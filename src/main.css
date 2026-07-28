@@ -1,0 +1,368 @@
+@import "tailwindcss";
+
+/*
+==================================================
+ HSSE DESIGN SYSTEM
+ Vue 3 + Tailwind CSS v4
+==================================================
+*/
+
+
+@theme {
+
+    /*
+    ==========================
+    BRAND COLORS
+    ==========================
+    */
+
+    --color-primary: #1E3A5F;
+    --color-secondary: #4A6FA5;
+    --color-tertiary: #7B9ACC;
+    --color-accent: #00984A;
+
+
+    /*
+    ==========================
+    LIGHT COLORS
+    ==========================
+    */
+
+    --color-background: #F8FAF9;
+    --color-surface: #FFFFFF;
+    --color-surface-variant: #F1F5F9;
+
+
+    /*
+    ==========================
+    DARK COLORS
+    ==========================
+    */
+
+    --color-dark-background: #121212;
+    --color-dark-surface: #1E1E1E;
+    --color-dark-surface-variant: #262626;
+
+
+    /*
+    ==========================
+    TEXT COLORS
+    ==========================
+    */
+
+    --color-text-primary: #1F2937;
+    --color-text-secondary: #64748B;
+    --color-text-disabled: #94A3B8;
+
+
+    /*
+    ==========================
+    BORDER
+    ==========================
+    */
+
+    --color-border: #E2E8F0;
+    --color-divider: #CBD5E1;
+
+
+    /*
+    ==========================
+    STATUS
+    ==========================
+    */
+
+    --color-success: #00984A;
+    --color-warning: #F59E0B;
+    --color-danger: #DC2626;
+    --color-info: #0EA5E9;
+
+
+    /*
+    ==========================
+    TYPOGRAPHY
+    ==========================
+    */
+
+    --font-family-sans: "Inter", sans-serif;
+
+
+    /*
+    ==========================
+    RADIUS
+    ==========================
+    */
+
+    --radius-card: 12px;
+    --radius-button: 10px;
+}
+
+
+/*
+==================================================
+ GLOBAL STYLE
+==================================================
+*/
+
+
+@layer base {
+
+    html {
+        font-family: "Inter", sans-serif;
+        background-color: var(--color-background);
+        color: var(--color-text-primary);
+    }
+
+
+    body {
+        min-height: 100vh;
+    }
+
+
+    * {
+        border-color: var(--color-border);
+    }
+
+}
+
+
+/*
+==================================================
+ COMPONENT UTILITIES
+==================================================
+*/
+
+
+@layer components {
+
+
+    /*
+    CARD
+    */
+
+    .hsse-card {
+
+        @apply 
+        bg-white
+        rounded-xl
+        border
+        shadow-sm
+        p-6;
+
+    }
+
+
+
+    /*
+    PRIMARY BUTTON
+    */
+
+    .btn-primary {
+
+        @apply
+        bg-primary
+        text-white
+        px-5
+        py-2.5
+        rounded-lg
+        font-medium
+        transition;
+
+    }
+
+
+    .btn-primary:hover {
+
+        background-color: #294D78;
+
+    }
+
+
+
+    /*
+    SECONDARY BUTTON
+    */
+
+    .btn-secondary {
+
+        @apply
+        bg-secondary
+        text-white
+        px-5
+        py-2.5
+        rounded-lg
+        font-medium;
+
+    }
+
+
+
+    /*
+    SUCCESS BUTTON
+    */
+
+    .btn-success {
+
+        @apply
+        bg-accent
+        text-white
+        px-5
+        py-2.5
+        rounded-lg;
+
+    }
+
+
+
+    /*
+    DANGER BUTTON
+    */
+
+    .btn-danger {
+
+        @apply
+        bg-danger
+        text-white
+        px-5
+        py-2.5
+        rounded-lg;
+
+    }
+
+
+
+    /*
+    INPUT
+    */
+
+    .hsse-input {
+
+        @apply
+        w-full
+        rounded-lg
+        border
+        bg-white
+        px-4
+        py-2.5
+        outline-none
+        transition;
+
+    }
+
+
+    .hsse-input:focus {
+
+        border-color: var(--color-secondary);
+        box-shadow: 0 0 0 3px rgba(74,111,165,.15);
+
+    }
+
+
+
+    /*
+    BADGES
+    */
+
+
+    .badge-success {
+
+        @apply
+        bg-green-100
+        text-green-700
+        px-3
+        py-1
+        rounded-full
+        text-sm;
+
+    }
+
+
+    .badge-warning {
+
+        @apply
+        bg-yellow-100
+        text-yellow-700
+        px-3
+        py-1
+        rounded-full
+        text-sm;
+
+    }
+
+
+    .badge-danger {
+
+        @apply
+        bg-red-100
+        text-red-700
+        px-3
+        py-1
+        rounded-full
+        text-sm;
+
+    }
+
+
+}
+
+
+/*
+==================================================
+ DARK MODE
+==================================================
+*/
+
+
+.dark {
+
+
+    --color-background: #121212;
+
+    --color-surface: #1E1E1E;
+
+    --color-surface-variant: #262626;
+
+
+    --color-text-primary: #F8FAFC;
+
+    --color-text-secondary: #CBD5E1;
+
+
+    --color-border: #374151;
+
+
+}
+
+
+
+@layer utilities {
+
+
+    .bg-app {
+
+        background-color: var(--color-background);
+
+    }
+
+
+    .bg-surface {
+
+        background-color: var(--color-surface);
+
+    }
+
+
+    .text-primary-app {
+
+        color: var(--color-text-primary);
+
+    }
+
+
+    .text-secondary-app {
+
+        color: var(--color-text-secondary);
+
+    }
+
+
+}
