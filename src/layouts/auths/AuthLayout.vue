@@ -1,9 +1,10 @@
 <template>
-    <div class="grid grid-cols-2 h-screen w-screen overflow-hidden">
-        <div class="bg-primary">
-            
-        </div>
+  <div class="grid grid-cols-2 h-screen bg-white">
+    <div class="">
+      <img src="/images/bg-login.webp" class="w-full h-full object-cover"/>
+    </div>
+    <div>
         <router-view/>
     </div>
+  </div>
 </template>
-<script lang="ts" setup></script>
