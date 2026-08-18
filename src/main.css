@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@theme {
+  /* GALANA */
+
+  --color-primary: #0f9d58;
+  --color-primary-light: #e8f5ee;
+  --color-primary-dark: #0d874c;
+
+  /* Status */
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Background */
+
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f1f5f9;
+
+  /* Text */
+
+  --color-text-primary: #334155;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  /* Border */
+
+  --color-border: #e2e8f0;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-text-primary antialiased;
+    font-family:
+      Inter,
+      system-ui,
+      sans-serif;
+  }
+
+  #app {
+    @apply min-h-screen;
+  }
+
+  h1 {
+    @apply text-4xl font-bold text-text-primary;
+  }
+
+  h2 {
+    @apply text-3xl font-bold text-text-primary;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold text-text-primary;
+  }
+
+  h4 {
+    @apply text-xl font-semibold text-text-primary;
+  }
+
+  h5 {
+    @apply text-lg font-semibold text-text-primary;
+  }
+
+  h6 {
+    @apply text-base font-semibold text-text-primary;
+  }
+
+  p {
+    @apply text-base text-text-primary;
+  }
+
+  label {
+    @apply mb-3 block text-sm font-bold uppercase tracking-wide text-text-secondary;
+  }
+
+  a {
+    @apply text-primary transition-colors;
+  }
+
+  a:hover {
+    @apply text-primary-dark;
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+
+  table {
+    @apply w-full overflow-hidden bg-white;
+  }
+
+  thead {
+    @apply bg-slate-50;
+  }
+
+  thead th {
+    @apply px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-text-secondary;
+  }
+
+  tbody td {
+    @apply border-t border-border px-6 py-4 text-sm text-text-primary;
+  }
+
+  tbody tr {
+    @apply transition-colors bg-white;
+  }
+
+  tbody tr:hover {
+    @apply bg-primary-light/40;
+  }
+}
+  .pagination-container {
+    display: flex;
+    column-gap: 10px;
+  }
+  .paginate-buttons {
+    height: 40px;
+    width: 40px;
+    border-radius: 20px;
+    cursor: pointer;
+    background-color: rgb(242, 242, 242);
+    border: 1px solid rgb(217, 217, 217);
+    color: black;
+  }
+  .paginate-buttons:hover {
+    background-color: #d8d8d8;
+  }
+  .active-page {
+    background-color: #3498db;
+    border: 1px solid #3498db;
+    color: white;
+  }
+  .active-page:hover {
+    background-color: #2988c8;
+  }
