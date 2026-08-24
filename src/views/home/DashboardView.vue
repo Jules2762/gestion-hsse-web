@@ -1,6 +1,6 @@
 <template>
     <div class="w-full flex flex-col ">
-        <Header title="Hello" show-search v-model="search"/>
+        <Header title="Tableau de bord"  v-model="search" />
         <div class="bg-white p-4 flex flex-row gap-x-4 border-b border-gray-200">
             <button v-for="(value,index) in tab_data" :key="index" :class="index==tab_index?'border-b-3 border-primary text-primary font-semibold':''" @click="tab_index=index" class="flex  flex-row items-center gap-x-2">
                 <span>{{value}}</span>

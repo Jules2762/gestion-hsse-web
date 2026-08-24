@@ -30,19 +30,19 @@ const optionsRep = ref({
 </script>
 
 <template>
-    <div class="flex flex-col gap-y-4 p-4">
+    <div class="flex flex-col gap-y-4 p-4 ">
 
         <div class="grid grid-cols-4 gap-3">
-            <Card title="Taux de réalisation du plan" value="56" :icon="Target" />
-            <Card title="Inspections réalisées" value="56" :icon="ClipboardCheck" />
-            <Card title="Taux de conformité global" value="56" :icon="ShieldCheck" />
-            <Card title="Actions ouvertes" value="56" :icon="ClipboardPen" />
+            <Card  title="Taux de réalisation du plan" theme="red" value="56" :icon="Target" />
+            <Card title="Inspections réalisées" theme="green" value="56" :icon="ClipboardCheck" />
+            <Card title="Taux de conformité global" theme="orange" value="56" :icon="ShieldCheck" />
+            <Card title="Actions ouvertes" theme="cyan" value="56" :icon="ClipboardPen" />
         </div>
-        <div class="bg-white gap-y-3 p-4 ">
+        <div class="bg-white gap-y-3 p-4 w-[99%]">
             <h3>Performance HSSE Globale</h3>
             <apexchart type="line" height="400" :options="options" :series="series"></apexchart>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 w-[99%]">
             <div class="bg-white p-4">
                 <h3>Dernières inspections</h3>
                 <table>
@@ -112,7 +112,7 @@ const optionsRep = ref({
                 </table>
             </div>
         </div>
-        <div class="bg-white p-4">
+        <div class="bg-white p-4 w-[99%]">
             <h3>Performance par direction</h3>
              <apexchart type="bar" height="400" :options="optionsRep" :series="seriesRep"></apexchart>
         </div>

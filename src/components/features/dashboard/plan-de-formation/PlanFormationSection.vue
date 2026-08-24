@@ -46,7 +46,7 @@
 import KPICards from './KPICards.vue';
 import { ref } from 'vue';
 
-const series = ref([{ name: 'Revenue', data: [44, 55, 41, 67, 22] },])
+const series = ref([{ name: 'Personnes formées', data: [44, 55, 41, 67, 22] },])
 const options = ref({
   chart: { type: 'bar' },
   xaxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May'] }
@@ -84,7 +84,7 @@ const pie_options = ref({
     width: 500,
     type: 'pie',
   },
-  labels: ['Organic Search', 'Direct', 'Social', 'Referral', 'Email'],
+  labels: ['DG', 'RH', 'HSSE', 'IT', 'TRANSPORT'],
 
   legend: {
     show: false,

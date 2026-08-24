@@ -1,6 +1,21 @@
-import type { ActionStatusType } from "../@types/Action.type"
+import type { ActionStatusJsonType, ActionStatusType } from "../@types/Action.type"
 
-const ActionStatusData=[] as ActionStatusType[]
+const ActionStatusData = ["PENDING", "IN_PROGRESS", "FINISHED"] as ActionStatusType[]
+const ActionStatusDataJson = [
+    {
+        label: "En attente",
+        value: "PENDING"
+    },
+    {
+        label: "En cours",
+        value: "IN_PROGRESS"
+    },
+    {
+        label: "Terminée",
+        value: "FINISHED"
+    },
+] as ActionStatusJsonType
 export {
-    ActionStatusData
+    ActionStatusData,
+    ActionStatusDataJson
 }

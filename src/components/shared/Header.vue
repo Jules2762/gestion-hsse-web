@@ -1,7 +1,21 @@
 <template>
     <div class="flex w-full flex-col gap-y-2 border-b border-gray-200">
         <div class=" bg-white px-6 py-3 flex flex-row items-center justify-between">
-            <h5>{{ title }}</h5>
+            <div class="flex flex-col gap-y-1">
+                <h5>{{ title }}</h5>
+                <div v-if="thumbnails" class="p-1">
+
+                    <div class="flex flex-row  gap-x-3">
+                        <div v-for="(item, index) in thumbnails" :key="index"
+                            class="flex flex-row text-xs gap-x-3 font-semibold text-slate-600 items-center">
+                            <div @click="router.push({ name: item.name })" class="hover:text-slate-800"
+                                :class="item.name == useRoute().name ? 'text-primary' : ''">{{ item.label }}</div>
+                            <ChevronRight :size="15" v-show="thumbnails.length >= 2 && thumbnails.length != index + 1">
+                            </ChevronRight>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="flex flex-row gap-x-5 items-center">
                 <form class="w-100" v-if="showSearch">
                     <Input :icon="SearchIcon" v-model="data"></Input>
@@ -12,24 +26,15 @@
                         <div v-if="notifications.getData.length > 0 && notifications.getData.some(item => !item.viewed)"
                             class="absolute -top-0.5 -right-0.5 bg-red-600 w-3 h-3 rounded-full"></div>
                     </button>
-                    <button>
+                    <button @click="router.push({
+                        name:'PROFILE'
+                    })">
                         <User2Icon />
                     </button>
                 </div>
             </div>
         </div>
-        <div v-if="thumbnails" class="p-6">
 
-            <div class="flex flex-row  gap-x-3">
-                <div v-for="(item, index) in thumbnails" :key="index"
-                    class="flex flex-row text-xs gap-x-3 font-semibold text-slate-600 items-center">
-                    <div @click="router.push({ name: item.name })" class="hover:text-slate-800"
-                        :class="item.name == useRoute().name ? 'text-primary' : ''">{{ item.label }}</div>
-                    <ChevronRight :size="15" v-show="thumbnails.length >= 2 && thumbnails.length != index + 1">
-                    </ChevronRight>
-                </div>
-            </div>
-        </div>
         <RightModal :is-open="modalRight" @on-close="
             modalRight = false;
         notifications.viewed();
@@ -80,7 +85,7 @@
                                 <div class="flex flex-row gap-x-3 items-center ">
                                     <div class="w-2 h-2  rounded-full bg-red-600" v-if="!value.viewed"></div>
                                     <button class="hidden group-hover:block " @click="notifications.deleteOne(index)">
-                                        <Trash2Icon :size="15"/>
+                                        <Trash2Icon :size="15" />
                                     </button>
                                 </div>
                             </div>

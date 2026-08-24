@@ -5,10 +5,10 @@
             <apexchart type="area" height="350" :options="options" :series="series"></apexchart>
         </div>
         <div class="grid grid-cols-4 gap-3">
-            <Card title="Inspections réalisées" value="156" :icon="ClipboardCheck"/>
-            <Card title="Inspections en retard" value="156" :icon="ClockAlert"/>
-            <Card title="Taux de conformité moyen" value="156" :icon="ShieldCheck"/>
-            <Card title="Non-conformités détectées" value="156" :icon="TriangleAlert"/>
+            <Card title="Inspections réalisées" theme="green" value="156" :icon="ClipboardCheck"/>
+            <Card title="Inspections en retard" theme="blue" value="156" :icon="ClockAlert"/>
+            <Card title="Taux de conformité moyen" theme="red" value="156" :icon="ShieldCheck"/>
+            <Card title="Non-conformités détectées" theme="cyan" value="156" :icon="TriangleAlert"/>
         </div>
         <div class="grid grid-cols-6 gap-3">
             <div class="col-span-4 bg-white p-4 h-fit">

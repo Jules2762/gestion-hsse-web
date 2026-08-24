@@ -3,11 +3,12 @@ import { ref } from 'vue';
 import CardTemplate from '../../../components/features/Template/CardTemplate.vue';
 import Header from '../../../components/shared/Header.vue';
 import Button from '../../../components/ui/Button.vue';
-import { ClipboardCheck, EditIcon, EyeIcon, LayoutGrid, ListIcon, PlusIcon, Table2, Trash2Icon } from '@lucide/vue';
+import { ClipboardCheck,  PlusIcon } from '@lucide/vue';
 import ShowMode from '../../../components/ui/ShowMode.vue';
 import Input from '../../../components/ui/Input.vue';
-import Pagination from '../../../components/ui/Pagination.vue';
+
 import { VueAwesomePaginate } from 'vue-awesome-paginate';
+import ActionTable from '../../../components/ui/ActionTable.vue';
 const data = ref([
     {
         title: "Sécurité incendie",
@@ -58,7 +59,21 @@ const current_page = ref(1)
 
 <template>
     <div class="flex flex-col ">
-        <Header title="Templates" show-search />
+        <Header title="Templates" show-search :thumbnails="[
+            {
+                label:'Accueil',
+                name:'DASHBOARD'
+            },
+             {
+                label:'Inspections',
+                name:'INSPECTION'
+            },
+             {
+                label:'Template',
+                name:'TEMPLATE'
+            },
+            
+        ]"/>
         <div class="  flex flex-col gap-y-4 ">
             <div
                 class="flex flex-row justify-between items-center p-2 bg-white max-w-full overflow-hidden border-b border-gray-200">
@@ -95,17 +110,7 @@ const current_page = ref(1)
                                 <td>{{ item.section }}</td>
                                 <td>{{ item.question }}</td>
                                 <td>
-                                    <div class="flex flex-row items-center gap-x-4">
-                                        <button>
-                                            <EyeIcon :size="15" />
-                                        </button>
-                                        <button>
-                                            <EditIcon :size="15" />
-                                        </button>
-                                        <button>
-                                            <Trash2Icon :size="15" />
-                                        </button>
-                                    </div>
+                                    <ActionTable show-details show-edit show-delete/>
                                 </td>
                             </tr>
                         </tbody>
