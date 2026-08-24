@@ -1,7 +1,7 @@
 <template>
     <transition name="modal">
         <div @click.self="close" v-if="isOpen" class="w-screen h-screen bg-black/10 fixed   ">
-            <div class="modal-content fixed  bg-white h-screen top-0 right-0 " :class="width?width:'w-100'">
+            <div class="modal-content fixed  bg-white h-screen z-50 top-0 right-0 " :class="width?width:'w-100'">
                 <slot></slot>
             </div>
         </div>

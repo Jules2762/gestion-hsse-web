@@ -117,6 +117,9 @@
   tbody tr:hover {
     @apply bg-primary-light/40;
   }
+  p{
+    @apply text-gray-500;
+  }
 }
   .pagination-container {
     display: flex;
