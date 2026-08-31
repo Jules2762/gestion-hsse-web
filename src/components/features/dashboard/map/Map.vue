@@ -7,7 +7,9 @@ import {
   LPopup,
   LTileLayer,
 } from "@vue-leaflet/vue-leaflet";
-
+import { Fullscreen, X } from "@lucide/vue";
+import { ref } from "vue";
+  const show_fullscreen=ref(false)
  const sites = [
   {
     name: 'Antananarivo',
@@ -54,10 +56,12 @@ const center = [-18.8792, 47.5079];
     class="
       rounded-3xl
       bg-white
+      
       p-6
       shadow-sm
     "
   >
+  
     <div
       class="
         mb-4
@@ -75,12 +79,18 @@ const center = [-18.8792, 47.5079];
 
     <div
       class="
-        h-[500px]
+
+        
         overflow-hidden
         rounded-2xl
       "
+      :class="show_fullscreen?'fixed top-0 left-0 right-0 h-full w-full ':'h-125 relative'"
     >
-      <LMap
+    <button class="absolute top-4 right-4 z-500 bg-white p-1 rounded border border-gray-400" @click="show_fullscreen=!show_fullscreen">
+    <Fullscreen v-if="!show_fullscreen"/>
+    <X v-else/>
+  </button>
+      <LMap class="z-0 w-full h-full"
         :zoom="6"
         :center="center"
        

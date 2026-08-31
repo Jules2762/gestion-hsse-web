@@ -53,7 +53,7 @@
       />
 
       <input
-        :value="modelValue"
+        
         :placeholder="placeholder"
         :type="type"
         :disabled="disabled"
@@ -91,7 +91,7 @@
 import { computed, type Component, type InputTypeHTMLAttribute } from 'vue'
 
 type propsType= {
-  modelValue?: string
+  modelValue?: string|number
   label?: string
   placeholder?: string
   type?: InputTypeHTMLAttribute
@@ -119,7 +119,7 @@ const props=withDefaults(
 
 const emit = defineEmits(["update:modelValue"])
 const data=computed({
-  get():string|undefined{
+  get():string|number|undefined{
     return props.modelValue
   },
   set(value:string|undefined):void{
