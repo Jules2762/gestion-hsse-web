@@ -95,7 +95,7 @@
   }
 
   table {
-    @apply w-full overflow-hidden bg-white;
+    @apply w-full overflow-hidden bg-white h-fit;
   }
 
   thead {
@@ -105,13 +105,16 @@
   thead th {
     @apply px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-text-secondary;
   }
+  tbody{
+    @apply bg-white h-fit ;
+  }
 
   tbody td {
-    @apply border-t border-border px-6 py-4 text-sm text-text-primary;
+    @apply border-t border-border px-6 py-4 h-fit text-sm text-text-primary;
   }
 
   tbody tr {
-    @apply transition-colors bg-white;
+    @apply h-fit transition-colors bg-white;
   }
 
   tbody tr:hover {
@@ -120,6 +123,7 @@
   p{
     @apply text-gray-500;
   }
+  
 }
   .pagination-container {
     display: flex;
@@ -145,3 +149,11 @@
   .active-page:hover {
     background-color: #2988c8;
   }
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}

@@ -10,9 +10,9 @@
         </div>
         <div class="flex  flex-col gap-y-3 flex-1">
             <div v-for="(item, index) in sidebar_routes" :key="index"
-                class=" flex flex-col   w-full transition-all overflow-x-hidden ">
-                <div class="flex flex-row gap-x-3 rounded px-2 justify-between items-center h-10 relative"
-                    @click="toggleMenu(item); sidebar.setLastIndex(index)" :class="item.children.length > 0
+                class=" flex flex-col   w-full transition-all select-none overflow-x-hidden ">
+                <div class="flex flex-row gap-x-3 rounded px-2 justify-between items-center h-10 relative "
+                    @click="toggleMenu(item); sidebar.setLastIndex(index)" :class="[item.children.length > 0
                         ? item.children.some(
                             child =>
                                 child.name === router.currentRoute.value.name
@@ -21,8 +21,8 @@
                             : ''
                         : router.currentRoute.value.name === item.name
                             ? 'bg-primary text-white'
-                            : ''
-                        ">
+                            : '',(item.children.length>0&&sidebar.isShow==true)?'rounded-bl-none':'rounded-bl'
+                        ]">
                     <div class="flex flex-row items-center w-full justify-between transition-all">
                         <div class=" flex flex-row gap-x-3">
                             <component :is="item.icon" />

@@ -1,9 +1,11 @@
 type UserRoleType = "USER" | "ADMIN"
 type UserStatusType = "ENABLED" | "DISABLED"
-
+type PermissionNameType = "USER_CREATE" | "USER_READ" | "USER_UPDATE" | "USER_DELETE"
 type permissionType = {
     id?: string | number,
-    name: string,
+    name: PermissionNameType,
+    created_at: string,
+    updated_at: string
 }
 type UserDataType = {
     id?: string | number,

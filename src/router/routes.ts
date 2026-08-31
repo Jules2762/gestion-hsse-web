@@ -3,11 +3,18 @@ import HomeLayout from "../layouts/HomeLayout.vue";
 import SearchAccount from "../views/auths/forgot-password/SearchAccount.vue";
 import LoginView from "../views/auths/LoginView.vue";
 import ActivityPage from "../views/home/administration/ActivityPage.vue";
+import RolePermissionPage from "../views/home/administration/RolePermissionPage.vue";
 import UsersAddPage from "../views/home/administration/UsersAddPage.vue";
 import UsersPage from "../views/home/administration/UsersPage.vue";
 import UserUpdatePage from "../views/home/administration/UserUpdatePage.vue";
 import DashboardView from "../views/home/DashboardView.vue";
+import DocumentLibraryPage from "../views/home/document-library/DocumentLibraryPage.vue";
+import FormationImport from "../views/home/Formation/FormationImport.vue";
+import FormationNewPage from "../views/home/Formation/FormationNewPage.vue";
+import FormationPage from "../views/home/Formation/FormationPage.vue";
 import ActionPage from "../views/home/Iinspections/ActionPage.vue";
+import ChecklistDetailsPage from "../views/home/Iinspections/ChecklistDetailsPage.vue";
+import ChecklistNewPage from "../views/home/Iinspections/ChecklistNewPage.vue";
 import ChecklistPage from "../views/home/Iinspections/ChecklistPage.vue";
 import EquipmentMonitoring from "../views/home/Iinspections/EquipmentMonitoring.vue";
 import TemplatePage from "../views/home/Iinspections/TemplatePage.vue";
@@ -63,6 +70,11 @@ const routes = [
                         component: UsersPage
                     },
                     {
+                        path: "/users/access-control/:id",
+                        name: "ROLE_PERMISSION",
+                        component: RolePermissionPage
+                    },
+                    {
                         path: "/users/add",
                         name: "ADD_USER",
                         component: UsersAddPage
@@ -79,11 +91,31 @@ const routes = [
                     },
                 ]
             },
+             {
+                path: "document-library",
+                name: "DOCUMENT_LIBRARY",
+                component: DocumentLibraryPage
+            },
+             {
+                path: "formation",
+                name: "FORMATION",
+                component: FormationPage
+            },
+             {
+                path: "formation/new",
+                name: "FORMATION_NEW",
+                component: FormationNewPage
+            },
+             {
+                path: "formation/import",
+                name: "FORMATION_IMPORT",
+                component: FormationImport
+            },
             {
                 path: 'inspection',
                 name: 'INSPECTION',
                 redirect:{
-                    name:"TEMPLATE"
+                    name:"ACTION"
                 },
                 children: [
                     {
@@ -97,6 +129,16 @@ const routes = [
                         component: ChecklistPage
                     },
                     {
+                        path: "/checklist/new",
+                        name: "CHECKLIST_NEW",
+                        component: ChecklistNewPage
+                    },
+                    {
+                        path: "/checklist/details/:id",
+                        name: "CHECKLIST_DETAILS",
+                        component: ChecklistDetailsPage
+                    },
+                    {
                         path: "/action",
                         name: "ACTION",
                         component: ActionPage
@@ -108,6 +150,7 @@ const routes = [
                     },
                 ]
             },
+           
             {
                 path: "profile/:id?",
                 name: "PROFILE",
