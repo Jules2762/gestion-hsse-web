@@ -38,6 +38,7 @@ type ChecklistItemType={
     question:string,
     answer?:AnswerType,
     action?:ActionType
+    
 }
 type ChecklistType = "CHECKLIST HSSE SURETE" | "FICHE D'INSPECTION DE CAMION CITERNE" | "INSPECTION DES VEHICULES" | "CHECKLIST EVALUATION RESEAU" | "CHECKLIST EVALUATION DES AGENCES ET MAGASIN" | "CHECKLIST EVALUATION CONSO"
 type ChecklistTypeJson = {

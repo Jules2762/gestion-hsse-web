@@ -2,14 +2,15 @@
 import { computed, ref } from 'vue';
 import Header from '../../../components/shared/Header.vue';
 import { FormationData } from '../../../@data/Formation.data.ts';
-import ActionTable from '../../../components/ui/ActionTable.vue';
-import { ChevronDown, CloudDownloadIcon, SquarePlusIcon, XIcon } from '@lucide/vue';
-import { useSidebarStore } from '../../../services/useSidebarStore..ts';
+import { CloudDownloadIcon, Download, Eye, SquarePlusIcon, XIcon } from '@lucide/vue';
 import ShowMode from '../../../components/ui/ShowMode.vue';
 import Button from '../../../components/ui/Button.vue';
 import { router } from '../../../router/index.ts';
+import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
+import type { FormationType } from '../../../@types/Formation.type.ts';
+import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
 
-const headers = ["#", "DATE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible", "ACTION"]
+const headers = ["#", "DATE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible"]
 const data = ref([...FormationData])
 const show_preview = ref<null | number | string>(null)
 const selectedFormation = computed(
@@ -20,8 +21,25 @@ const selectedFormation = computed(
                 show_preview.value,
         ),
 )
-const sidebar = useSidebarStore()
 const show_mode = ref(0)
+const contextMenu = ref<
+    {
+        isOpen: boolean, contextMenu?: contextMenuType, formation?: FormationType, actions?: ContextMenuActionType[]
+    }>(
+        {
+            isOpen: false,
+            actions: [
+                {
+                    label: "Détails",
+                    icon: Eye
+                },
+                {
+                    label: "Télécharger",
+                    icon: Download
+                },
+            ]
+        }
+    )
 </script>
 
 <template>
@@ -47,7 +65,7 @@ const show_mode = ref(0)
             </div>
         </div>
         <div class="flex flex-row transition-all">
-            <table class="transition-all" :class="show_preview  ? 'w-9/12' : 'w-12/12'">
+            <table class="transition-all" :class="show_preview ? 'w-9/12' : 'w-12/12'">
                 <thead>
                     <tr>
                         <th v-for="(item, index) in headers" :key="index">{{ item }}</th>
@@ -55,6 +73,7 @@ const show_mode = ref(0)
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in data" :key="index" @click="show_preview = item.id"
+                        @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.formation = item"
                         :class="show_preview == item.id ? 'bg-primary/10' : ''">
                         <td>{{ item.id }}</td>
                         <td>{{ item.date }}</td>
@@ -63,14 +82,12 @@ const show_mode = ref(0)
                         <td>{{ item.trainer }}</td>
                         <td>{{ item.duration }}</td>
                         <td>{{ item.target }}</td>
-                        <td>
-                            <ActionTable show-file show-download />
-                        </td>
+
                     </tr>
                 </tbody>
             </table>
-            
-                <div :class="show_preview?'w-3/12':'w-0'" v-if="show_preview " class="
+
+            <div :class="show_preview ? 'w-3/12' : 'w-0'" v-if="show_preview" class="
             scrollbar-hide
             bg-white
             border-l
@@ -81,57 +98,57 @@ const show_mode = ref(0)
             sticky top-0
             overflow-y-auto
         ">
-                    <template v-if="selectedFormation">
+                <template v-if="selectedFormation">
 
-                        <!-- HEADER -->
+                    <!-- HEADER -->
 
-                        <div class="
+                    <div class="
                     pb-5
                     border-b
                     border-gray-200
                 ">
-                            <div class="
+                        <div class="
                         flex
                         items-start
                         justify-between
                     ">
-                                <div>
-                                    <p class="
+                            <div>
+                                <p class="
                                 text-xs
                                 uppercase
                                 tracking-widest
                                 text-gray-500
                             ">
-                                        Formation
-                                    </p>
+                                    Formation
+                                </p>
 
-                                    <h4 class="mt-1">
-                                        {{
-                                            selectedFormation.title
-                                        }}
-                                    </h4>
-                                </div>
+                                <h4 class="mt-1">
+                                    {{
+                                        selectedFormation.title
+                                    }}
+                                </h4>
+                            </div>
 
-                                <button class="
+                            <button class="
                             rounded-lg
                             p-2
                             hover:bg-slate-100
                         " @click="
                             show_preview = null
                             ">
-                                    <XIcon :size="18" />
-                                </button>
-                            </div>
+                                <XIcon :size="18" />
+                            </button>
+                        </div>
 
-                            <!-- BADGES -->
+                        <!-- BADGES -->
 
-                            <div class="
+                        <div class="
                         mt-4
                         flex
                         flex-wrap
                         gap-2
                     ">
-                                <span class="
+                            <span class="
                             rounded-full
                             bg-primary/10
                             px-3
@@ -140,12 +157,12 @@ const show_mode = ref(0)
                             font-medium
                             text-primary
                         ">
-                                    {{
-                                        selectedFormation.type
-                                    }}
-                                </span>
+                                {{
+                                    selectedFormation.type
+                                }}
+                            </span>
 
-                                <span class="
+                            <span class="
                             rounded-full
                             bg-blue-100
                             px-3
@@ -154,263 +171,265 @@ const show_mode = ref(0)
                             font-medium
                             text-blue-700
                         ">
-                                    {{
-                                        selectedFormation.volet
-                                    }}
-                                </span>
-                            </div>
+                                {{
+                                    selectedFormation.volet
+                                }}
+                            </span>
                         </div>
+                    </div>
 
-                        <!-- KPI -->
+                    <!-- KPI -->
 
-                        <div class="
+                    <div class="
                     mt-5
                     grid
                     grid-cols-3
                     gap-3
                 ">
-                            <div class="
+                        <div class="
                         rounded-xl
                         bg-slate-50
                         p-3
                         text-center
                     ">
-                                <p class="
+                            <p class="
                             text-xs
                             text-gray-500
                         ">
-                                    Participants
-                                </p>
+                                Participants
+                            </p>
 
-                                <h5>
-                                    {{
-                                        selectedFormation.participant
-                                    }}
-                                </h5>
-                            </div>
-
-                            <div class="
-                        rounded-xl
-                        bg-slate-50
-                        p-3
-                        text-center
-                    ">
-                                <p class="
-                            text-xs
-                            text-gray-500
-                        ">
-                                    Durée
-                                </p>
-
-                                <h5>
-                                    {{
-                                        selectedFormation.duration
-                                    }}h
-                                </h5>
-                            </div>
-
-                            <div class="
-                        rounded-xl
-                        bg-slate-50
-                        p-3
-                        text-center
-                    ">
-                                <p class="
-                            text-xs
-                            text-gray-500
-                        ">
-                                    Public
-                                </p>
-
-                                <h5 class="
-                            text-sm
-                        ">
-                                    {{
-                                        selectedFormation.target_type
-                                    }}
-                                </h5>
-                            </div>
+                            <h5>
+                                {{
+                                    selectedFormation.participant
+                                }}
+                            </h5>
                         </div>
 
-                        <!-- INFORMATIONS -->
+                        <div class="
+                        rounded-xl
+                        bg-slate-50
+                        p-3
+                        text-center
+                    ">
+                            <p class="
+                            text-xs
+                            text-gray-500
+                        ">
+                                Durée
+                            </p>
+
+                            <h5>
+                                {{
+                                    selectedFormation.duration
+                                }}h
+                            </h5>
+                        </div>
 
                         <div class="
+                        rounded-xl
+                        bg-slate-50
+                        p-3
+                        text-center
+                    ">
+                            <p class="
+                            text-xs
+                            text-gray-500
+                        ">
+                                Public
+                            </p>
+
+                            <h5 class="
+                            text-sm
+                        ">
+                                {{
+                                    selectedFormation.target_type
+                                }}
+                            </h5>
+                        </div>
+                    </div>
+
+                    <!-- INFORMATIONS -->
+
+                    <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                            <h6 class="
+                        <h6 class="
                         mb-4
                         text-gray-500
                     ">
-                                Informations générales
-                            </h6>
+                            Informations générales
+                        </h6>
 
-                            <div class="
+                        <div class="
                         grid
                         grid-cols-2
                         gap-4
                     ">
-                                <div>
-                                    <p class="
+                            <div>
+                                <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                        Date
-                                    </p>
+                                    Date
+                                </p>
 
-                                    <p>
-                                        {{
-                                            selectedFormation.date
-                                        }}
-                                    </p>
-                                </div>
+                                <p>
+                                    {{
+                                        selectedFormation.date
+                                    }}
+                                </p>
+                            </div>
 
-                                <div>
-                                    <p class="
+                            <div>
+                                <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                        Formateur
-                                    </p>
+                                    Formateur
+                                </p>
 
-                                    <p>
-                                        {{
-                                            selectedFormation.trainer
-                                        }}
-                                    </p>
-                                </div>
+                                <p>
+                                    {{
+                                        selectedFormation.trainer
+                                    }}
+                                </p>
+                            </div>
 
-                                <div>
-                                    <p class="
+                            <div>
+                                <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                        Type
-                                    </p>
+                                    Type
+                                </p>
 
-                                    <p>
-                                        {{
-                                            selectedFormation.type
-                                        }}
-                                    </p>
-                                </div>
+                                <p>
+                                    {{
+                                        selectedFormation.type
+                                    }}
+                                </p>
+                            </div>
 
-                                <div>
-                                    <p class="
+                            <div>
+                                <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                        Volet
-                                    </p>
+                                    Volet
+                                </p>
 
-                                    <p>
-                                        {{
-                                            selectedFormation.volet
-                                        }}
-                                    </p>
-                                </div>
+                                <p>
+                                    {{
+                                        selectedFormation.volet
+                                    }}
+                                </p>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- PUBLIC CIBLE -->
+                    <!-- PUBLIC CIBLE -->
 
-                        <div class="
+                    <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                            <h6 class="mb-3">
-                                Public concerné
-                            </h6>
+                        <h6 class="mb-3">
+                            Public concerné
+                        </h6>
 
-                            <p>
-                                {{
-                                    selectedFormation.target
-                                }}
-                            </p>
+                        <p>
+                            {{
+                                selectedFormation.target
+                            }}
+                        </p>
 
-                            <p class="
+                        <p class="
                         mt-2
                         text-sm
                         text-gray-500
                     ">
-                                {{
-                                    selectedFormation.target_type
-                                }}
-                            </p>
-                        </div>
+                            {{
+                                selectedFormation.target_type
+                            }}
+                        </p>
+                    </div>
 
-                        <!-- PARTICIPATION -->
+                    <!-- PARTICIPATION -->
 
-                        <div class="
+                    <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                            <h6 class="mb-3">
-                                Participation
-                            </h6>
+                        <h6 class="mb-3">
+                            Participation
+                        </h6>
 
-                            <div class="
+                        <div class="
                         rounded-xl
                         bg-green-50
                         border
                         border-green-200
                         p-4
                     ">
-                                <div class="
+                            <div class="
                             flex
                             items-center
                             justify-between
                         ">
-                                    <span>
-                                        Participants
-                                    </span>
+                                <span>
+                                    Participants
+                                </span>
 
-                                    <span class="
+                                <span class="
                                 text-lg
                                 font-semibold
                                 text-green-700
                             ">
-                                        {{
-                                            selectedFormation.participant
-                                        }}
-                                    </span>
-                                </div>
+                                    {{
+                                        selectedFormation.participant
+                                    }}
+                                </span>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- ACTIONS -->
+                    <!-- ACTIONS -->
 
-                        <div class="
+                    <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                            <div class="
+                        <div class="
                         flex
                         flex-col
                         gap-2
                     ">
-                                <Button class="w-full">
-                                    Voir les participants
-                                </Button>
+                            <Button class="w-full">
+                                Voir les participants
+                            </Button>
 
-                                <Button variant="outline" class="w-full">
-                                    Télécharger la fiche
-                                </Button>
-                            </div>
+                            <Button variant="outline" class="w-full">
+                                Télécharger la fiche
+                            </Button>
                         </div>
+                    </div>
 
-                    </template>
-                </div>
-          
+                </template>
+            </div>
+
         </div>
+        <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
+            :actions="contextMenu.actions" />
     </div>
 </template>
 <style scoped>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { LoaderCircle } from '@lucide/vue'
-import type { Component } from 'vue'
+import { useSlots, type Component } from 'vue'
 
 export type ButtonVariant =
   | 'primary'
@@ -9,6 +9,8 @@ export type ButtonVariant =
   | 'danger'
   | 'success'
   | 'ghost'
+  |'icon'
+  |'primary-icon'
 
 export type ButtonSize =
   | 'sm'
@@ -37,15 +39,16 @@ withDefaults(
     fullWidth: false,
   },
 )
+
 </script>
 
 <template>
   <button
     :type="type"
     :disabled="disabled || loading"
-    class="min-w-50"
+    
     :class="[
-      'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-all duration-200 ',
+      size!='sm'?'min-w-50':'w-fit p-0 h-fit','inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-all duration-200 ',
 
       fullWidth && 'w-full',
 
@@ -54,7 +57,7 @@ withDefaults(
         : '',
 
       size === 'sm' &&
-        'h-10 px-4 text-sm',
+        ' p-2 text-sm',
 
       size === 'md' &&
         'h-12 px-5 text-sm',
@@ -64,13 +67,15 @@ withDefaults(
 
       variant === 'primary' &&
         'bg-primary text-white shadow-lg shadow-green-100 hover:bg-primary-dark',
+      variant === 'primary-icon' &&
+        'bg-primary text-white shadow-lg shadow-green-100 hover:bg-primary-dark',
 
       variant === 'secondary' &&
         'bg-slate-100 text-slate-700 hover:bg-slate-200',
 
       variant === 'outline' &&
         'border border-border bg-white text-text-primary hover:bg-slate-50',
-
+     
       variant === 'danger' &&
         'bg-danger text-white hover:bg-red-600',
 
@@ -89,10 +94,10 @@ withDefaults(
     <component
       :is="leftIcon"
       v-else-if="leftIcon"
-      class="h-4 w-4"
+      :size="18"
     />
 
-    <slot />
+    <slot v-if="variant!='icon'" />
 
     <component
       :is="rightIcon"

@@ -1,19 +1,55 @@
 <script setup lang="ts">
-import { CalendarCheck, CalendarIcon, ClipboardCheck, PlusIcon } from '@lucide/vue';
+import { CalendarCheck, CalendarIcon, ClipboardCheck, Download, Edit, Eye, PlusIcon, Trash2, User } from '@lucide/vue';
 import Header from '../../../components/shared/Header.vue';
 import Button from '../../../components/ui/Button.vue';
 import ShowMode from '../../../components/ui/ShowMode.vue';
 import { ref } from 'vue';
 import Input from '../../../components/ui/Input.vue';
-import ActionTable from '../../../components/ui/ActionTable.vue';
+
 import { ChecklistsData } from '../../../@data/Checklist.data.ts';
 import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
 import { router } from '../../../router/index.ts';
 import type { Checklistype } from '../../../@types/Checklist.type.ts';
+import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
+import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
 const data = ref(ChecklistsData)
 const show_mode = ref(0) //0 ou 1
 const current_page = ref(1)
 const selected_checklist = ref<Checklistype>()
+const contextMenu = ref<{
+    isOpen: boolean,
+    contextMenu?: contextMenuType,
+    checklist?: Checklistype,
+    actions?: ContextMenuActionType[]
+}>({
+    isOpen: false,
+    actions: [
+        {
+            label: "Détails",
+            icon: Eye,
+            onClick: () => router.push({
+                name: 'CHECKLIST_DETAILS', params: {
+                    id: 1
+                }
+            })
+        },
+        {
+            label: "Télécharger rapport",
+            icon: Download
+        },
+        {
+            label: "Modifier",
+            variant: 'WARNING',
+            icon: Edit
+        },
+        {
+            label: "Supprimer",
+            variant: 'DANGER',
+            icon: Trash2
+        },
+
+    ]
+})
 </script>
 
 <template>
@@ -62,11 +98,13 @@ const selected_checklist = ref<Checklistype>()
                                 <th>Type</th>
                                 <th>Lieu</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <!-- <th>Action</th> -->
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in data" :key="index" @click="selected_checklist = item">
+                            <tr v-for="(item, index) in data" :key="index"
+                                @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.checklist = item"
+                                @click="selected_checklist = item">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ item.title }}</td>
                                 <td class="truncate max-w-70">{{ item.description }}</td>
@@ -75,13 +113,13 @@ const selected_checklist = ref<Checklistype>()
                                 <td>
                                     <ChecklistStatus :name="item.status" />
                                 </td>
-                                <td>
+                                <!-- <td>
                                     <ActionTable show-details show-edit show-delete @click-details="router.push({
                                         name: 'CHECKLIST_DETAILS', params: {
                                             id: 1
                                         }
                                     })" />
-                                </td>
+                                </td> -->
                             </tr>
                         </tbody>
 
@@ -503,5 +541,7 @@ const selected_checklist = ref<Checklistype>()
                 </div>
             </transition>
         </div>
+        <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
+            :actions="contextMenu.actions" />
     </div>
 </template>

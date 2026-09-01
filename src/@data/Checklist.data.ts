@@ -2,87 +2,87 @@ import type { ChecklistStatusJsonType, ChecklistStatusType, ChecklistTypeJson, C
 
 const ChecklistStatusData = ["DRAFT", "IN_PROGRESS", "COMPLETED", "CANCELLED"] as ChecklistStatusType[]
 const ChecklistStatusJsonData = [
-    {
-        label: 'Planifiée',
-        value: 'DRAFT',
-    },
+  {
+    label: 'Planifiée',
+    value: 'DRAFT',
+  },
 
-    {
-        label: 'En cours',
-        value: 'IN_PROGRESS',
-    },
+  {
+    label: 'En cours',
+    value: 'IN_PROGRESS',
+  },
 
-    {
-        label: 'Clôturée',
-        value: 'COMPLETED',
-    },
+  {
+    label: 'Clôturée',
+    value: 'COMPLETED',
+  },
 
-    {
-        label: 'Annulée',
-        value: 'CANCELLED',
-    },
+  {
+    label: 'Annulée',
+    value: 'CANCELLED',
+  },
 ] as ChecklistStatusJsonType
-const SiteTypeDataJson:SiteTypeJson = [
-    {
-        label: 'Station Service',
-        value: 'STATION SERVICE',
-    },
+const SiteTypeDataJson: SiteTypeJson = [
+  {
+    label: 'Station Service',
+    value: 'STATION SERVICE',
+  },
 
-    {
-        label: 'Magasin',
-        value: 'MAGASIN',
-    },
+  {
+    label: 'Magasin',
+    value: 'MAGASIN',
+  },
 
-    {
-        label: 'Vehicule',
-        value: 'VEHICULE',
-    },
+  {
+    label: 'Vehicule',
+    value: 'VEHICULE',
+  },
 
-    {
-        label: 'Agence',
-        value: 'AGENCE',
-    },
+  {
+    label: 'Agence',
+    value: 'AGENCE',
+  },
 
-    {
-        label: 'Camion Citerne',
-        value: 'CAMION CITERNE',
-    },
+  {
+    label: 'Camion Citerne',
+    value: 'CAMION CITERNE',
+  },
 
-    {
-        label: 'B2B',
-        value: 'B2B',
-    },
-] 
+  {
+    label: 'B2B',
+    value: 'B2B',
+  },
+]
 const ChecklistTypeData: ChecklistTypeJson = [
-    {
-        label: 'Checklist HSSE Sûreté',
-        value: 'CHECKLIST HSSE SURETE'
-    },
+  {
+    label: 'Checklist HSSE Sûreté',
+    value: 'CHECKLIST HSSE SURETE'
+  },
 
-    {
-        label: "Fiche d'inspection de camion citerne",
-        value: "FICHE D'INSPECTION DE CAMION CITERNE"
-    },
+  {
+    label: "Fiche d'inspection de camion citerne",
+    value: "FICHE D'INSPECTION DE CAMION CITERNE"
+  },
 
-    {
-        label: 'Inspection des véhicules',
-        value: 'INSPECTION DES VEHICULES'
-    },
+  {
+    label: 'Inspection des véhicules',
+    value: 'INSPECTION DES VEHICULES'
+  },
 
-    {
-        label: 'Checklist évaluation réseau',
-        value: 'CHECKLIST EVALUATION RESEAU'
-    },
+  {
+    label: 'Checklist évaluation réseau',
+    value: 'CHECKLIST EVALUATION RESEAU'
+  },
 
-    {
-        label: 'Checklist évaluation des agences et magasin',
-        value: 'CHECKLIST EVALUATION DES AGENCES ET MAGASIN'
-    },
+  {
+    label: 'Checklist évaluation des agences et magasin',
+    value: 'CHECKLIST EVALUATION DES AGENCES ET MAGASIN'
+  },
 
-    {
-        label: 'Checklist évaluation conso',
-        value: 'CHECKLIST EVALUATION CONSO'
-    }
+  {
+    label: 'Checklist évaluation conso',
+    value: 'CHECKLIST EVALUATION CONSO'
+  }
 ]
 
 const ChecklistsData: Checklistype[] = [
@@ -143,10 +143,22 @@ const ChecklistsData: Checklistype[] = [
             } as any,
             action: {
               id: 1,
+              email_status: "SENT",
               description:
                 "Remplacer le panneau de sécurité endommagé.",
               status: "IN_PROGRESS",
-              assigned_to: 3,
+              assigned_to: {
+                "id": 4,
+                "first_name": "ARIMANANA",
+                "last_name": "Maherison Jules",
+                "email": "arimananajules@gmail.com",
+                "phone_number": "+261344310334",
+                "status": "ENABLED",
+                "role": "USER",
+                "permissions": [],
+                "department": "HSSE",
+                "job": "Responsable HSSE"
+              },
               checklist_item_id: 3,
               created_at: "2026-08-27T09:15:00",
             },
@@ -259,10 +271,22 @@ const ChecklistsData: Checklistype[] = [
             } as any,
             action: {
               id: 2,
+              email_status: "NOT_SENT",
               description:
                 "Réparer le feu arrière droit avant utilisation du camion.",
               status: "PENDING",
-              assigned_to: 5,
+              assigned_to: {
+                "id": 4,
+                "first_name": "ARIMANANA",
+                "last_name": "Maherison Jules",
+                "email": "arimananajules@gmail.com",
+                "phone_number": "+261344310334",
+                "status": "ENABLED",
+                "role": "USER",
+                "permissions": [],
+                "department": "HSSE",
+                "job": "Responsable HSSE"
+              },
               checklist_item_id: 9,
               created_at: "2026-08-27T11:30:00",
             },
@@ -385,10 +409,22 @@ const ChecklistsData: Checklistype[] = [
             } as any,
             action: {
               id: 3,
+              email_status: "NOT_SENT",
               description:
                 "Organiser une session de sensibilisation sur les procédures d'évacuation.",
               status: "FINISHED",
-              assigned_to: 4,
+              assigned_to: {
+                "id": 4,
+                "first_name": "ARIMANANA",
+                "last_name": "Maherison Jules",
+                "email": "arimananajules@gmail.com",
+                "phone_number": "+261344310334",
+                "status": "ENABLED",
+                "role": "USER",
+                "permissions": [],
+                "department": "HSSE",
+                "job": "Responsable HSSE"
+              },
               checklist_item_id: 16,
               created_at: "2026-08-26T15:20:00",
             },
@@ -548,9 +584,9 @@ const ChecklistsData: Checklistype[] = [
   },
 ];
 export {
-    ChecklistStatusData,
-    ChecklistStatusJsonData,
-    ChecklistsData,
-    ChecklistTypeData,
-    SiteTypeDataJson
+  ChecklistStatusData,
+  ChecklistStatusJsonData,
+  ChecklistsData,
+  ChecklistTypeData,
+  SiteTypeDataJson
 }
