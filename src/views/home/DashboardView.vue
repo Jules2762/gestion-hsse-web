@@ -1,14 +1,7 @@
 <template>
     <div class="w-full flex flex-col ">
         <Header title="Tableau de bord"  v-model="search" />
-        <div class="bg-white p-4 flex flex-row gap-x-4 border-b border-gray-200">
-            <button v-for="(value,index) in tab_data" :key="index" :class="index==tab_index?'border-b-3 border-primary text-primary font-semibold':''" @click="tab_index=index" class="flex  flex-row items-center gap-x-2">
-                <span>{{value}}</span>
-                <span v-if="tab_index!=index" class="flex flex-row items-center justify-center text-xs w-4 text-white h-4 rounded-full bg-red-400">1</span>
-            </button>
-            
-           
-        </div>
+        <TabUI v-model="tab_index" :tab-data="tab_data"/>
         <template v-if="tab_index==1">
             <PlanFormationSection/>
         </template>      
@@ -27,6 +20,7 @@ import Header from '../../components/shared/Header.vue';
 import PlanFormationSection from '../../components/features/dashboard/plan-de-formation/PlanFormationSection.vue';
 import GeneralSection from '../../components/features/dashboard/général/GeneralSection.vue';
 import InspectionSection from '../../components/features/dashboard/inspection/InspectionSection.vue';
+import TabUI from '../../components/ui/TabUI.vue';
 
 const search=ref("")
 const tab_data=[

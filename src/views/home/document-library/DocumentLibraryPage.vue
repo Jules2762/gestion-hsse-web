@@ -393,7 +393,7 @@ child in getChildren(
         z-99999
         
         overflow-hidden
-        rounded-2xl
+        rounded
         border
         border-gray-200
         bg-white
@@ -421,9 +421,9 @@ child in getChildren(
                 p-2
                 hover:bg-slate-100
             ">
-                <Copy :size="18" />
+                <Copy :size="21" />
 
-                <span class="text-[12px]">
+                <span class="text-[14px]">
                     Copier
                 </span>
             </button>
@@ -436,9 +436,9 @@ child in getChildren(
                 p-2
                 hover:bg-slate-100
             ">
-                <Scissors :size="18" />
+                <Scissors :size="21" />
 
-                <span class="text-[12px]">
+                <span class="text-[14px]">
                     Couper
                 </span>
             </button>
@@ -451,9 +451,9 @@ child in getChildren(
                 p-2
                 hover:bg-slate-100
             ">
-                <Download :size="18" />
+                <Download :size="21" />
 
-                <span class="text-[12px]">
+                <span class="text-[14px]">
                     Télécharger
                 </span>
             </button>
@@ -466,9 +466,9 @@ child in getChildren(
                 p-2
                 hover:bg-slate-100
             ">
-                <Info :size="18" />
+                <Info :size="21" />
 
-                <span class="text-[12px]">
+                <span class="text-[14px]">
                     Info
                 </span>
             </button>
@@ -482,9 +482,9 @@ child in getChildren(
                 hover:bg-slate-100
                 text-red-600
             ">
-                <Trash2 :size="18" />
+                <Trash2 :size="21" />
 
-                <span class="text-[12px]">
+                <span class="text-[14px]">
                     Supprimer
                 </span>
             </button>

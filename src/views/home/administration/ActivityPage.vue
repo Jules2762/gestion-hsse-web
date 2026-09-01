@@ -2,14 +2,15 @@
 import { computed, ref } from 'vue';
 import { UserData, UserRoleDataJson } from '../../../@data/User.data.ts';
 import Header from '../../../components/shared/Header.vue';
-import { router } from '../../../router/index.ts';
-import ActionTable from '../../../components/ui/ActionTable.vue';
-import type { UserDataType } from '../../../@types/User.type.ts';
+
 import type { LogType, LogTypeType } from '../../../@types/Logs.type.ts';
 import { LogData, LogTypeData } from '../../../@data/Logs.data.ts';
-import { Logs, XIcon } from '@lucide/vue';
+import { Logs, User, XIcon } from '@lucide/vue';
 import ShowMode from '../../../components/ui/ShowMode.vue';
 import Input from '../../../components/ui/Input.vue';
+import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
+import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
+import { router } from '../../../router/index.ts';
 const show_mode = ref(0)
 const selectedUser = computed(() => {
     return UserData.find(
@@ -19,12 +20,33 @@ const selectedUser = computed(() => {
 const filter = ref<{
     type?: LogTypeType
 }>({
-    type:undefined
+    type: undefined
 })
 const selected_log = ref<LogType>()
 const data = ref([...LogData])
 const dataFiltered = computed(() => {
     return data.value.filter(item => filter.value?.type ? item.type.includes(filter.value.type) : item)
+})
+const contextMenu = ref<{
+    isOpen: boolean,
+    contextMenu?: contextMenuType,
+    log?: LogType,
+    actions: ContextMenuActionType[]
+}>({
+    isOpen: false,
+    actions: [
+        {
+            label: "Profil",
+            icon: User,
+            onClick: () => router.push({
+                name: 'PROFILE',
+                params: {
+                    id: contextMenu.value.log?.id
+                }
+            })
+        },
+
+    ]
 })
 </script>
 
@@ -64,6 +86,7 @@ const dataFiltered = computed(() => {
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in dataFiltered" :key="index" @click="selected_log = item"
+                        @contextmenu.prevent="contextMenu.log = item; contextMenu.isOpen = true; contextMenu.contextMenu = $event"
                         :class="selected_log?.id == item.id ? 'bg-primary/10' : ''">
                         <td>{{ index + 1 }}</td>
                         <td>{{ item.type }}</td>
@@ -368,5 +391,7 @@ const dataFiltered = computed(() => {
                 </template>
             </div>
         </div>
+        <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
+            :actions="contextMenu.actions" />
     </div>
 </template>

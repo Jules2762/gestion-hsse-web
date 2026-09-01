@@ -59,15 +59,7 @@
                                 <td>
                                     <UserStatus :name="item.status" />
                                 </td>
-                                <!-- <td>
-                                    <ActionTable 
-                                        @click-ban="ban_modal = true" @click-edit="router.push({
-                                            name: 'UPDATE_USER',
-                                            params: {
-                                                id: item.id
-                                            }
-                                        })"  />
-                                </td> -->
+                               
                             </tr>
                         </tbody>
                     </table>
@@ -357,29 +349,49 @@ permission in
                 Vous pourrez le réactiver ultérieurement si nécessaire.
             </p>
         </CenterModal>
-        <ContextMenuUI v-model:is-open="isOpenContextMenu" :context-menu="contextMenu">
-            <div class="flex flex-col ">
-                <button @click="router.push({
-                    name: 'PROFILE',
-                    params: {
-                        id: context_menu_user?.id
+        <ContextMenuUI v-model="isOpenContextMenu" :context-menu="contextMenu" :actions="[
+            {
+                label:'Profil',
+                icon:User,
+                onClick:()=>router.push({
+                    name:'PROFILE',
+                    params:{
+                        id:context_menu_user?.id
                     }
-                })" class="flex flex-row gap-x-3 items-center text-gray-600 w-full p-1 hover:bg-gray-100">
-                    <User />
-                    <span>Utilisateur</span>
-                </button>
-                <button @click="router.push(
-                    {
-                        name: 'ROLE_PERMISSION',
-                        params: {
-                            id: context_menu_user?.id
-                        }
+                })
+            },
+            {
+                label:'Rôle et Permissions',
+                icon:UserCog2,
+                onClick:()=>router.push({
+                    name:'ROLE_PERMISSION',
+                    params:{
+                        id:context_menu_user?.id
                     }
-                )" class="flex flex-row gap-x-3 items-center text-gray-600 w-full p-1 hover:bg-gray-100">
-                    <UserCog2 />
-                    <span>Rôle et permissions</span>
-                </button>
-            </div>
+                })
+            },
+            {
+                label:'Activités',
+                icon:User,
+                onClick:()=>router.push({
+                    name:'PROFILE',
+                    params:{
+                        id:context_menu_user?.id
+                    }
+                })
+            },
+            {
+                label:'Désactiver',
+                icon:Ban,
+                variant:'DANGER',
+                onClick:()=>router.push({
+                    name:'PROFILE',
+                    params:{
+                        id:context_menu_user?.id
+                    }
+                })
+            },
+        ]">
         </ContextMenuUI>
     </div>
 </template>
@@ -388,10 +400,10 @@ import { ref } from 'vue';
 import Header from '../../../components/shared/Header.vue';
 import ShowMode from '../../../components/ui/ShowMode.vue';
 import Button from '../../../components/ui/Button.vue';
-import { Eye, PlusIcon, User, UserCog2, UserShield, XIcon } from '@lucide/vue';
+import {  Ban, Eye, PlusIcon, User, UserCog2, UserShield, XIcon } from '@lucide/vue';
 import Input from '../../../components/ui/Input.vue';
 import { UserData, UserRoleData, UserRoleDataJson } from '../../../@data/User.data';
-import ActionTable from '../../../components/ui/ActionTable.vue';
+
 import { router } from '../../../router/index.ts';
 import CenterModal from '../../../components/ui/centerModal.vue';
 import UserStatus from '../../../components/features/user/UserStatus.vue';

@@ -1,31 +1,3 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-import { UserData, UserRoleDataJson } from '../../../@data/User.data.ts';
-import Header from '../../../components/shared/Header.vue';
-import { router } from '../../../router/index.ts';
-import ActionTable from '../../../components/ui/ActionTable.vue';
-import ActionStatus from '../../../components/features/action/ActionStatus.vue';
-import ShowMode from '../../../components/ui/ShowMode.vue';
-import Input from '../../../components/ui/Input.vue';
-import { Calendar1Icon, Type, XIcon } from '@lucide/vue';
-import Select from '../../../components/ui/Select.vue';
-import UserCard from '../../../components/features/user/UserCard.vue';
-import type { ActionType } from '../../../@types/Action.type.ts';
-import { ActionData } from '../../../@data/Action.data.ts';
-const show_mode = ref(0)
-const data = ref<ActionType[]>([...ActionData])
-const selected_action = ref<ActionType>()
-import { computed } from 'vue'
-
-const selectedUser = computed(() =>
-    UserData.find(
-        user =>
-            user.id ===
-            selected_action.value?.assigned_to,
-    ),
-)
-</script>
-
 <template>
     <div>
         <Header title="Gestion des actions correctives" show-search :thumbnails="[
@@ -61,29 +33,28 @@ const selectedUser = computed(() =>
                                 <th>Checklist</th>
 
                                 <th>status</th>
-                                <th>Action</th>
+                                <th>e-mail</th>
+
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in data" :key="index" @click="selected_action = item"
+                            <tr v-for="(item, index) in data" :key="index"
+                                @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.action = item"
+                                @click="selected_action = item"
                                 :class="selected_action?.id == item.id ? 'bg-primary/10' : ''">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ item.created_at }}</td>
                                 <td>{{ item.description }}</td>
-                                <td>{{ item.assigned_to }}</td>
+                                <td>{{ item.assigned_to?.first_name + " " + item.assigned_to?.last_name }}</td>
 
                                 <td>{{ item.checklist_item_id }}</td>
                                 <td>
                                     <ActionStatus :name="item.status" />
                                 </td>
                                 <td>
-                                    <ActionTable show-user show-file @click-file="router.push({
-                                        name: 'CHECKLIST_DETAILS',
-                                        params: {
-                                            id: 1
-                                        }
-                                    })" />
+                                    <ActionEmailStatus :status="item.email_status" />
                                 </td>
+
                             </tr>
                         </tbody>
                     </table>
@@ -339,5 +310,110 @@ const selectedUser = computed(() =>
                 </div>
             </div>
         </div>
+        <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu" :actions="[
+            {
+                label: 'Voir Inspecteur',
+                icon: User
+            },
+            {
+                label: 'Voir Responsable',
+                icon: User
+            },
+            {
+                label: 'Voir Checklist',
+                icon: ListCheck
+            },
+            {
+                label: contextMenu.action?.email_status == 'NOT_SENT' ? 'Envoyer e-mail' : 'Réenvoyer e-mail',
+                icon: Mail,
+                onClick: () => notifyResponsible()
+            },
+            {
+                label: textContextMenuStatus(contextMenu.action?.status).text,
+                icon: textContextMenuStatus(contextMenu.action?.status).icon,
+                variant: textContextMenuStatus(contextMenu.action?.status).theme,
+                // onClick: () => notifyResponsible()
+            },
+        ]" />
     </div>
 </template>
+<script setup lang="ts">
+import { ref, type Component } from 'vue';
+import { UserData } from '../../../@data/User.data.ts';
+import Header from '../../../components/shared/Header.vue';
+import { router } from '../../../router/index.ts';
+
+import ActionStatus from '../../../components/features/action/ActionStatus.vue';
+
+import Input from '../../../components/ui/Input.vue';
+import { Calendar1Icon, CheckCircle2, Eye, ListCheck, Mail, PlayCircle, RotateCcw, Type, User, XIcon } from '@lucide/vue';
+import Select from '../../../components/ui/Select.vue';
+import type { ActionStatusType, ActionType } from '../../../@types/Action.type.ts';
+import { ActionData } from '../../../@data/Action.data.ts';
+const show_mode = ref(0)
+const data = ref<ActionType[]>([...ActionData])
+const selected_action = ref<ActionType>()
+import { computed } from 'vue'
+import type { contextMenuType, ContextMenuVariantType } from '../../../@types/ContextMenu.type.ts';
+import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
+import ActionEmailStatus from '../../../components/features/action/ActionEmailStatus.vue';
+
+const selectedUser = computed(() =>
+    UserData.find(
+        user =>
+            user.id ===
+            selected_action.value?.assigned_to,
+    ),
+)
+const contextMenu = ref<{
+    isOpen: boolean,
+    contextMenu?: contextMenuType,
+    action?: ActionType,
+
+}>({
+    isOpen: false,
+
+})
+function notifyResponsible(
+
+): void {
+    const email = contextMenu.value.action?.assigned_to?.email
+    const action = contextMenu.value.action as ActionType
+    const subject =
+        encodeURIComponent(
+            `Action corrective #${action.id} "${action.description}"`,
+        )
+
+    const body =
+        encodeURIComponent(`
+Bonjour,
+
+Une action corrective vous a été attribuée.
+
+Merci de consulter la plateforme GALANA HSSE pour plus de détails.
+
+Cordialement.
+        `)
+
+    window.location.href =
+        `mailto:${email}?subject=${subject}&body=${body}`
+}
+function textContextMenuStatus(status?: ActionStatusType): {
+    text: string,
+    icon: Component,
+    theme?: ContextMenuVariantType
+} {
+    switch (status) {
+        case "PENDING":
+            return { text: "Prendre en charge", icon: PlayCircle, "theme": "INFO" }
+
+        case "IN_PROGRESS":
+            return { text: "Clôturer l'action", icon: CheckCircle2, theme: "SUCCESS" }
+
+        default:
+            return { text: "Réouvrir", icon: RotateCcw, theme: "WARNING" }
+
+
+    }
+}
+</script>

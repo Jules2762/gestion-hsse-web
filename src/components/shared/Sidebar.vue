@@ -1,12 +1,12 @@
 <template>
     <div @mouseenter.self="sidebar.toggle(true)" @mouseleave.self="hide"
-        class="h-screen  sticky top-0 left-0 bottom-0 bg-white   transition-all px-3 py-5 flex flex-col gap-y-3 border-r border-gray-200"
+        class="h-screen  sticky top-0 left-0 bottom-0 bg-white overflow-x-hidden transition-all px-3 py-5 flex flex-col gap-y-3 border-r border-gray-200"
         :class="sidebar.isShow ? 'w-65 min-w-65' : 'w-16 min-w-16'">
         <div class="flex flex-row gap-x-2 items-center justify-start mb-5 cursor-pointer" @click="router.push({
             name: 'DASHBOARD'
         })">
             <img src="/logo/logo-galana.webp" class="w-13 min-w-13 -translate-x-2" />
-            <h4 v-if="sidebar.isShow" class="text-nowrap">Gestion HSSE</h4>
+            <h4  class="text-nowrap">Gestion HSSE</h4>
         </div>
         <div class="flex  flex-col gap-y-3 flex-1">
             <div v-for="(item, index) in sidebar_routes" :key="index"
