@@ -19,12 +19,13 @@
 
     import Header from "../../../components/shared/Header.vue"
     import Input from "../../../components/ui/Input.vue"
-    import Select from "../../../components/ui/Select.vue"
     import Button from "../../../components/ui/Button.vue"
 
     import type { SiteNameType } from "../../../@types/SiteName..type.ts"
     import type { EquipmentMonitoringFormType } from "../../../@types/EquipmentMonitoring.type"
-import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service.ts"
+    import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service.ts"
+    import { useI18n } from "vue-i18n"
+import { toast } from "vue3-toastify"
 
 
     const router = useRouter()
@@ -34,15 +35,16 @@ import { useEquipmentMonitoringService } from "../../../core/services/equipmentM
     | STATE
     |--------------------------------------------------------------------------
     */
-
+    const { t } = useI18n()
     const loading = ref(false)
+    const disabled=ref(true)
     const sites = ref<SiteNameType[]>([])
-    const equipments=useEquipmentMonitoringService()
+    const equipments = useEquipmentMonitoringService()
     const form = reactive<EquipmentMonitoringFormType>({
 
         site_name: null,
 
-      
+
 
         date: new Date()
             .toISOString()
@@ -81,7 +83,7 @@ import { useEquipmentMonitoringService } from "../../../core/services/equipmentM
         politique: false
 
     })
-
+    const errors = ref<Record<keyof EquipmentMonitoringFormType, string[] | undefined> | undefined>()
 
     /*
     |--------------------------------------------------------------------------
@@ -89,9 +91,9 @@ import { useEquipmentMonitoringService } from "../../../core/services/equipmentM
     |--------------------------------------------------------------------------
     */
     const totalEquipment = computed(() => {
-        return Object.values(form).filter(item=>typeof item=='number').reduce((sum,value)=>sum+value,0)
+        return Object.values(form).filter(item => typeof item == 'number').reduce((sum, value) => sum + value, 0)
     })
-    
+
     /*
     |--------------------------------------------------------------------------
     | CONTRÔLES
@@ -119,8 +121,11 @@ import { useEquipmentMonitoringService } from "../../../core/services/equipmentM
         )
 
     })
+    function formValidation(){
+        disabled.value=Object.values(form).some(item=> item==null)
+    }
 
-    
+
 
     /*
     |--------------------------------------------------------------------------
@@ -152,25 +157,36 @@ import { useEquipmentMonitoringService } from "../../../core/services/equipmentM
     */
 
     const submit = async () => {
-loading.value=true
+        errors.value = undefined
+        loading.value = true
+        disabled.value = true
+        console.table(form)
         equipments.store(form)
-        .then(res=>{
-            console.log(res.data)
-            setTimeout(()=>{
-                router.push({
-                    name:"EQUIPMENT_MONITORING"
-                })
-            },1000)
-        })
-        .catch(err=>{
-            // console.error(err)
-            if(err?.response.status=="422"){
-                console.error(err?.response.status)
-            }
-        })
-        .finally(()=>{
-            loading.value = false
-        })
+            .then(res => {
+                toast.success(t('inspections.equipment-monitoring.add.notifications.success'))
+                setTimeout(() => {
+                    router.push({
+                        name: "EQUIPMENT_MONITORING"
+                    })
+                }, 1000)
+            })
+            .catch(err => {
+                // console.error(err)
+                if (err?.response.status == "422") {
+                    console.error(err?.response.data.errors)
+                    errors.value = Object.fromEntries(Object.entries(err?.response.data.errors as Record<keyof EquipmentMonitoringFormType, string[]>).map(
+                        ([key, value]) => [
+                            key,
+                            value.map(item => t('inspections.equipment-monitoring.add.notifications.errors.' + item)
+                            )
+                        ])
+                    ) as Record<keyof EquipmentMonitoringFormType, string[]>
+                }
+            })
+            .finally(() => {
+                loading.value = false
+                disabled.value = false
+            })
 
     }
 
@@ -192,23 +208,27 @@ loading.value=true
     |--------------------------------------------------------------------------
     */
 
-   function fetchSiteNames(){
+    function fetchSiteNames() {
         equipments.getSiteNames()
-        .then(res=>{
-            console.log(res.data)
-            sites.value=res.data
-        })
-        .catch(err=>{
-            console.error(err)
-        })
-   }
+            .then(res => {
+                console.log(res.data)
+                sites.value = res.data
+            })
+            .catch(err => {
+                console.error(err)
+            })
+    }
     /*
     |--------------------------------------------------------------------------
     | INIT
     |--------------------------------------------------------------------------
     */
+   watch(form,()=>{
+    formValidation()
+   })
 
     onMounted(() => {
+        disabled.value=true
         fetchSiteNames()
     })
 
@@ -224,21 +244,21 @@ loading.value=true
         <!-- HEADER -->
         <!-- ============================================================ -->
 
-        <Header title="Nouveau suivi matériel" :thumbnails="[
+        <Header title="inspections.equipment-monitoring.add.title" :thumbnails="[
             {
-                label: 'Tableau de bord',
+                label: 'thumbnails.home',
                 name: 'DASHBOARD'
             },
             {
-                label: 'Inspection',
+                label: 'thumbnails.inspection',
                 name: 'INSPECTION'
             },
             {
-                label: 'Suivi matériels',
+                label: 'thumbnails.equipment-monitoring',
                 name: 'EQUIPMENT_MONITORING'
             },
             {
-                label: 'Nouveau',
+                label: 'thumbnails.new',
                 name: 'EQUIPMENT_MONITORING_NEW'
             }
         ]" />
@@ -399,10 +419,12 @@ loading.value=true
                                     ">
 
                                     <Input v-model="form.site_name as string | undefined" label="Site"
-                                        placeholder="Sélectionner une site" list_id="site_id" :lists="sites.map(item=>item.name)" />
+                                        placeholder="Sélectionner une site" list_id="site_id"
+                                        :lists="sites.map(item => item.name)" :error="errors?.site_name?.[0]" />
 
 
-                                    <Input v-model="form.date" label="Date de relevé" type="date" />
+                                    <Input v-model="form.date" label="Date de relevé" type="date"
+                                        :error="errors?.date?.[0]" />
 
                                 </div>
 
@@ -470,13 +492,17 @@ loading.value=true
                                         gap-4
                                     ">
 
-                                    <Input v-model.number="form.p50" label="P50" type="number" :min="0" />
+                                    <Input v-model.number="form.p50" label="P50" type="number" :min="0"
+                                        :error="errors?.p50?.[0]" />
 
-                                    <Input v-model.number="form.p9" label="P9" type="number" :min="0" />
+                                    <Input v-model.number="form.p9" label="P9" type="number" :min="0"
+                                        :error="errors?.p9?.[0]" />
 
-                                    <Input v-model.number="form.p6" label="P6" type="number" :min="0" />
+                                    <Input v-model.number="form.p6" label="P6" type="number" :min="0"
+                                        :error="errors?.p6?.[0]" />
 
-                                    <Input v-model.number="form.co2" label="CO₂" type="number" :min="0" />
+                                    <Input v-model.number="form.co2" label="CO₂" type="number" :min="0"
+                                        :error="errors?.co2?.[0]" />
 
                                 </div>
 
@@ -544,27 +570,32 @@ loading.value=true
                                         gap-4
                                     ">
 
-                                    <Input v-model.number="form.bas_met" label="Bac métal" type="number" :min="0" />
+                                    <Input v-model.number="form.bas_met" label="Bac métal" type="number" :min="0"
+                                        :error="errors?.bas_met?.[0]" />
 
-                                    <Input v-model.number="form.bas_plast" label="Bac plastique" type="number"
-                                        :min="0" />
+                                    <Input v-model.number="form.bas_plast" label="Bac plastique" type="number" :min="0"
+                                        :error="errors?.bas_plast?.[0]" />
 
-                                    <Input v-model.number="form.pelles" label="Pelles" type="number" :min="0" />
+                                    <Input v-model.number="form.pelles" label="Pelles" type="number" :min="0"
+                                        :error="errors?.pelles?.[0]" />
 
-                                    <Input v-model.number="form.caf" label="CAF" type="number" :min="0" />
+                                    <Input v-model.number="form.caf" label="CAF" type="number" :min="0"
+                                        :error="errors?.caf?.[0]" />
 
                                     <Input v-model.number="form.poubelles_120l" label="Poubelles 120L" type="number"
-                                        :min="0" />
+                                        :min="0" :error="errors?.poubelles_120l?.[0]" />
 
                                     <Input v-model.number="form.poubelles_240l" label="Poubelle 240L" type="number"
-                                        :min="0" />
+                                        :min="0" :error="errors?.poubelles_240l?.[0]" />
 
-                                    <Input v-model.number="form.plots" label="Plots" type="number" :min="0" />
+                                    <Input v-model.number="form.plots" label="Plots" type="number" :min="0"
+                                        :error="errors?.plots?.[0]" />
 
-                                    <Input v-model.number="form.chainettes" label="Chaînettes" type="number" :min="0" />
+                                    <Input v-model.number="form.chainettes" label="Chaînettes" type="number" :min="0"
+                                        :error="errors?.chainettes?.[0]" />
 
                                     <Input v-model.number="form.detecteur_de_fumee" label="Détecteurs de fumée"
-                                        type="number" :min="0" />
+                                        type="number" :min="0" :error="errors?.detecteur_de_fumee?.[0]" />
 
                                 </div>
 
@@ -634,24 +665,25 @@ loading.value=true
                                     ">
 
                                     <Input v-model.number="form.picto_ext" label="Picto extincteur" type="number"
-                                        :min="0" />
+                                        :min="0" :error="errors?.picto_ext?.[0]" />
 
-                                    <Input v-model.number="form.picto_caf" label="Picto CAF" type="number" :min="0" />
+                                    <Input v-model.number="form.picto_caf" label="Picto CAF" type="number" :min="0"
+                                        :error="errors?.picto_caf?.[0]" />
 
                                     <Input v-model.number="form.picto_defense_de_fumer" label="Défense de fumer"
-                                        type="number" :min="0" />
+                                        type="number" :min="0" :error="errors?.picto_defense_de_fumer?.[0]" />
 
                                     <Input v-model.number="form.point_de_rasso" label="Point de rassemblement"
-                                        type="number" :min="0" />
+                                        type="number" :min="0" :error="errors?.point_de_rasso?.[0]" />
 
                                     <Input v-model.number="form.contact_d_urgence" label="Contact d'urgence"
-                                        type="number" :min="0" />
+                                        type="number" :min="0" :error="errors?.contact_d_urgence?.[0]" />
 
                                     <Input v-model.number="form.canne_d_enfutage" label="Canne d'enfûtage" type="number"
-                                        :min="0" />
+                                        :min="0" :error="errors?.canne_d_enfutage?.[0]" />
 
                                     <Input v-model.number="form.panneau_depotage_en_cours" label="Panneau dépotage"
-                                        type="number" :min="0" />
+                                        type="number" :min="0" :error="errors?.panneau_depotage_en_cours?.[0]" />
 
                                 </div>
 
@@ -942,7 +974,7 @@ loading.value=true
                             </Button>
 
 
-                            <Button :left-icon="CheckCircle" :loading="loading" @click="submit">
+                            <Button :left-icon="CheckCircle" :disabled="disabled" :loading="loading" @click="submit">
                                 Enregistrer
                             </Button>
 

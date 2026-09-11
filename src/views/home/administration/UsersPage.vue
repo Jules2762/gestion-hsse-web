@@ -13,18 +13,22 @@
                 label: 'users',
                 name: 'USERS'
             },
-        ]" show-search />
-        <div class="bg-white flex flex-row items-center justify-between border-b border-gray-200 p-4">
-            <div>
-                <ShowMode v-model="show_mode" />
+        ]" />
+        <div class="bg-white flex flex-col  border-b border-gray-200 p-4 gap-3">
 
+            <div class="flex flex-row items-center justify-between ">
+                <div class="flex flex-row gap-1 items-center">
+                    <ButtonFilter text="Add" :icon="Plus" is-primary @click="router.push({
+                        name:'ADD_USER'
+                    })"/>
+                    <ButtonFilter text="Export" :icon="Download" />
+
+                </div>
+                <InputFilter :icon="Search" v-model="filters.search[0]"/>
             </div>
-            <div class="flex flex-row items-center gap-x-3">
-                <Input :icon="UserShield" list_id="user_type_id" :lists="UserRoleData" v-model="filter.role" />
-                <Button :left-icon="PlusIcon" @click="router.push({
-                    name: 'ADD_USER'
-                })">Créer un utilisateur</Button>
-            </div>
+            <ChipFilter :filterableKeys="filterableKeys" :column-labels="columnLabels" :filters="filters"
+                :column-options="columnOptions as Record<string, string[]>" :show-date-filter="false"
+                @clear-all="clearFilters()" />
         </div>
         <div class="flex flex-row">
             <template v-if="show_mode == 0">
@@ -32,7 +36,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <!-- <th>#</th> -->
+                                <th>#</th>
                                 <th>Nom</th>
                                 <th>E-mail</th>
                                 <th>Téléphone</th>
@@ -40,15 +44,15 @@
                                 <th>Fonction</th>
                                 <th>Rôle</th>
                                 <th>Status</th>
-                                <!-- <th>Action</th> -->
+
                             </tr>
                         </thead>
                         <tbody>
                             <tr @contextmenu.prevent="($event) => { contextMenu = $event; isOpenContextMenu = true; context_menu_user = item }"
-                                v-for="(item, index) in UserData.filter(item => filter.role ? item.role.toLowerCase().includes(filter.role.toLowerCase()) : item)"
-                                :key="index" :class="selected_user?.id == item.id ? 'bg-primary/10' : ''"
+                                v-for="(item, index) in data" :key="index"
+                                :class="selected_user?.id == item.id ? 'bg-primary/10' : ''"
                                 @click="selected_user = item">
-                                <!-- <td>{{ index + 1 }}</td> -->
+                                <td>{{ item.id }}</td>
                                 <td>{{ item.first_name + " " + item.last_name }}</td>
                                 <td>{{ item.email }}</td>
                                 <td>{{ item.phone_number }}</td>
@@ -59,9 +63,22 @@
                                 <td>
                                     <UserStatus :name="item.status" />
                                 </td>
-                               
+
                             </tr>
+
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="8" class="w-full p-4">
+                                    <div class="flex flex-row items-center text-sm justify-end ">
+                                        <vue-awesome-paginate :hide-prev-next-when-ends="true"
+                                            :total-items="pagination.total" :items-per-page="15" :max-pages-shown="4"
+                                            v-model="pagination.current_page"
+                                            @click="(page: number) => { pagination.current_page = page }" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </template>
@@ -339,7 +356,8 @@ permission in
 
             </div>
         </div>
-        <CenterModal :is-open="ban_modal" title="Désactiver le compte utilisateur ?" @close="ban_modal = false">
+        <CenterModal :is-open="ban_modal" title="Désactiver le compte utilisateur ?" @close="ban_modal = false"
+            @confirm="() => { }">
             <p class="max-w-100 p-4   rounded">
                 Cet utilisateur ne pourra plus se connecter à la plateforme GALANA HSSE ni accéder aux inspections,
                 rapports et
@@ -351,43 +369,43 @@ permission in
         </CenterModal>
         <ContextMenuUI v-model="isOpenContextMenu" :context-menu="contextMenu" :actions="[
             {
-                label:'Profil',
-                icon:User,
-                onClick:()=>router.push({
-                    name:'PROFILE',
-                    params:{
-                        id:context_menu_user?.id
+                label: 'Profil',
+                icon: User,
+                onClick: () => router.push({
+                    name: 'PROFILE',
+                    params: {
+                        id: context_menu_user?.id
                     }
                 })
             },
             {
-                label:'Rôle et Permissions',
-                icon:UserCog2,
-                onClick:()=>router.push({
-                    name:'ROLE_PERMISSION',
-                    params:{
-                        id:context_menu_user?.id
+                label: 'Rôle et Permissions',
+                icon: UserCog2,
+                onClick: () => router.push({
+                    name: 'ROLE_PERMISSION',
+                    params: {
+                        id: context_menu_user?.id
                     }
                 })
             },
             {
-                label:'Activités',
-                icon:User,
-                onClick:()=>router.push({
-                    name:'PROFILE',
-                    params:{
-                        id:context_menu_user?.id
+                label: 'Activités',
+                icon: User,
+                onClick: () => router.push({
+                    name: 'PROFILE',
+                    params: {
+                        id: context_menu_user?.id
                     }
                 })
             },
             {
-                label:'Désactiver',
-                icon:Ban,
-                variant:'DANGER',
-                onClick:()=>router.push({
-                    name:'PROFILE',
-                    params:{
-                        id:context_menu_user?.id
+                label: 'Désactiver',
+                icon: Ban,
+                variant: 'DANGER',
+                onClick: () => router.push({
+                    name: 'PROFILE',
+                    params: {
+                        id: context_menu_user?.id
                     }
                 })
             },
@@ -396,36 +414,128 @@ permission in
     </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
-import Header from '../../../components/shared/Header.vue';
-import ShowMode from '../../../components/ui/ShowMode.vue';
-import Button from '../../../components/ui/Button.vue';
-import {  Ban,  PlusIcon, User, UserCog2, UserShield, XIcon } from '@lucide/vue';
-import Input from '../../../components/ui/Input.vue';
-import { UserData, UserRoleData, UserRoleDataJson } from '../../../@data/User.data';
+    import { onMounted, ref, watch } from 'vue';
+    import Header from '../../../components/shared/Header.vue';
 
-import { router } from '../../../router/index.ts';
-import CenterModal from '../../../components/ui/centerModal.vue';
-import UserStatus from '../../../components/features/user/UserStatus.vue';
-import type { contextMenuType } from '../../../@types/ContextMenu.type.ts';
-import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-import type { UserDataType, UserRoleType } from '../../../@types/User.type.ts';
-import { computed } from 'vue'
+    import Button from '../../../components/ui/Button.vue';
+    import { Ban, Download, Plus, PlusIcon, Search, User, UserCog2, UserShield, XIcon } from '@lucide/vue';
 
-const show_mode = ref(0)
-const ban_modal = ref(false)
-const contextMenu = ref<contextMenuType>()
-const isOpenContextMenu = ref(false)
-const selected_user = ref<UserDataType>()
-const context_menu_user = ref<UserDataType>()
-const filter = ref<{ role?: UserRoleType }>({
-    role: undefined
-})
+    import { UserData, UserRoleData, UserRoleDataJson, UserStatusData } from '../../../@data/User.data';
 
-const permissionsCount = computed(
-    () =>
-        selected_user.value
-            ?.permissions?.length ?? 0,
-)
+    import { router } from '../../../router/index.ts';
+    import CenterModal from '../../../components/ui/centerModal.vue';
+    import UserStatus from '../../../components/features/user/UserStatus.vue';
+    import type { contextMenuType } from '../../../@types/ContextMenu.type.ts';
+    import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
+    import type { UserDataType, UserFilterType, UserRoleType } from '../../../@types/User.type.ts';
+    import { computed } from 'vue'
+    import { useUserService } from '../../../core/services/user.service.ts';
+    import type { PaginationType } from '../../../@types/Pagination.type.ts';
+    import ChipFilter from '../../../components/ui/ChipFilter.vue';
+    import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
+    import InputFilter from '../../../components/ui/InputFilter.vue';
+    const data = ref<UserDataType[]>()
+    const show_mode = ref(0)
+    const ban_modal = ref(false)
+    const contextMenu = ref<contextMenuType>()
+    const isOpenContextMenu = ref(false)
+    const selected_user = ref<UserDataType>()
+    const context_menu_user = ref<UserDataType>()
+    type FilterKeyType = "department" | "fonction" | "role" | "status" | "search"
+    const filterableKeys: Exclude<FilterKeyType, 'search'>[] = ["department", "fonction", "role", "status"]
+    const columnLabels: Record<Exclude<FilterKeyType, 'search'>, string> = {
+        "department": "Department",
+        "fonction": "Fonction",
+        "role": "Role",
+        "status": "Status"
+    }
+    const columnOptions = ref<Record<Exclude<FilterKeyType, 'search'>, string[]>>()
+
+    const pagination = ref<PaginationType>({
+        'current_page': 1,
+        "to": 0,
+        "total": 0
+    })
+    const filters = ref<Record<FilterKeyType, string[]>>({
+        "department": [],
+        "fonction": [],
+        "role": [],
+        "search": [],
+        "status": []
+    })
+
+    const permissionsCount = computed(
+        () =>
+            selected_user.value
+                ?.permissions?.length ?? 0,
+    )
+    const user = useUserService()
+    function fetchDataFilters() {
+        user.getFilters()
+            .then(res => {
+
+                columnOptions.value = {
+                    'department': res.data.department,
+                    'fonction': res.data.fonction,
+                    'role': UserRoleData,
+                    'status': UserStatusData
+                }
+
+            })
+            .catch(err => {
+                console.error(err)
+            })
+            .finally(() => {
+                console.table(filters.value)
+            })
+    }
+    function fetchData(params?: UserFilterType) {
+        user.index(params)
+            .then(res => {
+                console.log(res.data)
+                data.value = res.data.data
+                pagination.value.to = res.data.meta.to
+                pagination.value.total = res.data.meta.total
+            })
+            .catch(err => {
+                console.error(err)
+            })
+    }
+    function clearFilters() {
+        Object.keys(filters.value).forEach((key) => {
+            filters.value[key as keyof typeof filters.value] = [] as string[]
+        })
+    }
+
+    watch([filters.value], () => {
+        fetchData({
+            page: 1,
+            search: filters.value.search[0],
+            department: filters.value.department,
+            fonction: filters.value.fonction,
+            role: filters.value.role,
+            status: filters.value.status
+        })
+    }, {
+        immediate: false
+    })
+    watch(() => pagination.value.current_page, () => {
+        fetchData({
+            page: pagination.value.current_page,
+            search: filters.value.search[0],
+            department: filters.value.department,
+            fonction: filters.value.fonction,
+            role: filters.value.role,
+            status: filters.value.status
+        })
+    }, {
+        immediate: false
+    })
+
+    onMounted(() => {
+
+        fetchDataFilters()
+        fetchData()
+    })
 
 </script>

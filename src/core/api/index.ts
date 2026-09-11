@@ -11,7 +11,24 @@ const api = axios.create({
         "Content-Type": "application/json",
     },
 });
+let lastErrorStatus: number | null = null
+let lastErrorTime = 0
 
+function showError(status: number) {
+    const now = Date.now()
+
+    if (
+        lastErrorStatus === status &&
+        now - lastErrorTime < 1000
+    ) {
+        return
+    }
+
+    lastErrorStatus = status
+    lastErrorTime = now
+
+    toast.error(i18n.global.t(`errors.${status}`))
+}
 api.interceptors.request.use(
     (config) => {
 
@@ -32,13 +49,13 @@ api.interceptors.response.use(
 
     (error:AxiosError) => {
         console.log(error.status)
-        if (error.response) {
-            
-            switch (error.response.status) {
-
+        if (error?.response) {
+            const status = error.response.status
+            switch (status) {
+                
                 case 401:
                     sessionStorage.removeItem("gestion-hsse-token");
-                    toast.error(i18n.global.t("errors." + error.response.status));
+                    showError(status)
                     setTimeout(()=>{
                         router.replace({
                             name:"LOGIN"
@@ -47,19 +64,16 @@ api.interceptors.response.use(
                     break;
 
                 case 403:
-                    console.error("Accès interdit");
-                    toast.error(i18n.global.t("errors." + error.response.status));
+                    showError(status)
                     break;
                 case 404:
-                    
-                    toast.error(i18n.global.t("errors." + error.response.status));
+                    showError(status)
                     break;
 
                
 
                 case 500:
-                    console.error("Erreur serveur");
-                    toast.error(i18n.global.t("errors." + error.response.status));
+                    showError(status)
                     break;
             }
         }

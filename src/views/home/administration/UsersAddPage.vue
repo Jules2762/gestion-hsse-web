@@ -1,210 +1,3 @@
-<script setup lang="ts">
-
-    import {
-        Briefcase,
-        Building2Icon,
-        Camera,
-        CheckCircle,
-        CircleAlert,
-        LockIcon,
-        LockKeyhole,
-        MailIcon,
-        Phone,
-        ToggleRight,
-        UserRound,
-        UserCog2Icon,
-        X
-    } from '@lucide/vue'
-
-    import { computed, ref } from 'vue'
-
-    import Header from '../../../components/shared/Header.vue'
-    import Input from '../../../components/ui/Input.vue'
-    import Button from '../../../components/ui/Button.vue'
-    import Select from '../../../components/ui/Select.vue'
-
-    import {
-        UserRoleDataJson,
-        UserStatusJsonData
-    } from '../../../@data/User.data.ts'
-
-    import { router } from '../../../router/index.ts'
-
-    import type {
-        UserRoleType,
-        UserStatusType
-    } from '../../../@types/User.type.ts'
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | FORMULAIRE
-    |--------------------------------------------------------------------------
-    */
-
-    const form = ref({
-
-        first_name: "",
-        last_name: "",
-        phone_number: "",
-        department: "",
-        job: "",
-
-        email: "",
-        password: "",
-        confirmation_password: "",
-        role: "" as UserRoleType | "",
-        status: "ENABLED" as UserStatusType
-
-    })
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PHOTO DE PROFIL
-    |--------------------------------------------------------------------------
-    */
-
-    const avatarFile = ref<File | null>(null)
-    const avatarPreview = ref("")
-    const avatarInput = ref<HTMLInputElement | null>(null)
-
-    function handleAvatarChange(event: Event) {
-
-        const target = event.target as HTMLInputElement
-        const file = target.files?.[0]
-
-        if (!file) return
-
-        avatarFile.value = file
-
-        const reader = new FileReader()
-
-        reader.onload = () => {
-            avatarPreview.value = String(reader.result ?? "")
-        }
-
-        reader.readAsDataURL(file)
-
-    }
-
-    function removeAvatar() {
-
-        avatarFile.value = null
-        avatarPreview.value = ""
-
-        if (avatarInput.value) {
-            avatarInput.value.value = ""
-        }
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDATION
-    |--------------------------------------------------------------------------
-    */
-
-    const submitted = ref(false)
-
-    const errors = computed(() => {
-
-        const list: string[] = []
-
-        if (!form.value.first_name.trim()) {
-            list.push("Le nom est obligatoire.")
-        }
-
-        if (!form.value.last_name.trim()) {
-            list.push("Le prénom est obligatoire.")
-        }
-
-        if (!form.value.email.trim()) {
-            list.push("L'adresse e-mail est obligatoire.")
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email.trim())) {
-            list.push("L'adresse e-mail n'est pas valide.")
-        }
-
-        if (
-            form.value.phone_number.trim() &&
-            !/^[0-9+\s().-]{6,}$/.test(form.value.phone_number.trim())
-        ) {
-            list.push("Le numéro de téléphone n'est pas valide.")
-        }
-
-        if (!form.value.role) {
-            list.push("Le rôle est obligatoire.")
-        }
-
-        if (!form.value.password) {
-            list.push("Le mot de passe est obligatoire.")
-        } else if (form.value.password.length < 8) {
-            list.push("Le mot de passe doit contenir au moins 8 caractères.")
-        }
-
-        if (!form.value.confirmation_password) {
-            list.push("La confirmation du mot de passe est obligatoire.")
-        } else if (form.value.password !== form.value.confirmation_password) {
-            list.push("Les deux mots de passe ne correspondent pas.")
-        }
-
-        return list
-
-    })
-
-    const hasErrors = computed(() => errors.value.length > 0)
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SOUMISSION
-    |--------------------------------------------------------------------------
-    |
-    | Pour le moment, aucune API : la création reste simulée.
-    |
-    */
-
-    const isSubmitting = ref(false)
-    const successMessage = ref("")
-
-    async function handleSubmit() {
-
-        submitted.value = true
-
-        if (hasErrors.value) return
-
-        isSubmitting.value = true
-
-        const payload = {
-            ...form.value,
-            image_path: avatarFile.value?.name ?? null
-        }
-
-        console.log("Nouveau compte utilisateur :", payload)
-
-        await new Promise(resolve => setTimeout(resolve, 600))
-
-        isSubmitting.value = false
-
-        successMessage.value =
-            `Le compte de ${form.value.first_name} ${form.value.last_name} a été créé avec succès.`
-
-        setTimeout(() => {
-            router.push({ name: "USERS" })
-        }, 1200)
-
-    }
-
-    function handleCancel() {
-
-        if (isSubmitting.value) return
-
-        router.back()
-
-    }
-
-</script>
 
 <template>
     <div class="min-h-screen bg-background">
@@ -320,8 +113,9 @@
                             <Input v-model="form.phone_number" type="tel" label="Numéro de téléphone" :icon="Phone"
                                 class="sm:col-span-2" />
 
-                            <Input v-model="form.department" label="Département" :icon="Building2Icon" />
-                            <Input v-model="form.job" label="Fonction" :icon="Briefcase" />
+                            <Input v-model="form.department" label="Département" :icon="Building2Icon" :list_id="'department_id'" :lists="departments"/>
+                            <Input v-model="form.job" label="Fonction" :icon="Briefcase" :list_id="'job_id'"
+                                :lists="fonctions" />
 
                         </div>
 
@@ -411,3 +205,223 @@
 
     </div>
 </template>
+<script setup lang="ts">
+
+    import {
+        Briefcase,
+        Building2Icon,
+        Camera,
+        CheckCircle,
+        CircleAlert,
+        LockIcon,
+        LockKeyhole,
+        MailIcon,
+        Phone,
+        ToggleRight,
+        UserRound,
+        UserCog2Icon,
+        X
+    } from '@lucide/vue'
+
+    import { computed, onMounted, ref } from 'vue'
+
+    import Header from '../../../components/shared/Header.vue'
+    import Input from '../../../components/ui/Input.vue'
+    import Button from '../../../components/ui/Button.vue'
+    import Select from '../../../components/ui/Select.vue'
+
+    import {
+        UserRoleDataJson,
+        UserStatusJsonData
+    } from '../../../@data/User.data.ts'
+
+    import { router } from '../../../router/index.ts'
+
+    import type {
+        UserRoleType,
+        UserStatusType
+    } from '../../../@types/User.type.ts'
+import { useUserService } from '../../../core/services/user.service.ts'
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORMULAIRE
+    |--------------------------------------------------------------------------
+    */
+
+    const form = ref({
+
+        first_name: "",
+        last_name: "",
+        phone_number: "",
+        department: "",
+        job: "",
+
+        email: "",
+        password: "",
+        confirmation_password: "",
+        role: "" as UserRoleType | "",
+        status: "ENABLED" as UserStatusType
+
+    })
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PHOTO DE PROFIL
+    |--------------------------------------------------------------------------
+    */
+
+    const avatarFile = ref<File | null>(null)
+    const avatarPreview = ref("")
+    const avatarInput = ref<HTMLInputElement | null>(null)
+
+    function handleAvatarChange(event: Event) {
+
+        const target = event.target as HTMLInputElement
+        const file = target.files?.[0]
+
+        if (!file) return
+
+        avatarFile.value = file
+
+        const reader = new FileReader()
+
+        reader.onload = () => {
+            avatarPreview.value = String(reader.result ?? "")
+        }
+
+        reader.readAsDataURL(file)
+
+    }
+
+    function removeAvatar() {
+
+        avatarFile.value = null
+        avatarPreview.value = ""
+
+        if (avatarInput.value) {
+            avatarInput.value.value = ""
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDATION
+    |--------------------------------------------------------------------------
+    */
+
+    const submitted = ref(false)
+
+    const errors = computed(() => {
+
+        const list: string[] = []
+
+        if (!form.value.first_name.trim()) {
+            list.push("Le nom est obligatoire.")
+        }
+
+
+        if (!form.value.email.trim()) {
+            list.push("L'adresse e-mail est obligatoire.")
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email.trim())) {
+            list.push("L'adresse e-mail n'est pas valide.")
+        }
+
+        if (
+            form.value.phone_number.trim() &&
+            !/^[0-9+\s().-]{6,}$/.test(form.value.phone_number.trim())
+        ) {
+            list.push("Le numéro de téléphone n'est pas valide.")
+        }
+
+        if (!form.value.role) {
+            list.push("Le rôle est obligatoire.")
+        }
+
+        if (!form.value.password) {
+            list.push("Le mot de passe est obligatoire.")
+        } else if (form.value.password.length < 8) {
+            list.push("Le mot de passe doit contenir au moins 8 caractères.")
+        }
+
+        if (!form.value.confirmation_password) {
+            list.push("La confirmation du mot de passe est obligatoire.")
+        } else if (form.value.password !== form.value.confirmation_password) {
+            list.push("Les deux mots de passe ne correspondent pas.")
+        }
+
+        return list
+
+    })
+
+    const hasErrors = computed(() => errors.value.length > 0)
+    const departments=ref<string[]>()
+    const fonctions=ref<string[]>()
+    /*
+    |--------------------------------------------------------------------------
+    | SOUMISSION
+    |--------------------------------------------------------------------------
+    |
+    | Pour le moment, aucune API : la création reste simulée.
+    |
+    */
+
+    const isSubmitting = ref(false)
+    const successMessage = ref("")
+    const user=useUserService()
+
+    async function handleSubmit() {
+
+        submitted.value = true
+
+        if (hasErrors.value) return
+
+        isSubmitting.value = true
+
+        const payload = {
+            ...form.value,
+            image_path: avatarFile.value?.name ?? null
+        }
+
+        console.log("Nouveau compte utilisateur :", payload)
+
+        await new Promise(resolve => setTimeout(resolve, 600))
+
+        isSubmitting.value = false
+
+        successMessage.value =
+            `Le compte de ${form.value.first_name} ${form.value.last_name} a été créé avec succès.`
+
+        setTimeout(() => {
+            router.push({ name: "USERS" })
+        }, 1200)
+
+    }
+
+    function handleCancel() {
+
+        if (isSubmitting.value) return
+
+        router.back()
+
+    }
+    function getFilters(){
+        user.getFilters()
+        .then(res=>{
+            console.log(res.data)
+            departments.value = res.data.department
+            fonctions.value = res.data.fonction
+        })
+        .catch(err=>{
+            console.error(err)
+        })
+    }
+    onMounted(()=>{
+        getFilters()
+    })
+
+</script>

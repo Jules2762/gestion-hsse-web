@@ -22,12 +22,34 @@ type UserDataType = {
     department?: string,
     job?: string
 }
+type UserFormType = {
+    first_name: string,
+    last_name?: string,
+    email: string,
+    phone_number?: string,
+    image_path?: string,
+    status: UserStatusType,
+    password?: string,
+    confirmation_password?: string
+    role: UserRoleType,
+    permissions?: permissionType[],
+    department?: string,
+    job?: string
+}
 type UserStatusJsonType =
     {
         label: string,
         value: UserStatusType
     }[]
-
+type UserFilterType={
+    page?:number,
+    per_page?:number,
+    search?:string,
+    department?:string[],
+    fonction?:string[],
+    role?:string[],
+    status?:string[]
+}
 
 export type {
     UserRoleType,
@@ -35,5 +57,7 @@ export type {
     UserDataType,
     UserStatusJsonType,
     permissionType,
-    PermissionNameType
+    PermissionNameType,
+    UserFilterType,
+    UserFormType
 }

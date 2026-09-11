@@ -1,5 +1,17 @@
+import type { EquipmentMonitoringFormType } from "../@types/EquipmentMonitoring.type"
 import type { FormationFilterType, FormationFormType } from "../@types/Formation.type"
-
+type ResponseType = {
+    "required"?: string,
+    "string"?: string,
+    "integer"?: string,
+    "date"?: string,
+    "min"?: string,
+    "max"?: string,
+    "array"?: string,
+    "boolean"?: string,
+    "numeric"?: string,
+    "enum"?: string,
+}
 type LangType = {
     "french": string,
     "english": string,
@@ -54,7 +66,12 @@ type LangType = {
     "thumbnails": {
         "home": string,
         "document library": string,
-        "training": string
+        "training": string,
+        "inspection":string,
+        "equipment-monitoring":string,
+        "new":string,
+        "update":string,
+        "import":string
     },
 
     //============================
@@ -136,16 +153,7 @@ type LangType = {
                 "success": string,
                 "error": string,
                 "form_error": {
-                    [key in keyof FormationFormType]: {
-                        "required"?: string,
-                        "string"?: string,
-                        "max"?: string,
-                        "min"?: string,
-                        "date"?: string,
-                        "enum"?: string,
-                        "numeric"?: string,
-                        "integer"?: string,
-                    }
+                    [key in keyof FormationFormType]: ResponseType
                 }
             },
             "import": {
@@ -174,6 +182,23 @@ type LangType = {
             }
         }
     },
+    //============================
+    //inspections
+    //============================
+    "inspections":{
+        "equipment-monitoring":{
+            "add":{
+                "title":string,
+                "caption":string,
+                "notifications":{
+                    "success":string,
+                    "errors":{
+                        [key in keyof EquipmentMonitoringFormType]:ResponseType
+                    }
+                }
+            }
+        }
+    }
     //============================
     //settings
     //============================
