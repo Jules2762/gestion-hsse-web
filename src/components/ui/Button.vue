@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LoaderCircle } from '@lucide/vue'
+import { Loader, LoaderCircle } from '@lucide/vue'
 import { useSlots, type Component } from 'vue'
 
 export type ButtonVariant =
@@ -86,7 +86,7 @@ withDefaults(
         'bg-transparent text-primary hover:bg-primary-light',
     ]"
   >
-    <LoaderCircle
+    <Loader
       v-if="loading"
       class="h-4 w-4 animate-spin"
     />

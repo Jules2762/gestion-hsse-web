@@ -17,6 +17,13 @@
             <component :is="item.icon" :size="21"/>
             <span class="text-[14px]">{{ item.label }}</span>
         </button>
+       <div class="border-t border-gray-300" v-if="bottom_actions?.length">
+           <button v-for="(item, index) in bottom_actions" :key="index" @click="item.onClick"
+                class="flex flex-row gap-x-3 items-center   w-full p-2 " :class="themeVariant(item.variant)">
+                <component :is="item.icon" :size="21" />
+                <span class="text-[14px]">{{ item.label }}</span>
+            </button>
+       </div>
     </div>
 </template>
 <script lang="ts" setup>
@@ -31,6 +38,7 @@ const contextMenuStyle = computed(() => {
         return {}
     const menuWidth =
         div_ref.value?.offsetWidth ?? 250
+        const menuHeight=div_ref.value?.offsetHeight??250
 
     let left =
         props.contextMenu.clientX
@@ -45,7 +53,10 @@ const contextMenuStyle = computed(() => {
         left =
             window.innerWidth -
             menuWidth -
-            10
+            20
+    }
+    if(top as number +menuHeight>window.innerHeight){
+        top=window.innerHeight-menuHeight-10
     }
 
     return {

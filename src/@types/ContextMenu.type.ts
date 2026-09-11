@@ -14,7 +14,8 @@ type ContextMenuActionType = {
 type ContextMenuPropsType = {
     contextMenu?: contextMenuType,
     modelValue?: boolean,
-    actions?: ContextMenuActionType[]
+    actions?: ContextMenuActionType[],
+    bottom_actions?:ContextMenuActionType[]
 }
 
 export type {

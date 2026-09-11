@@ -1,16 +1,16 @@
 <template>
     <div class="flex flex-col">
-        <Header title="Utilisateur" :thumbnails="[
+        <Header title="users" :thumbnails="[
             {
-                label: 'Accueil',
+                label: 'home',
                 name: 'DASHBOARD'
             },
             {
-                label: 'Administration',
+                label: 'administration',
                 name: 'ADMINISTRATION'
             },
             {
-                label: 'Utilisateur',
+                label: 'users',
                 name: 'USERS'
             },
         ]" show-search />
@@ -400,7 +400,7 @@ import { ref } from 'vue';
 import Header from '../../../components/shared/Header.vue';
 import ShowMode from '../../../components/ui/ShowMode.vue';
 import Button from '../../../components/ui/Button.vue';
-import {  Ban, Eye, PlusIcon, User, UserCog2, UserShield, XIcon } from '@lucide/vue';
+import {  Ban,  PlusIcon, User, UserCog2, UserShield, XIcon } from '@lucide/vue';
 import Input from '../../../components/ui/Input.vue';
 import { UserData, UserRoleData, UserRoleDataJson } from '../../../@data/User.data';
 
@@ -427,4 +427,5 @@ const permissionsCount = computed(
         selected_user.value
             ?.permissions?.length ?? 0,
 )
+
 </script>

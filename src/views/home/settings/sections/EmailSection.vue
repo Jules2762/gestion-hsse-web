@@ -6,7 +6,7 @@
                 <h5>
                     Méthode d'ouverture
                 </h5>
-                <p class="mt-1 text-sm text-gray-500">
+                <p class="mt-1 text-sm text-text-secondary">
                     Choisissez comment ouvrir
                     les e-mails depuis la
                     plateforme GALANA HSSE.
@@ -21,7 +21,7 @@
                     :class="emailOpenMethod ===
                         'OUTLOOK_DESKTOP'
                         ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-border hover:border-border/60'
                         ">
                     <div>
                         <p class="font-medium">
@@ -30,7 +30,7 @@
 
                         <p class="
                             text-sm
-                            text-gray-500
+                            text-text-secondary
                         ">
                             Ouvre l'application
                             Outlook installée sur
@@ -57,7 +57,7 @@
                 " :class="emailOpenMethod ===
                     'OUTLOOK_WEB'
                     ? 'border-primary bg-primary/5'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-border hover:border-border/60'
                     ">
                     <div>
                         <p class="
@@ -68,7 +68,7 @@
 
                         <p class="
                             text-sm
-                            text-gray-500
+                            text-text-secondary
                         ">
                             Ouvre Outlook dans
                             le navigateur.
@@ -94,7 +94,7 @@
                 " :class="emailOpenMethod ===
                     'ASK'
                     ? 'border-primary bg-primary/5'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-border hover:border-border/60'
                     ">
                     <div>
                         <p class="
@@ -105,7 +105,7 @@
 
                         <p class="
                             text-sm
-                            text-gray-500
+                            text-text-secondary
                         ">
                             Affiche une boîte de dialogue
                             avant l'ouverture d'un e-mail.
@@ -128,7 +128,7 @@
             <p class="
                 mt-1
                 text-sm
-                text-gray-500
+                text-text-secondary
             ">
                 Recevront une copie des
                 notifications des actions
@@ -147,7 +147,7 @@
                     flex-1
                     rounded-xl
                     border
-                    border-gray-200
+                    border-border
                     px-3
                     py-2
                 ">
@@ -233,26 +233,83 @@ recipient in
             " class="
                 mt-4
                 text-sm
-                text-gray-400
+                text-text-muted
             ">
                 Aucun destinataire
                 sélectionné.
             </p>
         </div>
+
+
+        <!-- ========================================================= -->
+        <!-- ACTIONS -->
+        <!-- ========================================================= -->
+
+        <div class="flex items-center justify-end gap-3 border-t border-border px-5 py-4">
+
+            <button type="button" :disabled="!hasChanges" @click="resetForm"
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
+                :class="hasChanges
+                    ? 'text-text-secondary hover:-translate-y-0.5 hover:bg-surface-alt hover:shadow-md'
+                    : 'cursor-not-allowed text-text-muted'">
+                <RotateCcw class="h-4 w-4" />
+                Annuler
+            </button>
+
+            <button type="button" :disabled="!hasChanges" @click="save"
+                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
+                :class="hasChanges
+                    ? 'bg-linear-to-r from-success to-primary-dark text-white hover:-translate-y-0.5 hover:shadow-md'
+                    : 'cursor-not-allowed bg-surface-alt text-text-muted'">
+                <Save class="h-4 w-4" />
+                Enregistrer
+            </button>
+
+        </div>
+
+
+        <!-- ========================================================= -->
+        <!-- MESSAGE -->
+        <!-- ========================================================= -->
+
+        <div v-if="successMessage"
+            class="fixed right-6 top-6 z-50 flex max-w-sm items-start gap-3 rounded-2xl border border-status-success/20 bg-surface p-4 shadow-2xl ring-1 ring-status-success/5">
+
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-light">
+                <CheckCircle2 class="h-5 w-5 text-success" />
+            </div>
+
+            <div>
+                <p class="font-semibold text-text-primary">
+                    E-mail enregistré
+                </p>
+                <p class="mt-1 text-sm text-text-secondary">
+                    {{ successMessage }}
+                </p>
+            </div>
+
+            <button type="button" @click="successMessage = ''" class="ml-2 text-text-muted hover:text-text-secondary">
+                <X class="h-4 w-4" />
+            </button>
+
+        </div>
+
     </div>
 </template>
 <script setup lang="ts">
     import { computed, ref } from 'vue';
-    import { Plus, X } from '@lucide/vue'
+    import { CheckCircle2, Plus, RotateCcw, Save, X } from '@lucide/vue'
 
     type EmailOpenMethodType =
         | "OUTLOOK_DESKTOP"
         | "OUTLOOK_WEB"
         | "ASK"
 
+    const DEFAULT_EMAIL_OPEN_METHOD: EmailOpenMethodType = "ASK"
+
     const emailOpenMethod =
         ref<EmailOpenMethodType>(
-            "ASK",
+            DEFAULT_EMAIL_OPEN_METHOD,
         )
     type RecipientType = {
         id: number
@@ -321,5 +378,68 @@ recipient in
             selectedRecipients.value.filter(
                 item => item.id !== id,
             )
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHANGEMENTS
+    |--------------------------------------------------------------------------
+    |
+    | Placeholder en attendant l'API des paramètres e-mail.
+    |
+    */
+
+    const savedEmailOpenMethod =
+        ref<EmailOpenMethodType>(DEFAULT_EMAIL_OPEN_METHOD)
+
+    const savedRecipientIds =
+        ref<number[]>([])
+
+    const hasChanges = computed(() => {
+
+        if (emailOpenMethod.value !== savedEmailOpenMethod.value) return true
+
+        const currentIds = selectedRecipients.value.map(recipient => recipient.id).sort()
+        const savedIds = [...savedRecipientIds.value].sort()
+
+        return JSON.stringify(currentIds) !== JSON.stringify(savedIds)
+
+    })
+
+    function resetForm() {
+
+        emailOpenMethod.value = savedEmailOpenMethod.value
+
+        selectedRecipients.value = availableRecipients.value.filter(
+            recipient => savedRecipientIds.value.includes(recipient.id)
+        )
+
+        selectedRecipientId.value = undefined
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ENREGISTRER
+    |--------------------------------------------------------------------------
+    */
+
+    const successMessage = ref("")
+
+    function save() {
+
+        console.log("Paramètres e-mail :", {
+            emailOpenMethod: emailOpenMethod.value,
+            recipients: selectedRecipients.value,
+        })
+
+        savedEmailOpenMethod.value = emailOpenMethod.value
+
+        savedRecipientIds.value = selectedRecipients.value.map(recipient => recipient.id)
+
+        successMessage.value = "Vos préférences e-mail ont été mises à jour."
+
     }
 </script>

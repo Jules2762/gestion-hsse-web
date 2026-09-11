@@ -2,14 +2,14 @@
     <div class="flex w-full flex-col gap-y-2 border-b border-gray-200">
         <div class=" bg-white px-6 py-3 flex flex-row items-center justify-between">
             <div class="flex flex-col gap-y-1">
-                <h5>{{ title }}</h5>
+                <h5>{{ t(title as string) }}</h5>
                 <div v-if="thumbnails" class="p-1">
 
                     <div class="flex flex-row  gap-x-3">
                         <div v-for="(item, index) in thumbnails" :key="index"
                             class="flex flex-row text-xs gap-x-3 font-semibold text-slate-600 items-center">
                             <div @click="router.push({ name: item.name })" class="hover:text-slate-800"
-                                :class="item.name == useRoute().name ? 'text-primary' : ''">{{ item.label }}</div>
+                                :class="item.name == useRoute().name ? 'text-primary' : ''">{{ t(item.label) }}</div>
                             <ChevronRight :size="15" v-show="thumbnails.length >= 2 && thumbnails.length != index + 1">
                             </ChevronRight>
                         </div>
@@ -151,6 +151,8 @@ import Input from "../ui/Input.vue"
 import { computed, onMounted, ref } from 'vue';
 import RightModal from '../ui/rightModal.vue';
 import { useNotificationStore } from '../../services/useNotificationStore.ts';
+import { useI18n } from 'vue-i18n';
+
 
 type thumblenailsType = {
     label: string,
@@ -181,5 +183,5 @@ onMounted(() => {
         ago: "il y a 1minutes"
     })
 })
-
+const {t}=useI18n()
 </script>

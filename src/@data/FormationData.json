@@ -1,0 +1,201 @@
+[
+    {
+    "id": 26,
+    "title": "Formation Conduite Défensive",
+    "date": "2026-10-18",
+    "type": "Formation",
+    "volet": "Sécurité",
+    "trainer": "Maxwell ANDRIANANTOANINA",
+    "duration": 6,
+    "target": "Chauffeurs",
+    "participant": 22,
+    "target_type": "Conducteurs",
+    "created": {
+        "id": 2,
+        "first_name": "Maxwell",
+        "last_name": "ANDRIANANTOANINA",
+        "email": "maxwell@galana.mg"
+        },
+    "created_at": "2026-09-08T08:30:00Z",
+    "updated_at": "2026-09-08T08:30:00Z"
+    },
+    {
+    "id": 27,
+    "title": "Sensibilisation Sécurité Routière",
+    "date": "2026-10-20",
+    "type": "Sensibilisation",
+    "volet": "Sécurité",
+    "trainer": "Jules ARIMANANA",
+    "duration": 2,
+    "target": "Personnel logistique",
+    "participant": 40,
+    "target_type": "Employés",
+    "created": {
+        "id": 1,
+        "first_name": "Jules",
+        "last_name": "ARIMANANA",
+        "email": "jules.arimanana@galana.mg"
+        },
+    "created_at": "2026-09-08T10:00:00Z",
+    "updated_at": "2026-09-08T10:00:00Z"
+    },
+    {
+    "id": 28,
+    "title": "Atelier Gestion des Déchets Dangereux",
+    "date": "2026-10-22",
+    "type": "Atelier",
+    "volet": "Environnement",
+    "trainer": "Mamy Randrianarisoa",
+    "duration": 5,
+    "target": "Magasiniers",
+    "participant": 15,
+    "target_type": "Opérateurs",
+    "created": {
+        "id": 4,
+        "first_name": "Mamy",
+        "last_name": "Randrianarisoa",
+        "email": "mamy@galana.mg"
+        },
+    "created_at": "2026-09-09T09:15:00Z",
+    "updated_at": "2026-09-09T09:15:00Z"
+    },
+    {
+    "id": 29,
+    "title": "Induction Personnel Temporaire",
+    "date": "2026-10-25",
+    "type": "Induction",
+    "volet": "Santé",
+    "trainer": "Jules ARIMANANA",
+    "duration": 3,
+    "target": "Personnel temporaire",
+    "participant": 18,
+    "target_type": "Prestataires",
+    "created": {
+        "id": 1,
+        "first_name": "Jules",
+        "last_name": "ARIMANANA",
+        "email": "jules.arimanana@galana.mg"
+        },
+    "created_at": "2026-09-10T08:00:00Z",
+    "updated_at": "2026-09-10T08:00:00Z"
+    },
+    {
+    "id": 30,
+    "title": "Formation Manipulation Extincteurs",
+    "date": "2026-10-28",
+    "type": "Formation",
+    "volet": "Sécurité",
+    "trainer": "Hery Rakotomalala",
+    "duration": 4,
+    "target": "Personnel station",
+    "participant": 30,
+    "target_type": "Employés",
+    "created": {
+        "id": 3,
+        "first_name": "Hery",
+        "last_name": "Rakotomalala",
+        "email": "hery@galana.mg"
+        },
+    "created_at": "2026-09-10T13:00:00Z",
+    "updated_at": "2026-09-10T13:00:00Z"
+    },
+    {
+    "id": 31,
+    "title": "Exercice Déversement Carburant",
+    "date": "2026-11-02",
+    "type": "Exercice d'urgence",
+    "volet": "Environnement",
+    "trainer": "Maxwell ANDRIANANTOANINA",
+    "duration": 3,
+    "target": "Équipe exploitation",
+    "participant": 16,
+    "target_type": "Opérateurs",
+    "created": {
+        "id": 2,
+        "first_name": "Maxwell",
+        "last_name": "ANDRIANANTOANINA",
+        "email": "maxwell@galana.mg"
+        },
+    "created_at": "2026-09-11T09:45:00Z",
+    "updated_at": "2026-09-11T09:45:00Z"
+    },
+    {
+    "id": 32,
+    "title": "Sensibilisation Prévention COVID",
+    "date": "2026-11-05",
+    "type": "Sensibilisation",
+    "volet": "Santé",
+    "trainer": "Dr Rakoto",
+    "duration": 2,
+    "target": "Tous employés",
+    "participant": 65,
+    "target_type": "Employés",
+    "created": {
+        "id": 5,
+        "first_name": "Rakoto",
+        "email": "rakoto@galana.mg"
+        },
+    "created_at": "2026-09-11T15:00:00Z",
+    "updated_at": "2026-09-11T15:00:00Z"
+    },
+    {
+    "id": 33,
+    "title": "Atelier Gestion des Situations d'Urgence",
+    "date": "2026-11-08",
+    "type": "Atelier",
+    "volet": "Sûreté",
+    "trainer": "Jules ARIMANANA",
+    "duration": 6,
+    "target": "Chefs d'équipe",
+    "participant": 12,
+    "target_type": "Managers",
+    "created": {
+        "id": 1,
+        "first_name": "Jules",
+        "last_name": "ARIMANANA",
+        "email": "jules.arimanana@galana.mg"
+        },
+    "created_at": "2026-09-12T11:00:00Z",
+    "updated_at": "2026-09-12T11:00:00Z"
+    },
+    {
+    "id": 34,
+    "title": "Formation Analyse des Causes Racines",
+    "date": "2026-11-12",
+    "type": "Formation",
+    "volet": "Sécurité",
+    "trainer": "Maxwell ANDRIANANTOANINA",
+    "duration": 8,
+    "target": "Équipe HSSE",
+    "participant": 10,
+    "target_type": "Spécialistes",
+    "created": {
+        "id": 2,
+        "first_name": "Maxwell",
+        "last_name": "ANDRIANANTOANINA",
+        "email": "maxwell@galana.mg"
+        },
+    "created_at": "2026-09-13T08:20:00Z",
+    "updated_at": "2026-09-13T08:20:00Z"
+    },
+    {
+    "id": 35,
+    "title": "Induction Visiteurs Dépôt",
+    "date": "2026-11-15",
+    "type": "Induction",
+    "volet": "Sûreté",
+    "trainer": "Hery Rakotomalala",
+    "duration": 1,
+    "target": "Visiteurs",
+    "participant": 50,
+    "target_type": "Externe",
+    "created": {
+        "id": 3,
+        "first_name": "Hery",
+        "last_name": "Rakotomalala",
+        "email": "hery@galana.mg"
+        },
+    "created_at": "2026-09-14T09:30:00Z",
+    "updated_at": "2026-09-14T09:30:00Z"
+    }
+]

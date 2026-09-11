@@ -1,8 +1,8 @@
-import { ClipboardCheck, FolderClosedIcon, GraduationCapIcon, HomeIcon, PackageIcon, Settings2Icon, User2Icon, Users2Icon } from "@lucide/vue"
+import { ClipboardCheck, FolderClosedIcon, GraduationCapIcon, HomeIcon, PackageIcon, Settings, Settings2Icon, User2Icon, Users2Icon } from "@lucide/vue"
 
 const sidebar_routes = [
     {
-        label: "Tableau de bord",
+        label: "dashboard",
         icon: HomeIcon,
         isOpen: false,
 
@@ -12,33 +12,33 @@ const sidebar_routes = [
         ]
     },
     {
-        label: "Administration",
+        label: "administration",
         icon: Users2Icon,
         isOpen: false,
         name: "ADMINISTRATION",
         children: [
             {
-                label: "Utilisateurs",
+                label: "users",
                 name: "USERS",
 
             },
 
             {
-                label: "Activités",
+                label: "activity",
                 name: "ACTIVITY",
 
             },
         ]
     },
     {
-        label: "Documents",
+        label: "documents",
         name: "DOCUMENT_LIBRARY",
         icon: FolderClosedIcon,
         isOpen: false,
         children: [],
     },
     {
-        label: "Formation",
+        label: "training",
         icon: GraduationCapIcon,
         isOpen: false,
         name: "FORMATION",
@@ -46,7 +46,7 @@ const sidebar_routes = [
         ]
     },
     {
-        label: "Inspections",
+        label: "inspections",
         icon: ClipboardCheck,
         isOpen: false,
         name: "INSPECTION",
@@ -58,17 +58,17 @@ const sidebar_routes = [
 
             // },
             {
-                label: "Actions correctives",
+                label: "corrective actions",
                 name: "ACTION",
             },
             {
-                label: "Checklists",
+                label: "checklists",
                 name: "CHECKLIST",
 
             },
 
             {
-                label: "Suivi matériel",
+                label: "equipment monitoring",
                 name: "EQUIPMENT_MONITORING",
 
             },
@@ -81,7 +81,7 @@ const sidebar_routes = [
     }
     ,
     {
-        label: "Inventaire",
+        label: "inventory",
         icon: PackageIcon,
         isOpen: false,
         name: "DASHBOARDe",
@@ -106,7 +106,7 @@ const sidebar_routes = [
     },
 
     {
-        label: "Profil",
+        label: "profile",
         name: "PROFILE",
         icon: User2Icon,
         isOpen: false,
@@ -114,9 +114,9 @@ const sidebar_routes = [
 
     },
     {
-        label: "Parametre",
+        label: "settings",
         name: "SETTING",
-        icon: Settings2Icon,
+        icon: Settings,
         isOpen: false,
         children: [],
 

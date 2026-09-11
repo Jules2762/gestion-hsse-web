@@ -1,17 +1,17 @@
 <script setup lang="ts">
-    import { h, ref } from 'vue';
+    import { h, onMounted, ref, watch } from 'vue';
     import Header from '../../../components/shared/Header.vue';
-    import type { EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type.ts';
+    import type { EquipmentMonitoringFilterType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type.ts';
     import { EquipmentMonitoringData } from '../../../@data/EquipementMonitoring.data.ts';
     import type { contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-    import { Calendar, Download, Eye, FileUp, PlusCircle, XIcon } from '@lucide/vue';
-    import Button from '../../../components/ui/Button.vue';
-    import Input from '../../../components/ui/Input.vue';
-    import Select from '../../../components/ui/Select.vue';
-import { router } from '../../../router/index.ts';
+    import { Calendar, CloudDownloadIcon, Download, DownloadIcon, Eye, FileUp, PlusCircle, SearchIcon, SquarePlusIcon, XIcon } from '@lucide/vue';
+    import { router } from '../../../router/index.ts';
+    import type { PaginationType } from '../../../@types/Pagination.type.ts';
+    import ChipFilter from '../../../components/ui/ChipFilter.vue';
+    import { useEquipmentMonitoringService } from '../../../core/services/equipmentMonitoring.service.ts';
 
-
+    const searchQuery = ref<string>("")
     const right_sidebar = ref<{
         isOpen?: boolean,
         equipment?: EquipmentMonitoringType
@@ -32,6 +32,7 @@ import { router } from '../../../router/index.ts';
     })
     const headers = [
         "#",
+        "Date",
         "Site",
         "P50",
         "P9",
@@ -53,34 +54,164 @@ import { router } from '../../../router/index.ts';
         "Picto Danger TGBT",
         "Panneau Event",
         "Livret / Fiche Réflexe",
-        "Créé le",
+    
 
     ]
-    const data = ref<EquipmentMonitoringType[]>(EquipmentMonitoringData)
+    const data = ref<EquipmentMonitoringType[]>()
+    type filtersKeyType = "site"
+    const filterableKeys: filtersKeyType[] = ["site"]
+    const columnLables: Record<filtersKeyType, string> = {
+        site: 'Site',
+
+    }
+    const filters = ref<Record<filtersKeyType, string[]>>(
+        {
+
+            "site": []
+        }
+    )
+    const columnOptions = ref<Record<filtersKeyType, string[]>>()
+    const dateRange = ref<{
+        from: string,
+        to: string
+    }>(
+        {
+            from: '',
+            to: ''
+        }
+    )
+    const equipments = useEquipmentMonitoringService()
+    const showDateFilter = ref<boolean>(false)
+    const pagination = ref<PaginationType>({
+        'current_page': 1,
+        'to': 0,
+        'total': 0
+    })
+    const loading_data=ref<boolean>(false)
+    const loading_export=ref<boolean>(false)
+    const loading_delete=ref<boolean>(false)
+
+
+    function fetchData(params?: EquipmentMonitoringFilterType) {
+        loading_data.value=true
+        equipments.index(params)
+            .then(res => {
+                console.log(res.data)
+                data.value=res.data.data as EquipmentMonitoringType[]
+                pagination.value.to=res.data.meta.to
+                pagination.value.total=res.data.meta.total
+            })
+            .catch(err => {
+                console.error(err)
+            }).finally(()=>{
+                loading_data.value=false
+            })
+
+    }
+    function fetchFilters() {
+        equipments.getFilters()
+            .then(res => {
+                console.log(res)
+                columnOptions.value = res.data as Record<filtersKeyType, string[]>
+            })
+            .catch(err => {
+                console.error(err)
+            })
+    }
+    function clearAllFilters(){
+       filters.value.site=[]
+        dateRange.value.from='',
+        dateRange.value.to='',
+        searchQuery.value=""
+    }
+    watch([filters.value,dateRange.value,()=>searchQuery.value], () => {
+        console.log(searchQuery.value)
+        fetchData({
+            page: 1,
+            site: filters.value.site,
+            date: dateRange.value,
+            search: searchQuery.value
+        })
+    }, {
+        immediate: false
+    })
+    watch(pagination.value, () => {
+        fetchData({
+            page: pagination.value.current_page,
+            site: filters.value.site,
+            date: dateRange.value,
+            search: searchQuery.value
+        })
+    }, {
+        immediate: false
+    })
+
+
+    onMounted(() => {
+        fetchFilters()
+        fetchData()
+    })
 </script>
 
 <template>
     <div class="flex flex-col ">
-        <Header title="Suivi du matériel" show-search />
-        <div class="bg-white h-16 border-b border-gray-200 px-4 flex flex-row justify-between items-center"
-            @click.self="right_sidebar.isOpen = false">
+        <Header title="Suivi du matériel" :thumbnails="[
+            { 'label': 'home', name: 'DASHBOARD' },
+            { 'label': 'home', name: 'DASHBOARD' },
+        ]" />
+        <!-- ======================= RIBBON TOOLBAR ======================= -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="h-16 px-4 flex flex-row items-center justify-between">
+                <div class="flex flex-row items-center gap-1">
+                    <button class="ribbon-btn ribbon-btn-primary" @click="router.push({
+                        name: 'EQUIPMENT_MONITORING_NEW'
+                    })"">
+                        <SquarePlusIcon :size="18" />
+                    <span> Ajout </span>
+                    </button>
+                    <button class="ribbon-btn" @click="router.push({
+                        name: 'EQUIPMENT_MONITORING_IMPORT'
+                    })">
+                        <CloudDownloadIcon :size="18" />
+                        <span> Import </span>
+                    </button>
 
-            <div class="flex flex-row items-center gap-x-1 ">
-                <Button :left-icon="PlusCircle" @click="router.push({
-                    name:'EQUIPMENT_MONITORING_NEW'
-                })">Nouveau</Button>
-                <Button :left-icon="FileUp" :variant="'icon'" :size="'sm'"></Button>
-                <Button :left-icon="Download" :variant="'icon'" :size="'sm'"></Button>
+                    <button class="ribbon-btn">
+                        <DownloadIcon :size="18" />
+                        <!-- <Loader v-else class="animate-spin" /> -->
+                        <span>Exporter </span>
+
+                    </button>
+
+
+                    <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
+
+
+                </div>
+
+                <div class="flex flex-row items-center gap-2">
+
+                    <div class="relative">
+                        <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input v-model="searchQuery" type="text" placeholder="Rechercher ..."
+                            class="h-9 w-64 rounded-lg border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                        <button v-if="searchQuery" @click="searchQuery = ''"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <XIcon :size="14" />
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-row items-centern gap-x-3">
-                <Input :icon="h('span', 'SS')" class="min-w-60" placeholder="Sélectionner un site"/>
-                <Input :icon="Calendar" class="min-w-60" placeholder="Sélectionner une date" />
-            </div>
+            <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLables" :date-range="dateRange" :filters="filters"
+                :column-options="columnOptions as Record<filtersKeyType, string[]>" @clear-all="clearAllFilters()"/>
+
+
         </div>
-        <div class="flex flex-row transition-all overflow-x-auto " @click.self="right_sidebar.isOpen = false">
-            <div class="min-h-[calc(100vh-160px)]" @click.self="right_sidebar.isOpen = false"
+
+        <div class="flex flex-row transition-all overflow-x-auto scrollbar-hide" @click.self="right_sidebar.isOpen = false">
+            <div class="min-h-fit " @click.self="right_sidebar.isOpen = false"
                 :class="right_sidebar ? 'w-9/12 max-w-9/12' : 'w-full max-w-full'">
-                <table class="min-w-max ">
+                <table class="min-w-max mb-30">
                     <thead>
                         <tr class="">
                             <th v-for="header in headers" :key="header">
@@ -90,18 +221,21 @@ import { router } from '../../../router/index.ts';
                     </thead>
                     <tbody class="h-fit">
                         <tr @contextmenu.prevent="context_menu.context_menu = $event; context_menu.equipment = item; context_menu.isOpen = true"
-                            v-for="(item, index) in data" :key="item.id" class="cursor-pointer" @click="
+                            v-for="(item, index) in data" :key="index" class="cursor-pointer" @click="
                                 right_sidebar = {
                                     isOpen: true,
                                     equipment: item,
                                 }
                                 " :class="right_sidebar.equipment?.id == item.id ? 'bg-primary/10' : ''">
                             <td>
-                                {{ index + 1 }}
+                                {{ item.id }}
+                            </td>
+                            <td>
+                                {{ item.date }}
                             </td>
 
                             <td>
-                                {{ item.site_name.name }}
+                                {{ item.site_name }}
                             </td>
 
                             <td>
@@ -137,7 +271,7 @@ import { router } from '../../../router/index.ts';
                             </td>
 
                             <td>
-                                {{ item.poubelle_240l }}
+                                {{ item.poubelles_240l }}
                             </td>
 
                             <td>
@@ -217,8 +351,15 @@ import { router } from '../../../router/index.ts';
 
 
                         </tr>
+                       
                     </tbody>
+                    <tfoot class="">
+                        
+                    </tfoot>
+                    
                 </table>
+               <!-- Pagination indépendante du scroll horizontal -->
+               
                 <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="[
                     {
                         label: 'Details',
@@ -229,7 +370,7 @@ import { router } from '../../../router/index.ts';
             </div>
             <div class="
         
-        shrink-0
+        h-fit
         border-l
         border-gray-200
         scrollbar-hide
@@ -237,11 +378,11 @@ import { router } from '../../../router/index.ts';
         p-5
         sticky
         top-0
-        bottom-0
+       bottom-0
         left-9/12
         right-0
-        h-screen
-        overflow-y-auto
+       
+        
     " :class="right_sidebar.isOpen ? 'w-3/12' : 'w-0'" v-if="right_sidebar.isOpen">
                 <!-- HEADER -->
 
@@ -492,7 +633,7 @@ import { router } from '../../../router/index.ts';
                             <strong>
                                 {{
                                     right_sidebar.equipment
-                                        ?.poubelle_240l
+                                        ?.poubelles_240l
                                 }}
                             </strong>
                         </div>
@@ -679,6 +820,11 @@ import { router } from '../../../router/index.ts';
                     </p>
                 </div>
             </div>
+        </div>
+        <div class="fixed py-4 px-6  right-0 bottom-0 bg-white w-full left-0  flex flex-row justify-end">
+            <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total" :items-per-page="15"
+                :max-pages-shown="4" v-model="pagination.current_page"
+                @click="(page: number) => pagination.current_page = page" />
         </div>
     </div>
 </template>

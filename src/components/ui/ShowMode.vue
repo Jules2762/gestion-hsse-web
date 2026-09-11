@@ -8,19 +8,19 @@
       border-border
       bg-white
       p-1
-      w-23.2
+      w-fit
     "
   >
     <button
       @click="data = 0"
       class="
         rounded-lg
-        p-3
+        p-2
         transition-colors
       "
       :class="
         data === 0
-          ? 'bg-primary text-white'
+          ? 'bg-gray-400 text-white'
           : 'text-text-secondary hover:bg-slate-100'
       "
     >
@@ -31,12 +31,12 @@
       @click="data = 1"
       class="
         rounded-lg
-        p-3
+        p-2
         transition-colors
       "
       :class="
         data === 1
-          ? 'bg-primary text-white'
+          ? 'bg-gray-400 text-white'
           : 'text-text-secondary hover:bg-slate-100'
       "
     >
