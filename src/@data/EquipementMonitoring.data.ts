@@ -6,8 +6,7 @@ export const EquipmentMonitoringData: EquipmentMonitoringType[] = [
 
         user_id: 1,
 
-        site_name_id: 1,
-
+        date: "2001-12-12",
         site_name: {
             id: 1,
             name: 'SS TALATAMATY',
@@ -62,7 +61,7 @@ export const EquipmentMonitoringData: EquipmentMonitoringType[] = [
 
         user_id: 2,
 
-        site_name_id: 2,
+        date: "2001-12-12",
 
         site_name: {
             id: 2,
@@ -118,7 +117,7 @@ export const EquipmentMonitoringData: EquipmentMonitoringType[] = [
 
         user_id: 3,
 
-        site_name_id: 3,
+        date: "2001-12-12",
 
         site_name: {
             id: 3,
@@ -174,7 +173,7 @@ export const EquipmentMonitoringData: EquipmentMonitoringType[] = [
 
         user_id: 4,
 
-        site_name_id: 4,
+        date: "2001-12-12",
 
         site_name: {
             id: 4,
@@ -230,7 +229,7 @@ export const EquipmentMonitoringData: EquipmentMonitoringType[] = [
 
         user_id: 5,
 
-        site_name_id: 5,
+        date: "2001-12-12",
 
         site_name: {
             id: 5,

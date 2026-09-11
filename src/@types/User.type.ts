@@ -33,5 +33,7 @@ export type {
     UserRoleType,
     UserStatusType,
     UserDataType,
-    UserStatusJsonType
+    UserStatusJsonType,
+    permissionType,
+    PermissionNameType
 }

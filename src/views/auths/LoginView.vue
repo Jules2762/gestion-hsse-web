@@ -6,29 +6,29 @@
     <form @submit.prevent="onSubmit" class="p-6  rounded-md w-8/12 flex flex-col gap-y-6">
       <div>
         <h2>
-          Connexion
+          {{ t('login.title') }}
         </h2>
         <p class="mt-2 text-slate-500">
-          Connectez-vous à votre compte.
+          {{ t('login.subtitle') }}
         </p>
       </div>
       <div class="flex flex-col gap-y-3">
-        <Input :icon="MailIcon" label="E-mail" placeholder="ex: nom@exemple.com" />
-        <Input :icon="LockIcon" label="Mot de passe" placeholder="******************" />
+        <Input :icon="MailIcon" type="email" v-model="data.forms.email" :label="t('login.email.label')" :placeholder="t('login.email.placeholder')" :error="data.errors.email[0]"/>
+        <Input :icon="LockIcon" type="password" v-model="data.forms.password" :label="t('login.password.label')" :placeholder="t('login.password.placeholder')" :error="data.errors.password[0]"/>
         <div class="w-full flex flex-row items-center justify-between">
           <div class="flex flex-row items-center">
-            <Checkbox label="checkbox" />
+            <Checkbox :label="t('login.remember_me')" />
           </div>
           <button type="button" class="text-blue-700" @click="router.push({
             name:'SEARCH_ACCOUNT'
-          })">Mot de passe oublier?</button>
+          })">{{ t('login.forgot_password') }}</button>
         </div>
-        <Button type="submit">Se connecter</Button>
+        <Button type="submit" :loading="data.forms.loading">{{t('login.login')}}</Button>
 
       </div>
       <div class="flex flex-row items-center w-full gap-x-2">
         <div class="bg-gray-300 h-0.5 w-full"></div>
-        <span>ou</span>
+        <span>{{ t('login.or') }}</span>
         <div class="bg-gray-300 h-0.5 w-full"></div>
       </div>
       <button type="button"
@@ -49,16 +49,63 @@ import { LockIcon, MailIcon } from '@lucide/vue';
 import Button from '../../components/ui/Button.vue';
 import Checkbox from '../../components/ui/Checkbox.vue';
 import { router } from '../../router/index.ts';
+import { useAuthService } from '../../core/services/auth.service.ts';
+import { toast } from 'vue3-toastify';
+import { useI18n } from 'vue-i18n';
 
-
-
-const email = ref('')
-const password = ref('')
-
-
+type dataType={
+  forms:{
+    email:string,
+    password:string,
+    loading:boolean
+  },errors:{
+    email:string[],
+    password:string[]
+  }
+}
+const data=ref<dataType>({
+  forms:{
+    email:'',
+    password:'',
+    loading:false
+  },
+  errors:{
+    email:[],
+    password:[]
+  }
+})
+const auth=useAuthService()
+const {t}=useI18n()
 function onSubmit(){
-  router.push({
-    name:"HOME"
+  data.value.forms.loading=true
+  data.value.errors.email=[]
+  data.value.errors.password=[]
+  auth.login({
+    email:data.value.forms.email,
+    password:data.value.forms.password,
+    confirmation_password:data.value.forms.password
+
+  }).then((res)=>{
+    console.log(res)
+    toast.success(
+      t('login.notification.success')
+    );
+    data.value.forms.loading = false
+      setTimeout(()=>{
+        router.push({
+          name: "HOME"
+        })
+      },1000)
+  }).catch((err)=>{
+    
+    data.value.forms.loading = false
+    if(err?.response?.status=="422"){
+      toast.error(
+        t('login.notification.error')
+      );
+    }
+   
   })
+
 }
 </script>

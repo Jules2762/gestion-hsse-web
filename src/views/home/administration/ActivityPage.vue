@@ -1,66 +1,14 @@
-<script setup lang="ts">
-import { computed, ref } from 'vue';
-import { UserData, UserRoleDataJson } from '../../../@data/User.data.ts';
-import Header from '../../../components/shared/Header.vue';
-
-import type { LogType, LogTypeType } from '../../../@types/Logs.type.ts';
-import { LogData, LogTypeData } from '../../../@data/Logs.data.ts';
-import { Logs, User, XIcon } from '@lucide/vue';
-import ShowMode from '../../../components/ui/ShowMode.vue';
-import Input from '../../../components/ui/Input.vue';
-import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
-import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-import { router } from '../../../router/index.ts';
-const show_mode = ref(0)
-const selectedUser = computed(() => {
-    return UserData.find(
-        user => user.id === selected_log.value?.user_id,
-    )
-})
-const filter = ref<{
-    type?: LogTypeType
-}>({
-    type: undefined
-})
-const selected_log = ref<LogType>()
-const data = ref([...LogData])
-const dataFiltered = computed(() => {
-    return data.value.filter(item => filter.value?.type ? item.type.includes(filter.value.type) : item)
-})
-const contextMenu = ref<{
-    isOpen: boolean,
-    contextMenu?: contextMenuType,
-    log?: LogType,
-    actions: ContextMenuActionType[]
-}>({
-    isOpen: false,
-    actions: [
-        {
-            label: "Profil",
-            icon: User,
-            onClick: () => router.push({
-                name: 'PROFILE',
-                params: {
-                    id: contextMenu.value.log?.id
-                }
-            })
-        },
-
-    ]
-})
-</script>
-
 <template>
     <div class="">
         <Header title="Activités" show-search :thumbnails="[
             {
-                label: 'Accueil',
+                label: 'home',
                 name: 'DASHBOARD'
             }, {
-                label: 'Administration',
+                label: 'administration',
                 name: 'ADMINISTRATION'
             }, {
-                label: 'Activité',
+                label: 'activity',
                 name: 'ACTIVITY'
             }
         ]" />
@@ -395,3 +343,54 @@ const contextMenu = ref<{
             :actions="contextMenu.actions" />
     </div>
 </template>
+<script setup lang="ts">
+    import { computed, ref } from 'vue';
+    import { UserData, UserRoleDataJson } from '../../../@data/User.data.ts';
+    import Header from '../../../components/shared/Header.vue';
+
+    import type { LogType, LogTypeType } from '../../../@types/Logs.type.ts';
+    import { LogData, LogTypeData } from '../../../@data/Logs.data.ts';
+    import { Logs, User, XIcon } from '@lucide/vue';
+    import ShowMode from '../../../components/ui/ShowMode.vue';
+    import Input from '../../../components/ui/Input.vue';
+    import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
+    import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
+    import { router } from '../../../router/index.ts';
+    const show_mode = ref(0)
+    const selectedUser = computed(() => {
+        return UserData.find(
+            user => user.id === selected_log.value?.user_id,
+        )
+    })
+    const filter = ref<{
+        type?: LogTypeType
+    }>({
+        type: undefined
+    })
+    const selected_log = ref<LogType>()
+    const data = ref([...LogData])
+    const dataFiltered = computed(() => {
+        return data.value.filter(item => filter.value?.type ? item.type.includes(filter.value.type) : item)
+    })
+    const contextMenu = ref<{
+        isOpen: boolean,
+        contextMenu?: contextMenuType,
+        log?: LogType,
+        actions: ContextMenuActionType[]
+    }>({
+        isOpen: false,
+        actions: [
+            {
+                label: "Profil",
+                icon: User,
+                onClick: () => router.push({
+                    name: 'PROFILE',
+                    params: {
+                        id: contextMenu.value.log?.id
+                    }
+                })
+            },
+
+        ]
+    })
+</script>

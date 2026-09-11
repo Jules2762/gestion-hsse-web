@@ -1,349 +1,2486 @@
-<script setup lang="ts">
-import {
-    UploadCloud,
-    FileText,
-    X,
-    CheckCircle2,
-    CloudDownload,
-} from '@lucide/vue'
-
-import { computed, ref } from 'vue'
-import Header from '../../../components/shared/Header.vue'
-import { router } from '../../../router'
-import type { routes } from '../../../router/routes'
-import Button from '../../../components/ui/Button.vue'
-
-const dragOver = ref(false)
-
-const selectedFile = ref<File | null>(
-    null,
-)
-
-const uploadProgress = ref(0)
-
-const isUploading = ref(false)
-
-const fileSize = computed(() => {
-    if (!selectedFile.value)
-        return ''
-
-    const size =
-        selectedFile.value.size
-
-    if (
-        size >
-        1024 * 1024
-    ) {
-        return `${(
-            size /
-            1024 /
-            1024
-        ).toFixed(2)} MB`
-    }
-
-    return `${(
-        size / 1024
-    ).toFixed(2)} KB`
-})
-
-function onDrop(
-    event: DragEvent,
-) {
-    dragOver.value = false
-
-    const file =
-        event.dataTransfer
-            ?.files?.[0]
-
-    if (!file) return
-
-    setFile(file)
-}
-
-function onFileChange(
-    event: Event,
-) {
-    const file = (
-        event.target as HTMLInputElement
-    ).files?.[0]
-
-    if (!file) return
-
-    setFile(file)
-}
-
-function setFile(
-    file: File,
-) {
-    selectedFile.value = file
-
-    simulateUpload()
-}
-
-function simulateUpload() {
-    uploadProgress.value = 0
-
-    isUploading.value = true
-
-    const interval =
-        setInterval(() => {
-            uploadProgress.value += 10
-
-            if (
-                uploadProgress.value >=
-                100
-            ) {
-                uploadProgress.value =
-                    100
-
-                isUploading.value =
-                    false
-
-                clearInterval(
-                    interval,
-                )
-            }
-        }, 100)
-}
-
-function removeFile() {
-    selectedFile.value = null
-
-    uploadProgress.value = 0
-
-    isUploading.value = false
-}
-</script>
-
 <template>
-    <div class="
-            mx-auto
-            flex
-            flex-col
-        ">
-        <!-- HEADER -->
-        <Header title="Import Formation"  :thumbnails="[
+    <div class="min-h-screen bg-white">
+
+        <Header title="Import Formation" :thumbnails="[
             {
-                'label':'Tableau de bord',
-                'name':'DASHBOARD'
+                label: 'Tableau de bord',
+                name: 'DASHBOARD'
             },
             {
-                'label':'Formation',
-                'name':'FORMATION'
+                label: 'Formation',
+                name: 'FORMATION'
             },
             {
-                'label':'Import',
-                'name':'FORMATION_IMPORT'
-            },
-        ]"/>
+                label: 'Import',
+                name: 'FORMATION_IMPORT'
+            }
+        ]" />
+
+        <div class="p-4">
+
+            <!-- ========================================================= -->
+            <!-- HEADER -->
+            <!-- ========================================================= -->
+
+            <div class=" flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
 
-        <div class="p-4 flex flex-col gap-4 items-center">
-            <p class="
-                    mt-1
-                    text-sm
-                    text-gray-500
-                ">
-                Importez une fiche
-                de présence ou un
-                document de
-                formation.
-            </p>
+                <div class="mb-6 rounded-2xl  bg-white p-4 ">
+                    <!-- ========================================================= -->
+                    <!-- ETAPES -->
+                    <!-- ========================================================= -->
 
 
-            <!-- DROP ZONE -->
+                    <div class="flex flex-wrap items-center gap-3">
 
-            <div class=" bg-white w-200
-                rounded-2xl
-                border-2
-                border-dashed
-                p-10
-                transition-all
-            " :class="dragOver
-                ? 'border-primary bg-primary/5'
-                : 'border-gray-300'
-                " @dragover.prevent="
-                    dragOver = true
-                    " @dragleave="
-                    dragOver = false
-                    " @drop.prevent="
-                    onDrop($event)
-                    ">
-                <div class="
+                        <!-- STEP 1 -->
+
+                        <div class="flex items-center gap-2">
+
+                            <div class="
+                                flex
+                                h-8
+                                w-8
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-primary
+                                text-sm
+                                font-bold
+                                text-white
+                            ">
+                                1
+                            </div>
+
+                            <span class="text-sm font-medium text-text-primary">
+                                Fichier
+                            </span>
+
+                        </div>
+
+
+                        <div class="h-px w-10 bg-border"></div>
+
+
+                        <!-- STEP 2 -->
+
+                        <div class="flex items-center gap-2">
+
+                            <div class="
+                                flex
+                                h-8
+                                w-8
+                                items-center
+                                justify-center
+                                rounded-full
+                                text-sm
+                                font-bold
+                            " :class="hasFile
+                                ? 'bg-primary text-white'
+                                : 'bg-surface-alt text-text-muted'
+                                ">
+                                2
+                            </div>
+
+                            <span class="text-sm font-medium" :class="hasFile
+                                ? 'text-text-primary'
+                                : 'text-text-muted'
+                                ">
+                                Prévisualisation
+                            </span>
+
+                        </div>
+
+
+                        <div class="h-px w-10 bg-border"></div>
+
+
+                        <!-- STEP 3 -->
+
+                        <div class="flex items-center gap-2">
+
+                            <div class="
+                                flex
+                                h-8
+                                w-8
+                                items-center
+                                justify-center
+                                rounded-full
+                                text-sm
+                                font-bold
+                            " :class="canImport
+                                ? 'bg-success text-white'
+                                : 'bg-surface-alt text-text-muted'
+                                ">
+                                3
+                            </div>
+
+                            <span class="text-sm font-medium" :class="canImport
+                                ? 'text-success'
+                                : 'text-text-muted'
+                                ">
+                                Importation
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- Télécharger modèle -->
+               <div v-if="hasFile" class=" flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+           
+                    <button type="button" @click="downloadTemplate"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-surface px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:shadow-md">
+
+                        <Download class="h-4 w-4" />
+
+                        Télécharger le modèle
+
+                    </button>
+
+              </div>
+
+            </div>
+
+
+
+
+            <!-- ========================================================= -->
+            <!-- UPLOAD -->
+            <!-- ========================================================= -->
+
+            <div v-if="!hasFile"
+                class="rounded border border-dashed border-primary/30 bg-surface p-10 text-center shadow-sm">
+
+                <div
+                    class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-light ring-8 ring-primary/5">
+
+                    <Upload class="h-7 w-7 text-primary" />
+
+                </div>
+
+
+                <h2 class="mt-5 text-lg font-semibold text-text-primary">
+                    Importer un fichier
+                </h2>
+
+
+                <p class="mx-auto mt-2 max-w-lg text-sm text-text-secondary">
+                    Sélectionnez un fichier Excel contenant les informations
+                    du registre de formation.
+                </p>
+
+
+                <label
+                    class="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-md">
+
+                    <Upload class="h-4 w-4" />
+
+                    Choisir un fichier
+
+                    <input ref="fileInput" type="file" class="hidden" accept=".xlsx,.xls,.csv" @change="handleFile" />
+
+                </label>
+
+
+                <p class="mt-4 text-xs text-text-muted">
+                    Formats acceptés : XLSX, XLS, CSV
+                </p>
+
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- INFORMATIONS FICHIER -->
+            <!-- ========================================================= -->
+
+            <div v-if="hasFile" class="mb-6 sticky top-6 rounded border border-gray-200 bg-white p-5">
+
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                    <div class="flex items-center gap-4">
+
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-light ring-8 ring-primary/5">
+
+                            <FileSpreadsheet class="h-6 w-6 text-success" />
+
+                        </div>
+
+
+                        <div>
+
+                            <p class="font-semibold text-text-primary">
+                                {{ fileName }}
+                            </p>
+
+                            <p class="mt-1 text-xs text-text-secondary">
+
+                                {{ formatFileSize(fileSize) }}
+
+                                <span class="mx-1">·</span>
+
+                                {{ rows.length }} ligne(s)
+
+                                <span class="mx-1">·</span>
+
+                                {{ headers.length }} colonne(s)
+
+                            </p>
+
+                        </div>
+
+                    </div>
+                   <div class="flex flex-row items-center gap-x-3">
+                       <!-- Importer -->
+
+                        <button type="button" :disabled="!canImport && loading_btn" @click="prepareImport"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
+                            :class="(!canImport || loading_btn)
+                                ? 'cursor-not-allowed bg-surface-alt text-text-muted'
+                                : 'bg-linear-to-r from-success to-primary-dark text-white hover:-translate-y-0.5 hover:shadow-md'
+                                ">
+
+                            <Upload class="h-4 w-4" v-if="loading_btn == false" />
+                            <Loader class="animate-spin " v-else />
+                            Préparer l'importation
+
+                        </button>
+
+                        <button type="button" @click="removeFile()"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2 text-sm font-semibold text-danger transition-all duration-200 hover:-translate-y-0.5 hover:bg-danger/20">
+
+                            <Trash2 class="h-4 w-4" />
+
+                            Supprimer
+
+                        </button>
+                   </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- ERREUR GLOBALE -->
+            <!-- ========================================================= -->
+
+            <div v-if="globalError" class="
+                    mb-6
                     flex
-                    flex-col
-                    items-center
-                    gap-4
+                    items-start
+                    gap-3
+                    rounded
+                    border
+                    border-danger/30
+                    bg-danger/10
+                    p-4
+                    text-sm
+                    text-danger
                 ">
-                    <UploadCloud :size="60" class="
-                        text-primary
-                    " />
 
-                    <div class="
-                        text-center
-                    ">
-                        <h5>
-                            Déposer un
-                            fichier ici
-                        </h5>
+                <CircleAlert class="mt-0.5 h-5 w-5 shrink-0" />
 
-                        <p class="
-                            text-sm
-                            text-gray-500
-                        ">
-                            PDF, DOCX,
-                            XLSX, CSV
+                <div>
+
+                    <p class="font-semibold">
+                        Erreur d'importation
+                    </p>
+
+                    <p class="mt-1">
+                        {{ globalError }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- VERIFICATION DES COLONNES -->
+            <!-- ========================================================= -->
+
+            <div v-if="hasFile" class="mb-6 rounded border border-gray-200 p-5 ">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 class="text-base font-semibold text-text-primary">
+                            Vérification des colonnes
+                        </h2>
+                        <p class="mt-1 text-sm text-text-secondary">
+                            Vérifiez que la structure de votre fichier correspond au modèle attendu.
                         </p>
                     </div>
 
-                    <label class="
-                        cursor-pointer
-                        rounded-xl
-                        bg-primary
-                        px-4
-                        py-2
-                        
-                        text-white
-                    ">
-                        Parcourir
-
-                        <input hidden type="file" accept="
-                            .pdf,
-                            .docx,
-                            .xlsx,
-                            .csv
-                        " @change="
-                            onFileChange
-                        " />
-                    </label>
+                    <div class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+                        :class="missingColumns.length === 0 ? 'bg-primary-light text-primary ring-1 ring-primary/20' : 'bg-danger/10 text-danger ring-1 ring-danger/20'">
+                        {{ missingColumns.length === 0 ? 'Structure valide' : `${missingColumns.length} colonne(s)
+                        manquante(s)` }}
+                    </div>
                 </div>
-            </div>
 
-            <!-- FILE INFO -->
-
-            <div v-if="selectedFile" class="
-                rounded-2xl
-                border
-                border-gray-200
-                bg-white
-                w-200
-                p-5
-            ">
-                <div class="
-                    flex
-                    items-start
-                    justify-between
-                ">
-                    <div class="
-                        flex
-                        gap-4
-                    ">
-                        <FileText :size="40" class="
-                            text-primary
-                        " />
-
-                        <div>
-                            <h5>
-                                {{
-                                    selectedFile.name
-                                }}
-                            </h5>
-
-                            <p class="
-                                text-sm
-                                text-gray-500
-                            ">
-                                {{
-                                    fileSize
-                                }}
+                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div v-for="field in importFields" :key="field.key"
+                        class="flex items-center justify-between rounded-lg border p-3"
+                        :class="columnMapping[field.key] ? 'border-success/30 bg-primary-light/60' : field.required ? 'border-danger/30 bg-danger/10' : 'border-border bg-surface-alt'">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-text-primary">
+                                {{ field.excelName }}
+                            </p>
+                            <p class="mt-0.5 text-xs text-text-muted">
+                                {{ field.key }}
                             </p>
                         </div>
-                    </div>
 
-                    <button class="
-                        rounded-lg
-                        p-2
-                        hover:bg-red-50
-                    " @click="
-                        removeFile
-                    ">
-                        <X class="
-                            text-red-500
-                        " />
-                    </button>
+                        <CheckCircle2 v-if="columnMapping[field.key]" class="h-5 w-5 shrink-0 text-success" />
+                        <CircleAlert v-else-if="field.required" class="h-5 w-5 shrink-0 text-danger" />
+                        <Circle v-else class="h-5 w-5 shrink-0 text-text-muted" />
+                    </div>
                 </div>
 
-                <!-- PROGRESS -->
+                <div v-if="missingColumns.length" class="mt-5 rounded-lg border border-danger/30 bg-danger/10 p-4">
+                    <p class="text-sm font-semibold text-danger">
+                        Colonnes obligatoires manquantes :
+                    </p>
+
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <span v-for="column in missingColumns" :key="column"
+                            class="rounded-full bg-surface px-3 py-1 text-xs font-medium text-danger">
+                            {{ column }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- PREVIEW -->
+            <!-- ========================================================= -->
+
+            <div v-if="hasFile"
+                class="preview-panel overflow-hidden rounded border border-gray-200  ">
+
+                <!-- Header preview -->
+
+                <div
+                    class="flex flex-col gap-3 border-b border-border bg-surface-alt/80 p-5 md:flex-row md:items-center md:justify-between">
+
+                    <div>
+
+                        <h2 class="text-base font-semibold text-text-primary">
+                            Prévisualisation des données
+                        </h2>
+
+                        <p class="mt-1 text-sm text-text-secondary">
+                            Voici les données qui seront préparées pour l'importation.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        class="inline-flex items-center gap-2 rounded-xl bg-accent-dark/5 px-3 py-2 text-xs font-semibold text-accent-dark ring-1 ring-accent-dark/10">
+
+                        <Eye class="h-4 w-4" />
+
+                        {{ previewRows.length }} ligne(s) affichée(s)
+
+                    </div>
+
+                </div>
+
+
+                <!-- TABLE -->
+
+                <div class="overflow-x-auto">
+
+                    <table class="min-w-max w-full border-collapse">
+
+                        <!-- HEAD -->
+
+                        <thead>
+
+                            <tr>
+
+                                <!-- Numéro -->
+
+                                <th>
+                                    #
+                                </th>
+
+
+                                <!-- Colonnes -->
+
+                                <th v-for="field in importFields" :key="field.key">
+                                    {{ field.label }}
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <!-- BODY -->
+
+                        <tbody>
+
+                            <tr v-for="(row, rowIndex) in previewRows" :key="rowIndex" class="
+                                    border-b
+                                    border-border
+                                    transition
+                                    hover:bg-surface-alt
+                                ">
+
+                                <!-- INDEX -->
+
+                                <td class="
+                                        sticky
+                                        left-0
+                                        z-1
+                                        border-r
+                                        border-border
+                                        bg-surface
+                                        px-4
+                                        py-3
+                                        text-xs
+                                        font-medium
+                                        text-text-secondary
+                                    ">
+                                    {{ rowIndex + 1 }}
+                                </td>
+
+
+                                <!-- DATA -->
+
+                                <td v-for="field in importFields" :key="field.key" class="
+                                        whitespace-nowrap
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        text-text-secondary
+                                    ">
+
+                                    <!-- TITRE -->
+
+                                    <template v-if="field.key === 'title'">
+
+                                        <span class="
+                                                inline-flex
+                                                rounded-md
+                                                bg-accent-dark/5
+                                                px-2
+                                                py-1
+                                                font-medium
+                                                text-accent-dark
+                                            ">
+                                            {{ getDisplayValue(row, field) }}
+                                        </span>
+
+                                    </template>
+
+
+                                    <!-- DATE -->
+
+                                    <template v-else-if="field.type === 'date'">
+
+                                        <span class="
+                                                inline-flex
+                                                rounded-md
+                                                bg-accent-medium/10
+                                                px-2
+                                                py-1
+                                                font-medium
+                                                text-accent-dark
+                                            ">
+                                            {{ getDisplayValue(row, field) }}
+                                        </span>
+
+                                    </template>
+
+
+                                    <!-- VOLET (couleur par domaine HSSE) -->
+
+                                    <template v-else-if="field.key === 'volet'">
+
+                                        <span class="
+                                                inline-flex
+                                                rounded-full
+                                                px-2.5
+                                                py-1
+                                                text-xs
+                                                font-medium
+                                            " :class="voletBadgeClasses(getRawValue(row, field))">
+                                            {{ getDisplayValue(row, field) }}
+                                        </span>
+
+                                    </template>
+
+
+                                    <!-- AUTRE ENUM (Type de formation) -->
+
+                                    <template v-else-if="field.type === 'enum'">
+
+                                        <span class="
+                                                inline-flex
+                                                rounded-md
+                                                bg-surface-alt
+                                                px-2
+                                                py-1
+                                                font-medium
+                                                text-text-secondary
+                                            ">
+                                            {{ getDisplayValue(row, field) }}
+                                        </span>
+
+                                    </template>
+
+
+                                    <!-- NUMBER / STRING -->
+
+                                    <template v-else>
+
+                                        {{ getDisplayValue(row, field) }}
+
+                                    </template>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- EMPTY -->
+
+                            <tr v-if="previewRows.length === 0">
+
+                                <td :colspan="importFields.length + 1" class="px-5 py-12 text-center">
+
+                                    <div class="
+                                            mx-auto
+                                            flex
+                                            h-12
+                                            w-12
+                                            items-center
+                                            justify-center
+                                            rounded-full
+                                            bg-surface-alt
+                                        ">
+
+                                        <FileX class="h-6 w-6 text-text-muted" />
+
+                                    </div>
+
+
+                                    <p class="
+                                            mt-3
+                                            text-sm
+                                            font-medium
+                                            text-text-secondary
+                                        ">
+                                        Aucune donnée à afficher
+                                    </p>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Info preview -->
+
+                <div v-if="rows.length > previewLimit" class="
+                        border-t
+                        border-border
+                        bg-surface-alt
+                        px-5
+                        py-3
+                        text-center
+                        text-xs
+                        text-text-secondary
+                    ">
+
+                    Seules les {{ previewLimit }} premières lignes sont affichées.
+
+                    Les {{ rows.length }} lignes seront prises en compte.
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- ERREURS DE VALIDATION -->
+            <!-- ========================================================= -->
+
+            <div v-if="validationErrors.length"
+                class="mt-6 rounded-2xl border border-warning/30 bg-linear-to-r from-warning/10 to-warning/20 p-5 shadow-sm">
+
+                <div class="flex items-start gap-3">
+
+                    <CircleAlert class="mt-0.5 h-5 w-5 text-warning" />
+
+                    <div>
+
+                        <h3 class="font-semibold text-warning">
+                            Données à vérifier
+                        </h3>
+
+                        <p class="mt-1 text-sm text-warning/80">
+                            {{ validationErrors.length }}
+                            erreur(s) détectée(s).
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="mt-4 max-h-60 overflow-y-auto">
+
+                    <div v-for="(error, index) in validationErrors" :key="index" class="
+                            border-b
+                            border-warning/20
+                            py-2
+                            text-sm
+                            text-warning
+                            last:border-0
+                        ">
+
+                        <span class="font-semibold">
+                            Ligne {{ error.row }} :
+                        </span>
+
+                        {{ error.message }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- ACTIONS -->
+            <!-- ========================================================= -->
+
+           
+
+            <!-- ========================================================= -->
+            <!-- MESSAGE -->
+            <!-- ========================================================= -->
+
+            <div v-if="successMessage"
+                class="fixed right-6 top-6 z-50 flex max-w-sm items-start gap-3 rounded-2xl border border-status-success/20 bg-surface p-4 shadow-2xl ring-1 ring-status-success/5">
 
                 <div class="
-                    mt-5
-                ">
-                    <div class="
-                        h-2
-                        overflow-hidden
-                        rounded-full
-                        bg-gray-100
-                    ">
-                        <div class="
-                            h-full
-                            bg-primary
-                            transition-all
-                        " :style="{
-                            width: `${uploadProgress}%`,
-                        }" />
-                    </div>
-
-                    <div class="
-                        mt-2
                         flex
+                        h-9
+                        w-9
+                        shrink-0
                         items-center
-                        justify-between
-                        text-sm
+                        justify-center
+                        rounded-full
+                        bg-primary-light
                     ">
-                        <span>
-                            {{
-                                uploadProgress
-                            }}%
-                        </span>
 
-                        <span v-if="
-                            isUploading
-                        ">
-                            Import en
-                            cours...
-                        </span>
+                    <CheckCircle2 class="h-5 w-5 text-success" />
 
-                        <span v-else class="
-                            flex
-                            items-center
-                            gap-1
-                            text-green-600
-                        ">
-                            <CheckCircle2 :size="16" />
-
-                            Prêt à être
-                            importé
-                        </span>
-                    </div>
                 </div>
-            </div>
 
-            <!-- ACTIONS -->
 
-            <div class="
-                flex
-                justify-end
-                gap-3 w-200
-            ">
-                <Button :variant="'outline'" @click="router.back()">
-                    Annuler
+                <div>
+
+                    <p class="font-semibold text-text-primary">
+                        Données préparées
+                    </p>
+
+                    <p class="mt-1 text-sm text-text-secondary">
+                        {{ successMessage }}
+                    </p>
+
+                </div>
+
+
+                <button type="button" @click="successMessage = ''"
+                    class="ml-2 text-text-muted hover:text-text-secondary">
+
+                    <X class="h-4 w-4" />
+
                 </button>
 
-                <Button :left-icon="CloudDownload" :disabled="!selectedFile
-                    ">
-                    Importer
-                </button>
             </div>
+
         </div>
+
     </div>
 </template>
+
+<script setup lang="ts">
+
+    import {
+        CheckCircle2,
+        Circle,
+        CircleAlert,
+        Download,
+        Eye,
+        FileSpreadsheet,
+        FileX,
+        Loader,
+        Trash2,
+        Upload,
+        X
+    } from "@lucide/vue"
+
+    import * as XLSX from "xlsx-js-style"
+
+    import { computed, ref } from "vue"
+
+    import Header from "../../../components/shared/Header.vue"
+
+    import type {
+
+        FormationFormType,
+        FormationType,
+        VoletType
+    } from "../../../@types/Formation.type.ts"
+    import { useFormationService } from "../../../core/services/formation.service.ts"
+    import { router } from "../../../router/index.ts"
+    import { toast } from "vue3-toastify"
+    import { useI18n } from "vue-i18n"
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TYPES
+    |--------------------------------------------------------------------------
+    */
+    const loading_btn=ref(false)
+    type ImportFieldType =
+        | "string"
+        | "number"
+        | "boolean"
+        | "date"
+        | "enum"
+
+
+    type ImportField = {
+
+        key: string
+
+        label: string
+
+        excelName: string
+
+        required?: boolean
+
+        type: ImportFieldType
+
+        options?: string[]
+
+    }
+
+
+    type ImportRow =
+        Record<string, any>
+
+
+    type ValidationError = {
+
+        row: number
+
+        message: string
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | OPTIONS DES CHAMPS ENUM
+    |--------------------------------------------------------------------------
+    */
+
+    const FORMATION_TYPE_OPTIONS: FormationType[] = [
+        "Atelier",
+        "Exercice d'urgence",
+        "Formation",
+        "Induction",
+        "Sensibilisation"
+    ]
+
+    const VOLET_OPTIONS: VoletType[] = [
+        "Environnement",
+        "Santé",
+        "Sécurité",
+        "Sûreté"
+    ]
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHAMPS DU MODELE EXCEL
+    |--------------------------------------------------------------------------
+    */
+
+    const importFields: ImportField[] = [
+
+        {
+            key: "title",
+            label: "Titre",
+            excelName: "Titre",
+            required: true,
+            type: "string"
+        },
+
+        {
+            key: "date",
+            label: "Date",
+            excelName: "Date",
+            required: true,
+            type: "date"
+        },
+
+        {
+            key: "type",
+            label: "Type",
+            excelName: "Type de formation",
+            required: true,
+            type: "enum",
+            options: FORMATION_TYPE_OPTIONS
+        },
+
+        {
+            key: "volet",
+            label: "Volet",
+            excelName: "Volet",
+            required: true,
+            type: "enum",
+            options: VOLET_OPTIONS
+        },
+
+        {
+            key: "trainer",
+            label: "Formateur",
+            excelName: "Formateur",
+            type: "string"
+        },
+
+        {
+            key: "duration",
+            label: "Durée (h)",
+            excelName: "Durée",
+            type: "number"
+        },
+
+        {
+            key: "target",
+            label: "Cible",
+            excelName: "Cible",
+            type: "string"
+        },
+
+        {
+            key: "participant",
+            label: "Participants",
+            excelName: "Participants",
+            type: "number"
+        },
+
+        {
+            key: "target_type",
+            label: "Type de cible",
+            excelName: "Type cibles",
+            type: "string"
+        }
+
+    ]
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATE
+    |--------------------------------------------------------------------------
+    */
+
+    const fileInput =
+        ref<HTMLInputElement | null>(null)
+
+    const fileName =
+        ref("")
+
+    const fileSize =
+        ref(0)
+
+    const headers =
+        ref<string[]>([])
+
+    const rows =
+        ref<ImportRow[]>([])
+
+    const columnMapping =
+        ref<Record<string, string>>({})
+
+    const globalError =
+        ref("")
+
+    const successMessage =
+        ref("")
+
+    const previewLimit =
+        20
+
+    const validationErrors =
+        ref<ValidationError[]>([])
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | COMPUTED
+    |--------------------------------------------------------------------------
+    */
+
+    const hasFile =
+        computed(() => {
+
+            return rows.value.length > 0
+
+        })
+
+
+    const previewRows =
+        computed(() => {
+
+            return rows.value.slice(
+                0,
+                previewLimit
+            )
+
+        })
+
+
+    const missingColumns =
+        computed(() => {
+
+            return importFields
+                .filter(
+                    field =>
+                        field.required &&
+                        !columnMapping.value[field.key]
+                )
+                .map(
+                    field =>
+                        field.excelName
+                )
+
+        })
+
+
+    const canImport =
+        computed(() => {
+
+            return (
+                hasFile.value &&
+                missingColumns.value.length === 0 &&
+                validationErrors.value.length === 0
+            )
+
+        })
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALISATION
+    |--------------------------------------------------------------------------
+    */
+
+    function normalize(
+        value: string
+    ): string {
+
+        return String(value)
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(
+                /[\u0300-\u036f]/g,
+                ""
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESOLUTION D'UNE VALEUR ENUM
+    |--------------------------------------------------------------------------
+    */
+
+    function resolveEnumOption(
+        value: any,
+        options: string[]
+    ): string | null {
+
+        if (
+            value === null ||
+            value === undefined ||
+            String(value).trim() === ""
+        ) {
+
+            return null
+
+        }
+
+
+        return options.find(
+            option =>
+                normalize(option) ===
+                normalize(String(value))
+        ) ?? null
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | COULEUR DU VOLET
+    |--------------------------------------------------------------------------
+    */
+
+    function voletBadgeClasses(
+        value: any
+    ): string {
+
+        const canonical =
+            resolveEnumOption(
+                value,
+                VOLET_OPTIONS
+            )
+
+        switch (canonical) {
+
+            case "Environnement":
+                return "bg-success/10 text-success"
+
+            case "Santé":
+                return "bg-info/10 text-info"
+
+            case "Sécurité":
+                return "bg-warning/10 text-warning"
+
+            case "Sûreté":
+                return "bg-accent-dark/10 text-accent-dark"
+
+            default:
+                return "bg-surface-alt text-text-secondary"
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FORMAT DATE
+    |--------------------------------------------------------------------------
+    */
+
+    function formatDate(
+        date: Date
+    ): string {
+
+        return `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            date.getDate()
+        ).padStart(2, "0")}`
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PARSE DATE EXCEL
+    |--------------------------------------------------------------------------
+    */
+
+    function parseExcelDate(
+        value: any
+    ): string | null {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+
+            return null
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Date JavaScript
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            value instanceof Date
+        ) {
+
+            if (
+                isNaN(value.getTime())
+            ) {
+
+                return null
+
+            }
+
+            return formatDate(value)
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Numéro de série Excel
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            typeof value === "number"
+        ) {
+
+            const date =
+                XLSX.SSF.parse_date_code(
+                    value
+                )
+
+            if (
+                !date
+            ) {
+
+                return null
+
+            }
+
+            return `${date.y}-${String(
+                date.m
+            ).padStart(2, "0")}-${String(
+                date.d
+            ).padStart(2, "0")}`
+
+        }
+
+
+        const stringValue =
+            String(value).trim()
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | YYYY-MM-DD
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            /^\d{4}-\d{2}-\d{2}$/.test(
+                stringValue
+            )
+        ) {
+
+            const date =
+                new Date(
+                    `${stringValue}T00:00:00`
+                )
+
+            if (
+                !isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return stringValue
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DD/MM/YYYY
+        |--------------------------------------------------------------------------
+        */
+
+        const match =
+            stringValue.match(
+                /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+            )
+
+
+        if (
+            match
+        ) {
+
+            const day =
+                Number(match[1])
+
+            const month =
+                Number(match[2])
+
+            const year =
+                Number(match[3])
+
+            const date =
+                new Date(
+                    year,
+                    month - 1,
+                    day
+                )
+
+
+            if (
+                date.getFullYear() === year &&
+                date.getMonth() === month - 1 &&
+                date.getDate() === day
+            ) {
+
+                return `${year}-${String(
+                    month
+                ).padStart(2, "0")}-${String(
+                    day
+                ).padStart(2, "0")}`
+
+            }
+
+        }
+
+
+        return null
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LECTURE DU FICHIER
+    |--------------------------------------------------------------------------
+    */
+
+    async function handleFile(
+        event: Event
+    ) {
+
+        globalError.value = ""
+
+        successMessage.value = ""
+
+        validationErrors.value = []
+
+
+        const target =
+            event.target as HTMLInputElement
+
+
+        const file =
+            target.files?.[0]
+
+
+        if (
+            !file
+        ) {
+
+            return
+
+        }
+
+
+        const extension =
+            file.name
+                .split(".")
+                .pop()
+                ?.toLowerCase()
+
+
+        if (
+            !extension ||
+            ![
+                "xlsx",
+                "xls",
+                "csv"
+            ].includes(extension)
+        ) {
+
+            globalError.value =
+                "Format de fichier non supporté. Utilisez XLSX, XLS ou CSV."
+
+            return
+
+        }
+
+
+        fileName.value =
+            file.name
+
+
+        fileSize.value =
+            file.size
+
+
+        try {
+
+            await readExcelFile(
+                file
+            )
+
+        } catch (error) {
+
+            console.error(
+                error
+            )
+
+            globalError.value =
+                "Impossible de lire le fichier. Vérifiez qu'il respecte le modèle fourni."
+
+            removeFile(false)
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LECTURE EXCEL
+    |--------------------------------------------------------------------------
+    */
+
+    async function readExcelFile(
+        file: File
+    ) {
+
+        const buffer =
+            await file.arrayBuffer()
+
+
+        const workbook =
+            XLSX.read(
+                buffer,
+                {
+                    type: "array",
+                    cellDates: true
+                }
+            )
+
+
+        if (
+            !workbook.SheetNames.length
+        ) {
+
+            throw new Error(
+                "Aucune feuille trouvée."
+            )
+
+        }
+
+
+        const sheetName =
+            workbook.SheetNames[0]
+
+
+        const worksheet =
+            workbook.Sheets[
+            sheetName
+            ]
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | HEADERS
+        |--------------------------------------------------------------------------
+        */
+
+        const rawHeaders =
+            XLSX.utils.sheet_to_json(
+                worksheet,
+                {
+                    header: 1,
+                    defval: ""
+                }
+            ) as any[][]
+
+
+        if (
+            !rawHeaders.length ||
+            !rawHeaders[0]?.length
+        ) {
+
+            throw new Error(
+                "Le fichier ne contient aucune colonne."
+            )
+
+        }
+
+
+        headers.value =
+            rawHeaders[0]
+                .map(
+                    value =>
+                        String(value).trim()
+                )
+                .filter(
+                    value =>
+                        value !== ""
+                )
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATA
+        |--------------------------------------------------------------------------
+        */
+
+        rows.value =
+            XLSX.utils.sheet_to_json(
+                worksheet,
+                {
+                    defval: "",
+                    raw: true
+                }
+            ) as ImportRow[]
+
+
+        if (
+            rows.value.length === 0
+        ) {
+
+            throw new Error(
+                "Le fichier ne contient aucune donnée."
+            )
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MAPPING
+        |--------------------------------------------------------------------------
+        */
+
+        initializeMapping()
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
+
+        validateRows()
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MAPPING DES COLONNES
+    |--------------------------------------------------------------------------
+    */
+
+    function initializeMapping() {
+
+        const mapping:
+            Record<string, string> = {}
+
+
+        for (
+            const field
+            of importFields
+        ) {
+
+            const match =
+                headers.value.find(
+                    header =>
+                        normalize(header) ===
+                        normalize(
+                            field.excelName
+                        )
+                )
+
+
+            if (
+                match
+            ) {
+
+                mapping[field.key] =
+                    match
+
+            }
+
+        }
+
+
+        columnMapping.value =
+            mapping
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALEUR BRUTE
+    |--------------------------------------------------------------------------
+    */
+
+    function getRawValue(
+        row: ImportRow,
+        field: ImportField
+    ) {
+
+        const column =
+            columnMapping.value[
+            field.key
+            ]
+
+
+        if (
+            !column
+        ) {
+
+            return ""
+
+        }
+
+
+        return row[column]
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALEUR AFFICHÉE
+    |--------------------------------------------------------------------------
+    */
+
+    function getDisplayValue(
+        row: ImportRow,
+        field: ImportField
+    ) {
+
+        const value =
+            getRawValue(
+                row,
+                field
+            )
+
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+
+            return "—"
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATE
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            field.type === "date"
+        ) {
+
+            return (
+                parseExcelDate(
+                    value
+                ) ?? "—"
+            )
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ENUM
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            field.type === "enum"
+        ) {
+
+            return (
+                resolveEnumOption(
+                    value,
+                    field.options ?? []
+                ) ?? String(value)
+            )
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NUMBER
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            field.type === "number"
+        ) {
+
+            const number =
+                Number(value)
+
+
+            if (
+                Number.isNaN(
+                    number
+                )
+            ) {
+
+                return String(
+                    value
+                )
+
+            }
+
+
+            return number.toString()
+
+        }
+
+
+        return String(
+            value
+        )
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDATION DES LIGNES
+    |--------------------------------------------------------------------------
+    */
+
+    function validateRows() {
+
+        validationErrors.value = []
+
+
+        rows.value.forEach(
+            (
+                row,
+                index
+            ) => {
+
+                const excelRow =
+                    index + 2
+
+
+                for (
+                    const field
+                    of importFields
+                ) {
+
+                    const column =
+                        columnMapping.value[
+                        field.key
+                        ]
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Colonne absente
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        !column
+                    ) {
+
+                        continue
+
+                    }
+
+
+                    const value =
+                        row[column]
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | REQUIRED
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        field.required &&
+                        (
+                            value === undefined ||
+                            value === null ||
+                            String(value).trim() === ""
+                        )
+                    ) {
+
+                        validationErrors.value.push({
+
+                            row: excelRow,
+
+                            message:
+                                `La colonne "${field.excelName}" est obligatoire.`
+
+                        })
+
+                        continue
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | DATE
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        field.type === "date" &&
+                        value !== "" &&
+                        value !== null &&
+                        value !== undefined
+                    ) {
+
+                        const date =
+                            parseExcelDate(
+                                value
+                            )
+
+
+                        if (
+                            !date
+                        ) {
+
+                            validationErrors.value.push({
+
+                                row: excelRow,
+
+                                message:
+                                    `"${field.excelName}" doit contenir une date valide. Valeur reçue : "${value}".`
+
+                            })
+
+                        }
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | NUMBER
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        field.type === "number" &&
+                        value !== "" &&
+                        value !== null &&
+                        value !== undefined
+                    ) {
+
+                        const number =
+                            Number(value)
+
+
+                        if (
+                            Number.isNaN(
+                                number
+                            )
+                        ) {
+
+                            validationErrors.value.push({
+
+                                row: excelRow,
+
+                                message:
+                                    `"${field.excelName}" doit être un nombre. Valeur reçue : "${value}".`
+
+                            })
+
+                        }
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | ENUM
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        field.type === "enum" &&
+                        value !== "" &&
+                        value !== null &&
+                        value !== undefined
+                    ) {
+
+                        const match =
+                            resolveEnumOption(
+                                value,
+                                field.options ?? []
+                            )
+
+
+                        if (
+                            !match
+                        ) {
+
+                            validationErrors.value.push({
+
+                                row: excelRow,
+
+                                message:
+                                    `"${field.excelName}" doit être l'une des valeurs suivantes : ${(field.options ?? []).join(" / ")}. Valeur reçue : "${value}".`
+
+                            })
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        )
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TRANSFORMATION DES DONNÉES
+    |--------------------------------------------------------------------------
+    */
+
+    function transformRows() {
+
+        return rows.value.map(
+            row => {
+
+                const result:
+                    Record<string, any> = {}
+
+
+                for (
+                    const field
+                    of importFields
+                ) {
+
+                    const column =
+                        columnMapping.value[
+                        field.key
+                        ]
+
+
+                    if (
+                        !column
+                    ) {
+
+                        continue
+
+                    }
+
+
+                    const value =
+                        row[column]
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STRING
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        field.type === "string"
+                    ) {
+
+                        result[field.key] =
+                            value === null ||
+                                value === undefined
+                                ? ""
+                                : String(
+                                    value
+                                ).trim()
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | DATE
+                    |--------------------------------------------------------------------------
+                    */
+
+                    else if (
+                        field.type === "date"
+                    ) {
+
+                        result[field.key] =
+                            parseExcelDate(
+                                value
+                            ) ?? ""
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | NUMBER
+                    |--------------------------------------------------------------------------
+                    */
+
+                    else if (
+                        field.type === "number"
+                    ) {
+
+                        result[field.key] =
+                            value === "" ||
+                                value === null ||
+                                value === undefined
+                                ? 0
+                                : Number(
+                                    value
+                                )
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | ENUM
+                    |--------------------------------------------------------------------------
+                    */
+
+                    else if (
+                        field.type === "enum"
+                    ) {
+
+                        result[field.key] =
+                            resolveEnumOption(
+                                value,
+                                field.options ?? []
+                            ) ?? ""
+
+                    }
+
+                }
+
+
+                return result
+
+            }
+        )
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PREPARER IMPORT
+    |--------------------------------------------------------------------------
+    |
+    | Pour le moment, aucune API.
+    |
+    */
+    const isImporting = ref(false)
+    const { t } = useI18n()
+    const importErrors = ref<string[]>([])
+    async function prepareImport() {
+        if (!canImport.value) return
+        loading_btn.value=true
+        isImporting.value = true
+        importErrors.value = []
+
+
+        const data = transformRows()
+        // console.log(data)
+        formation.storeBatch(data as FormationFormType[]).then((res) => {
+            // console.log(res)
+            toast.success(t('formation.notification.import.success'))
+            setTimeout(() => {
+                removeFile()
+                router.push({
+                    name: "FORMATION"
+                })
+
+            }, 1000)// vide le formulaire une fois importé
+
+        })
+            .catch(err => {
+                console.log(err?.response?.data.errors)
+                if (err?.response?.status === 422) {
+                    // erreurs de validation Laravel : { errors: { "formations.0.date": [...] } }
+                    importErrors.value = Object.values(err.response.data.errors).flat() as string[]
+                }
+            })
+            .finally(() => {
+                isImporting.value = false
+                loading_btn.value=false
+            })
+
+
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLES DU MODELE
+    |--------------------------------------------------------------------------
+    | Couleurs alignées sur la charte de l'application (main.css).
+    */
+
+    const templateColors = {
+
+        requiredHeader: "0F9D58",   // --color-primary
+        optionalHeader: "1E3A5F",   // --color-accent-dark
+        exampleFill: "F1F5F9",   // --color-surface-alt
+        exampleText: "64748B",   // --color-text-secondary
+        borderLight: "E2E8F0",   // --color-border
+        titleText: "1E3A5F",   // --color-accent-dark
+        white: "FFFFFF"
+
+    }
+
+
+    function thinBorder(
+        color: string
+    ) {
+
+        return {
+
+            top: { style: "thin", color: { rgb: color } },
+            bottom: { style: "thin", color: { rgb: color } },
+            left: { style: "thin", color: { rgb: color } },
+            right: { style: "thin", color: { rgb: color } }
+
+        }
+
+    }
+
+
+    function setCellStyle(
+        worksheet: Record<string, any>,
+        rowIndex: number,
+        colIndex: number,
+        style: Record<string, any>
+    ) {
+
+        const ref =
+            XLSX.utils.encode_cell({
+                r: rowIndex,
+                c: colIndex
+            })
+
+        if (!worksheet[ref]) {
+
+            worksheet[ref] = { t: "s", v: "" }
+
+        }
+
+        worksheet[ref].s = style
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TELECHARGER LE MODELE
+    |--------------------------------------------------------------------------
+    */
+
+    function downloadTemplate() {
+
+        const templateHeaders =
+            importFields.map(
+                field =>
+                    field.excelName
+            )
+
+
+        const exampleRow: Record<string, any> = {
+
+            "Titre": "Formation extincteurs",
+            "Date": "2026-03-15",
+            "Type de formation": "Formation",
+            "Volet": "Sécurité",
+            "Formateur": "Jean Rakoto",
+            "Durée": 2,
+            "Cible": "Équipe maintenance",
+            "Participants": 12,
+            "Type cibles": "Personnel GDP"
+
+        }
+
+
+        const worksheet =
+            XLSX.utils.aoa_to_sheet([
+
+                templateHeaders,
+
+                templateHeaders.map(
+                    header =>
+                        exampleRow[header] ?? ""
+                )
+
+            ])
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Largeur
+        |--------------------------------------------------------------------------
+        */
+
+        worksheet["!cols"] =
+            templateHeaders.map(
+                header => ({
+
+                    wch:
+                        Math.max(
+                            header.length + 3,
+                            15
+                        )
+
+                })
+            )
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hauteur des lignes (en-tête + exemple)
+        |--------------------------------------------------------------------------
+        */
+
+        worksheet["!rows"] = [
+            { hpx: 28 },
+            { hpx: 22 }
+        ]
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Style de l'en-tête (vert = obligatoire, bleu nuit = optionnel)
+        |--------------------------------------------------------------------------
+        */
+
+        importFields.forEach(
+            (field, colIndex) => {
+
+                setCellStyle(
+                    worksheet,
+                    0,
+                    colIndex,
+                    {
+                        fill: {
+                            patternType: "solid",
+                            fgColor: {
+                                rgb: field.required
+                                    ? templateColors.requiredHeader
+                                    : templateColors.optionalHeader
+                            }
+                        },
+                        font: {
+                            name: "Calibri",
+                            sz: 11,
+                            bold: true,
+                            color: { rgb: templateColors.white }
+                        },
+                        alignment: {
+                            horizontal: "center",
+                            vertical: "center",
+                            wrapText: true
+                        },
+                        border: thinBorder(templateColors.white)
+                    }
+                )
+
+
+                /*
+                |----------------------------------------------------------------
+                | Style de la ligne d'exemple
+                |----------------------------------------------------------------
+                */
+
+                setCellStyle(
+                    worksheet,
+                    1,
+                    colIndex,
+                    {
+                        fill: {
+                            patternType: "solid",
+                            fgColor: { rgb: templateColors.exampleFill }
+                        },
+                        font: {
+                            name: "Calibri",
+                            sz: 11,
+                            italic: true,
+                            color: { rgb: templateColors.exampleText }
+                        },
+                        alignment: {
+                            horizontal: "center",
+                            vertical: "center"
+                        },
+                        border: thinBorder(templateColors.borderLight)
+                    }
+                )
+
+            }
+        )
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Feuille d'instructions
+        |--------------------------------------------------------------------------
+        */
+
+        const instructionsRows = [
+
+            ["Instructions d'utilisation du modèle"],
+            [""],
+            ["Légende des couleurs de l'en-tête"],
+            ["", "Colonne obligatoire"],
+            ["", "Colonne optionnelle"],
+            [""],
+            ["Conseils"],
+            ["Ne modifiez pas les noms des colonnes (ligne 1 du fichier)."],
+            ["Le format de date attendu est AAAA-MM-JJ, par exemple 2026-03-15."],
+            [`"Type de formation" doit être : ${FORMATION_TYPE_OPTIONS.join(" / ")}.`],
+            [`"Volet" doit être : ${VOLET_OPTIONS.join(" / ")}.`],
+            ["Supprimez la ligne d'exemple (ligne 2) avant d'importer vos propres données."],
+            ["Une même formation peut occuper plusieurs lignes si elle concerne plusieurs cibles ou participants : le titre et la date sont alors identiques."]
+
+        ]
+
+
+        const instructionsSheet =
+            XLSX.utils.aoa_to_sheet(
+                instructionsRows
+            )
+
+
+        instructionsSheet["!cols"] = [
+            { wch: 4 },
+            { wch: 80 }
+        ]
+
+
+        setCellStyle(
+            instructionsSheet,
+            0,
+            0,
+            {
+                font: {
+                    name: "Calibri",
+                    sz: 14,
+                    bold: true,
+                    color: { rgb: templateColors.titleText }
+                }
+            }
+        )
+
+        setCellStyle(
+            instructionsSheet,
+            2,
+            0,
+            {
+                font: {
+                    name: "Calibri",
+                    sz: 11,
+                    bold: true,
+                    color: { rgb: templateColors.titleText }
+                }
+            }
+        )
+
+        setCellStyle(
+            instructionsSheet,
+            6,
+            0,
+            {
+                font: {
+                    name: "Calibri",
+                    sz: 11,
+                    bold: true,
+                    color: { rgb: templateColors.titleText }
+                }
+            }
+        )
+
+        setCellStyle(
+            instructionsSheet,
+            3,
+            0,
+            {
+                fill: {
+                    patternType: "solid",
+                    fgColor: { rgb: templateColors.requiredHeader }
+                }
+            }
+        )
+
+        setCellStyle(
+            instructionsSheet,
+            4,
+            0,
+            {
+                fill: {
+                    patternType: "solid",
+                    fgColor: { rgb: templateColors.optionalHeader }
+                }
+            }
+        )
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Workbook
+        |--------------------------------------------------------------------------
+        */
+
+        const workbook =
+            XLSX.utils.book_new()
+
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Registre de formation"
+        )
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            instructionsSheet,
+            "Instructions"
+        )
+
+
+        XLSX.writeFile(
+            workbook,
+            "modele_registre_formation.xlsx"
+        )
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUPPRIMER FICHIER
+    |--------------------------------------------------------------------------
+    */
+
+    function removeFile(
+        resetInput = true
+    ) {
+
+        fileName.value = ""
+
+        fileSize.value = 0
+
+        headers.value = []
+
+        rows.value = []
+
+        columnMapping.value = {}
+
+        validationErrors.value = []
+
+        globalError.value = ""
+
+        successMessage.value = ""
+
+
+        if (
+            resetInput &&
+            fileInput.value
+        ) {
+
+            fileInput.value.value = ""
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TAILLE FICHIER
+    |--------------------------------------------------------------------------
+    */
+
+    function formatFileSize(
+        bytes: number
+    ): string {
+
+        if (
+            bytes === 0
+        ) {
+
+            return "0 Ko"
+
+        }
+
+
+        const units = [
+
+            "o",
+            "Ko",
+            "Mo",
+            "Go"
+
+        ]
+
+
+        const index =
+            Math.floor(
+
+                Math.log(bytes) /
+                Math.log(1024)
+
+            )
+
+
+        return `${(
+
+            bytes /
+            Math.pow(
+                1024,
+                index
+            )
+
+        ).toFixed(1)} ${units[index]}`
+
+    }
+    const formation = useFormationService()
+
+</script>
