@@ -212,7 +212,11 @@ type LangType = {
     //============================
     "errors": {
         "401": string,
-        "403": string,
+        "403":{
+            "forbidden":string,
+            "disabled":string,
+        },
+        
         "404": string,
         "500": string,
         "ERR_NETWORK": string

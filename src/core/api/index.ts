@@ -11,14 +11,14 @@ const api = axios.create({
         "Content-Type": "application/json",
     },
 });
-let lastErrorStatus: number | null = null
+let lastErrorStatus: number |string| null = null
 let lastErrorTime = 0
 
-function showError(status: number) {
+function showError(status: number|string) {
     const now = Date.now()
 
     if (
-        lastErrorStatus === status &&
+        lastErrorStatus == status &&
         now - lastErrorTime < 1000
     ) {
         return
@@ -51,6 +51,7 @@ api.interceptors.response.use(
         console.log(error.status)
         if (error?.response) {
             const status = error.response.status
+            console.log()
             switch (status) {
                 
                 case 401:
@@ -64,7 +65,8 @@ api.interceptors.response.use(
                     break;
 
                 case 403:
-                    showError(status)
+                    const data = error.response.data as {message:string}
+                    showError(data.message)
                     break;
                 case 404:
                     showError(status)

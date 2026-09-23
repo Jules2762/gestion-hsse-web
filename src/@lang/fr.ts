@@ -98,7 +98,7 @@ export const fr: LangType = {
     //============================
     //formation
     //============================
-   
+
     "formation": {
         title: "Registre de formation",
         actions: {
@@ -414,7 +414,10 @@ export const fr: LangType = {
     //============================
     "errors": {
         "401": "Vous devez être authentifié pour effectuer cette action.",
-        "403": "Vous n'êtes pas autorisé à effectuer cette action.",
+        "403": {
+            'forbidden': 'êtes pas autorisé à effectuer cette action.',
+            "disabled": "Votre compte a été désactivé. Veuillez contacter un administrateur."
+        },
         "404": "La ressource demandée est introuvable.",
         "500": "Une erreur interne du serveur s'est produite.",
         // fr.ts

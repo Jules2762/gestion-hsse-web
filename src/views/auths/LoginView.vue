@@ -23,7 +23,7 @@
             name:'SEARCH_ACCOUNT'
           })">{{ t('login.forgot_password') }}</button>
         </div>
-        <Button type="submit" :loading="data.forms.loading">{{t('login.login')}}</Button>
+        <Button type="submit" full-width :loading="data.forms.loading">{{t('login.login')}}</Button>
 
       </div>
       <div class="flex flex-row items-center w-full gap-x-2">
@@ -99,7 +99,10 @@ function onSubmit(){
   }).catch((err)=>{
     
     data.value.forms.loading = false
-    if(err?.response?.status=="422"){
+    if(err?.status=="403"){
+      console.log(err.response.data.message)
+    }
+    if(err.status=="422"){
       toast.error(
         t('login.notification.error')
       );

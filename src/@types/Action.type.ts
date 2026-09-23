@@ -9,11 +9,11 @@ type ActionStatusJsonType={
 type ActionType={
     id?:string|number,
     description?:string,
-    status:ActionStatusType,
+    status?:ActionStatusType,
     assigned_to?:UserDataType,
-    checklist_item_id:string|number,
-    created_at:string,
-    email_status:ActionEmailStatusType
+    checklist_item_id?:string|number,
+    created_at?:string,
+    email_status?:ActionEmailStatusType
 }
 export type {
     ActionStatusType,

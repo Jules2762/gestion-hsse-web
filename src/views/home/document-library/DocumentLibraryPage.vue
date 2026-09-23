@@ -73,9 +73,7 @@
                         ml-2
                         space-y-1
                     ">
-                    <template v-for="folder in folders.filter(
-                        item => item.parent_id === 1
-                    )" :key="folder.id">
+                    <template v-for="folder in folders" :key="folder.id">
                         <div class="
                                 w-full
                                 flex
@@ -584,6 +582,7 @@ child in getChildren(
         FolderType,
     } from '../../../@types/documentLibrary.type.ts'
 import { useI18n } from 'vue-i18n'
+import documentService from '../../../core/services/document.service.ts'
 
     const {t}=useI18n()
     const sidebar = useSidebarStore()
@@ -592,7 +591,7 @@ import { useI18n } from 'vue-i18n'
 
     const folders =
         ref<FolderType[]>([
-            ...FolderData,
+            
         ])
 
     const documents =
@@ -802,11 +801,23 @@ import { useI18n } from 'vue-i18n'
         contextMenu.value.isOpen = false
     }
 
+    function fetchFolders(){
+        documentService.index()
+        .then(res=>{
+            console.log(res.data)
+            folders.value=res.data.children
+        })
+        .catch(err=>{
+            console.error(err)
+        })
+    }
+
     onMounted(() => {
         window.addEventListener(
             'click',
             closeContextMenu,
         )
+        fetchFolders()
     })
 
     onUnmounted(() => {

@@ -48,7 +48,7 @@ withDefaults(
     :disabled="disabled || loading"
     
     :class="[
-      size!='sm'?'min-w-50':'w-fit p-0 h-fit','inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-all duration-200 ',
+      size!='sm'?'w-fit':'w-fit p-0 h-fit','inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-all duration-200 ',
 
       fullWidth && 'w-full',
 

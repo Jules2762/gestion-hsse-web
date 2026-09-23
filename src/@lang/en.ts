@@ -65,11 +65,11 @@ export const en: LangType = {
         "home": "Home",
         "document library": "Document Library",
         "training": "Training",
-        "equipment-monitoring":"Equipment monitoring",
-        "inspection":"Inspection",
-        "new":"New",
-        "update":"Update",
-        "import":"Import"
+        "equipment-monitoring": "Equipment monitoring",
+        "inspection": "Inspection",
+        "new": "New",
+        "update": "Update",
+        "import": "Import"
     },
 
     //============================
@@ -413,7 +413,10 @@ export const en: LangType = {
     //============================
     "errors": {
         "401": "You must be authenticated to perform this action.",
-        "403": "You are not authorized to perform this action.",
+        "403": {
+            'forbidden': "You are not authorized to perform this action.",
+            'disabled': 'Your account has been deactivated. Please contact an administrator.'
+        },
         "404": "The requested resource could not be found.",
         "500": "An internal server error occurred.",
         // en.ts
