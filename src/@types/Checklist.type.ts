@@ -26,6 +26,12 @@ type Checklistype = {
     added_by?:string
     sections:ChecklistSectionType[]
 }
+type CheckllistFormType={
+    type?:ChecklistType,
+    site?:SiteType,
+    date?:string,
+    time?:string
+}
 type ChecklistSectionType={
     id?:string|number,
     title:string,
@@ -39,6 +45,18 @@ type ChecklistItemType={
     answer?:AnswerType,
     action?:ActionType
     
+}
+type ChecklistFilterType={
+    date?:{
+        from?:string,
+        to?:string
+    },
+    type?:string[],
+    status?:string[],
+    inspector?:string[],
+    search?:string,
+    page?:string|number
+
 }
 type ChecklistType = "CHECKLIST HSSE SURETE" | "FICHE D'INSPECTION DE CAMION CITERNE" | "INSPECTION DES VEHICULES" | "CHECKLIST EVALUATION RESEAU" | "CHECKLIST EVALUATION DES AGENCES ET MAGASIN" | "CHECKLIST EVALUATION CONSO"
 type ChecklistTypeJson = {
@@ -56,5 +74,7 @@ export type {
     Checklistype,
     ChecklistType,
     ChecklistTypeJson,
-    SiteType, SiteTypeJson
+    SiteType, SiteTypeJson,
+    CheckllistFormType,
+    ChecklistFilterType
 }

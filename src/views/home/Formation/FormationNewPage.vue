@@ -33,14 +33,14 @@
                 <Input label="Type cible" class="" :icon="Users" v-model="data.forms.target_type"
                     placeholder="Entrez le type de cible" :error="data.errors.target_type?.[0]" />
                 <Input label="Nombre de partipant" class="col-span-2" type="number" :icon="UsersRound"
-                    v-model="data.forms.participant" placeholder="Entrez le nombre de participants"                     :error="data.errors.participant?.[0]" />
+                    v-model="data.forms.participant" placeholder="Entrez le nombre de participants"                     :error="data.errors.participant?.[0]" :min="0" />
                 <Input label="Date" class="" type="date" :icon="CalendarDays" v-model="data.forms.date"
                     placeholder="Sélectionnez la date" :error="data.errors.date?.[0]"/>
                 <Input input-mode="decimal" label="Durée" class="" type="text" :icon="Clock3" v-model="data.forms.duration"
                     placeholder="0.00" :error="data.errors.duration?.[0]" />
                 <div class="col-span-2 flex flex-row items-center justify-end gap-3">
                     <Button :variant="'outline'" type="button"  @click="router.back()">Annuler</Button>
-                    <Button :left-icon="CheckCircle" type='submit' :loading="data.options.loading">Confirmer</Button>
+                    <Button :left-icon="CheckCircle" type='submit' :disabled="disabled"  :loading="data.options.loading">Confirmer</Button>
                 </div>
             </form>
         </div>
@@ -55,7 +55,7 @@
     import Button from '../../../components/ui/Button.vue';
     import { router } from '../../../router/index.ts';
     import type { FormationFormType } from '../../../@types/Formation.type.ts';
-    import { computed, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
 import { useFormationService } from '../../../core/services/formation.service.ts';
 import { toast } from 'vue3-toastify';
 import { useI18n } from 'vue-i18n';
@@ -99,10 +99,21 @@ import { useI18n } from 'vue-i18n';
     })
     const {t}=useI18n()
 const formation=useFormationService()
-
+const disabled=ref(true)
+function formValidation(){
+    disabled.value=Object.values(data.value.forms).some(item=>{
+        if(typeof item=='string'){
+            return item == null || item == ''
+        }
+        if(typeof item=='number'){
+            return item == undefined
+        }
+    })
+}
     function onSubmit(){
 
         data.value.options.loading=true
+        disabled.value=true
         data.value.errors={
             "title": [],
             "date": [],
@@ -145,12 +156,17 @@ const formation=useFormationService()
         })
         .finally(()=>{
             data.value.options.loading=false
+            disabled.value = false
         })
     }
 
    
-       watch(data.value,()=>{
+       watch(data.value.forms,()=>{
             data.value.forms.duration=data.value.forms.duration.replace(',', '.')
+            formValidation()
+       })
+       onMounted(()=>{
+        disabled.value=true
        })
     
 </script>

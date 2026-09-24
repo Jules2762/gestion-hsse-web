@@ -64,7 +64,12 @@ export const en: LangType = {
     "thumbnails": {
         "home": "Home",
         "document library": "Document Library",
-        "training": "Training"
+        "training": "Training",
+        "equipment-monitoring": "Equipment monitoring",
+        "inspection": "Inspection",
+        "new": "New",
+        "update": "Update",
+        "import": "Import"
     },
 
     //============================
@@ -279,7 +284,122 @@ export const en: LangType = {
             }
         }
     },
-
+    //============================
+    //inspections
+    //============================
+    "inspections": {
+        "equipment-monitoring": {
+            "add": {
+                "title": "Add equipment monitoring",
+                "caption": "Enter the equipment monitoring information.",
+                "notifications": {
+                    "success": "The equipment monitoring was added successfully.",
+                    "errors": {
+                        "bas_met": {
+                            "min": "The BAS MET value must be greater than or equal to 0.",
+                            "integer": "The BAS MET value must be an integer."
+                        },
+                        "bas_plast": {
+                            "min": "The BAS PLAST value must be greater than or equal to 0.",
+                            "integer": "The BAS PLAST value must be an integer."
+                        },
+                        "caf": {
+                            "min": "The CAF value must be greater than or equal to 0.",
+                            "integer": "The CAF value must be an integer."
+                        },
+                        "canne_d_enfutage": {
+                            "min": "The canne d'enfutage value must be greater than or equal to 0.",
+                            "integer": "The canne d'enfutage value must be an integer."
+                        },
+                        "chainettes": {
+                            "min": "The chainettes value must be greater than or equal to 0.",
+                            "integer": "The chainettes value must be an integer."
+                        },
+                        "co2": {
+                            "min": "The CO₂ value must be greater than or equal to 0.",
+                            "integer": "The CO₂ value must be an integer."
+                        },
+                        "contact_d_urgence": {
+                            "min": "The emergency contact value must be greater than or equal to 0.",
+                            "integer": "The emergency contact value must be an integer."
+                        },
+                        "date": {
+                            "required": "The date is required.",
+                            "date": "The date must be a valid date."
+                        },
+                        "detecteur_de_fumee": {
+                            "min": "The smoke detector value must be greater than or equal to 0.",
+                            "integer": "The smoke detector value must be an integer."
+                        },
+                        "livret_fiche_reflexe": {
+                            "boolean": "The emergency response guide must be a boolean value."
+                        },
+                        "p50": {
+                            "min": "The P50 value must be greater than or equal to 0.",
+                            "integer": "The P50 value must be an integer."
+                        },
+                        "p6": {
+                            "min": "The P6 value must be greater than or equal to 0.",
+                            "integer": "The P6 value must be an integer."
+                        },
+                        "p9": {
+                            "min": "The P9 value must be greater than or equal to 0.",
+                            "integer": "The P9 value must be an integer."
+                        },
+                        "panneau_depotage_en_cours": {
+                            "min": "The unloading-in-progress panel value must be greater than or equal to 0.",
+                            "integer": "The unloading-in-progress panel value must be an integer."
+                        },
+                        "panneau_event": {
+                            "boolean": "The vent panel must be a boolean value."
+                        },
+                        "pelles": {
+                            "min": "The shovel value must be greater than or equal to 0.",
+                            "integer": "The shovel value must be an integer."
+                        },
+                        "picto_caf": {
+                            "min": "The CAF pictogram value must be greater than or equal to 0.",
+                            "integer": "The CAF pictogram value must be an integer."
+                        },
+                        "picto_danger_tgbt": {
+                            "boolean": "The TGBT danger pictogram must be a boolean value."
+                        },
+                        "picto_defense_de_fumer": {
+                            "min": "The no-smoking pictogram value must be greater than or equal to 0.",
+                            "integer": "The no-smoking pictogram value must be an integer."
+                        },
+                        "picto_ext": {
+                            "min": "The EXT pictogram value must be greater than or equal to 0.",
+                            "integer": "The EXT pictogram value must be an integer."
+                        },
+                        "plots": {
+                            "min": "The plot value must be greater than or equal to 0.",
+                            "integer": "The plot value must be an integer."
+                        },
+                        "point_de_rasso": {
+                            "min": "The assembly point value must be greater than or equal to 0.",
+                            "integer": "The assembly point value must be an integer."
+                        },
+                        "politique": {
+                            "boolean": "The policy must be a boolean value."
+                        },
+                        "poubelles_120l": {
+                            "min": "The 120 L bin value must be greater than or equal to 0.",
+                            "integer": "The 120 L bin value must be an integer."
+                        },
+                        "poubelles_240l": {
+                            "min": "The 240 L bin value must be greater than or equal to 0.",
+                            "integer": "The 240 L bin value must be an integer."
+                        },
+                        "site_name": {
+                            "required": "The site is required.",
+                            "string": "The site name must be a string."
+                        }
+                    }
+                }
+            }
+        }
+    },
     //============================
     //setting
     //============================
@@ -293,7 +413,10 @@ export const en: LangType = {
     //============================
     "errors": {
         "401": "You must be authenticated to perform this action.",
-        "403": "You are not authorized to perform this action.",
+        "403": {
+            'forbidden': "You are not authorized to perform this action.",
+            'disabled': 'Your account has been deactivated. Please contact an administrator.'
+        },
         "404": "The requested resource could not be found.",
         "500": "An internal server error occurred.",
         // en.ts

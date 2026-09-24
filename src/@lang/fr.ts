@@ -63,7 +63,12 @@ export const fr: LangType = {
     "thumbnails": {
         "home": "Accueil",
         "document library": "Bibliothèque documentaire",
-        "training": "Formation"
+        "training": "Formation",
+        "equipment-monitoring": "Equipment monitoring",
+        "inspection": "Inspection",
+        "new": "Nouveau",
+        "update": "Modification",
+        "import": "Import"
     },
 
     //============================
@@ -93,6 +98,7 @@ export const fr: LangType = {
     //============================
     //formation
     //============================
+
     "formation": {
         title: "Registre de formation",
         actions: {
@@ -280,6 +286,122 @@ export const fr: LangType = {
         }
     },
     //============================
+    //formation
+    //============================
+    "inspections": {
+        "equipment-monitoring": {
+            "add": {
+                "title": "Ajouter un suivi des équipements",
+                "caption": "Renseignez les informations du suivi des équipements.",
+                "notifications": {
+                    "success": "Le suivi des équipements a été ajouté avec succès.",
+                    "errors": {
+                        "bas_met": {
+                            "min": "La valeur de BAS MET doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de BAS MET doit être un nombre entier."
+                        },
+                        "bas_plast": {
+                            "min": "La valeur de BAS PLAST doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de BAS PLAST doit être un nombre entier."
+                        },
+                        "caf": {
+                            "min": "La valeur de CAF doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de CAF doit être un nombre entier."
+                        },
+                        "canne_d_enfutage": {
+                            "min": "La valeur de cannes d'enfûtage doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de cannes d'enfûtage doit être un nombre entier."
+                        },
+                        "chainettes": {
+                            "min": "La valeur de chaînettes doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de chaînettes doit être un nombre entier."
+                        },
+                        "co2": {
+                            "min": "La valeur de CO₂ doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de CO₂ doit être un nombre entier."
+                        },
+                        "contact_d_urgence": {
+                            "min": "La valeur des contacts d'urgence doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des contacts d'urgence doit être un nombre entier."
+                        },
+                        "date": {
+                            "required": "La date est obligatoire.",
+                            "date": "La date doit être une date valide."
+                        },
+                        "detecteur_de_fumee": {
+                            "min": "La valeur des détecteurs de fumée doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des détecteurs de fumée doit être un nombre entier."
+                        },
+                        "livret_fiche_reflexe": {
+                            "boolean": "Le livret fiche réflexe doit être une valeur booléenne."
+                        },
+                        "p50": {
+                            "min": "La valeur de P50 doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de P50 doit être un nombre entier."
+                        },
+                        "p6": {
+                            "min": "La valeur de P6 doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de P6 doit être un nombre entier."
+                        },
+                        "p9": {
+                            "min": "La valeur de P9 doit être supérieure ou égale à 0.",
+                            "integer": "La valeur de P9 doit être un nombre entier."
+                        },
+                        "panneau_depotage_en_cours": {
+                            "min": "La valeur des panneaux de dépotage en cours doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des panneaux de dépotage en cours doit être un nombre entier."
+                        },
+                        "panneau_event": {
+                            "boolean": "Le panneau évent doit être une valeur booléenne."
+                        },
+                        "pelles": {
+                            "min": "La valeur des pelles doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des pelles doit être un nombre entier."
+                        },
+                        "picto_caf": {
+                            "min": "La valeur des pictogrammes CAF doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des pictogrammes CAF doit être un nombre entier."
+                        },
+                        "picto_danger_tgbt": {
+                            "boolean": "Le pictogramme de danger TGBT doit être une valeur booléenne."
+                        },
+                        "picto_defense_de_fumer": {
+                            "min": "La valeur des pictogrammes d'interdiction de fumer doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des pictogrammes d'interdiction de fumer doit être un nombre entier."
+                        },
+                        "picto_ext": {
+                            "min": "La valeur des pictogrammes EXT doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des pictogrammes EXT doit être un nombre entier."
+                        },
+                        "plots": {
+                            "min": "La valeur des plots doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des plots doit être un nombre entier."
+                        },
+                        "point_de_rasso": {
+                            "min": "La valeur des points de rassemblement doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des points de rassemblement doit être un nombre entier."
+                        },
+                        "politique": {
+                            "boolean": "La politique doit être une valeur booléenne."
+                        },
+                        "poubelles_120l": {
+                            "min": "La valeur des poubelles de 120 L doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des poubelles de 120 L doit être un nombre entier."
+                        },
+                        "poubelles_240l": {
+                            "min": "La valeur des poubelles de 240 L doit être supérieure ou égale à 0.",
+                            "integer": "La valeur des poubelles de 240 L doit être un nombre entier."
+                        },
+                        "site_name": {
+                            "required": "Le site est obligatoire.",
+                            "string": "Le nom du site doit être une chaîne de caractères."
+                        }
+                    }
+                }
+            }
+        }
+    },
+    //============================
     //settings
     //============================
     "general": "Général",
@@ -292,7 +414,10 @@ export const fr: LangType = {
     //============================
     "errors": {
         "401": "Vous devez être authentifié pour effectuer cette action.",
-        "403": "Vous n'êtes pas autorisé à effectuer cette action.",
+        "403": {
+            'forbidden': 'êtes pas autorisé à effectuer cette action.',
+            "disabled": "Votre compte a été désactivé. Veuillez contacter un administrateur."
+        },
         "404": "La ressource demandée est introuvable.",
         "500": "Une erreur interne du serveur s'est produite.",
         // fr.ts

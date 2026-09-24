@@ -1,15 +1,693 @@
+<template>
+    <div class="flex flex-row">
+        <div class="flex flex-col " :class="right_sidebar.isOpen?'w-[calc(100%-360px)]':'w-full'">
+            <Header title="Suivi du matériel" :thumbnails="[
+                { 'label': 'home', name: 'DASHBOARD' },
+                { 'label': 'home', name: 'DASHBOARD' },
+            ]" />
+            <!-- ======================= RIBBON TOOLBAR ======================= -->
+            <div class="bg-white border-b border-gray-200">
+                <div class="h-16 px-4 flex flex-row items-center justify-between">
+                    <div class="flex flex-row items-center gap-1">
+                        <ButtonFilter is-primary text="Ajout" :icon="SquarePlusIcon" @click="router.push({
+                            name: 'EQUIPMENT_MONITORING_NEW'
+                        })" />
+                        <ButtonFilter text="Importer" :icon="CloudDownloadIcon" @click="router.push({
+                            name: 'EQUIPMENT_MONITORING_IMPORT'
+                        })" />
+                        <ButtonFilter text="Exporter" :icon="DownloadIcon" :loading="loading_export"
+                            :badge="pagination.total.toString()" @click="exportData()" />
+                        <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
+                    </div>
+
+                    <div class="flex flex-row items-center gap-2">
+
+                        <div class="relative">
+                            <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input v-model="searchQuery" type="text" placeholder="Rechercher ..."
+                                class="h-9 w-64 rounded-lg border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                            <button v-if="searchQuery" @click="searchQuery = ''"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <XIcon :size="14" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLables" :date-range="dateRange"
+                    :filters="filters" :column-options="columnOptions as Record<filtersKeyType, string[]>"
+                    @clear-all="clearAllFilters()" />
+
+
+            </div>
+
+            <div class="flex flex-row transition-all overflow-x-auto scrollbar-hide"
+                @click.self="right_sidebar.isOpen = false">
+                <div class="min-h-fit " @click.self="right_sidebar.isOpen = false">
+                    <table class="min-w-max ">
+                        <thead>
+                            <tr class="">
+                                <th v-for="header in headers" :key="header">
+                                    {{ header }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="h-fit">
+                            <template v-if="data?.length && loading_data == false">
+                                <tr @contextmenu.prevent="context_menu.context_menu = $event; context_menu.equipment = item; context_menu.isOpen = true"
+                                    v-for="(item, index) in data" :key="index" class="cursor-pointer" @click="
+                                        right_sidebar = {
+                                            isOpen: true,
+                                            equipment: item,
+                                        }
+                                        " :class="right_sidebar.equipment?.id == item.id ? 'bg-primary/10' : ''">
+                                    <td>
+                                        {{ item.id }}
+                                    </td>
+                                    <td>
+                                        {{ item.date }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.site_name }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.p50 }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.p9 }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.p6 }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.co2 }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.bas_met }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.bas_plast }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.pelles }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.poubelles_120l }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.poubelles_240l }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.caf }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.picto_ext }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.picto_caf }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.picto_defense_de_fumer }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.point_de_rasso }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.contact_d_urgence }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.canne_d_enfutage }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.panneau_depotage_en_cours }}
+                                    </td>
+
+                                    <td>
+                                        <span :class="item.picto_danger_tgbt
+                                            ? 'text-green-600'
+                                            : 'text-red-600'
+                                            ">
+                                            {{
+                                                item.picto_danger_tgbt
+                                                    ? 'Oui'
+                                                    : 'Non'
+                                            }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span :class="item.panneau_event
+                                            ? 'text-green-600'
+                                            : 'text-red-600'
+                                            ">
+                                            {{
+                                                item.panneau_event
+                                                    ? 'Oui'
+                                                    : 'Non'
+                                            }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span :class="item.livret_fiche_reflexe
+                                            ? 'text-green-600'
+                                            : 'text-red-600'
+                                            ">
+                                            {{
+                                                item.livret_fiche_reflexe
+                                                    ? 'Oui'
+                                                    : 'Non'
+                                            }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ item.created_at }}
+                                    </td>
+
+
+                                </tr>
+                            </template>
+
+                        </tbody>
+
+                    </table>
+
+
+                    <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="[
+                        {
+                            label: 'Details',
+                            icon: Eye,
+                            onClick: () => { right_sidebar.isOpen = true; right_sidebar.equipment = context_menu.equipment }
+                        }
+                    ]" :bottom_actions="[
+                    {
+                        label: 'Supprimer',
+                        icon: Trash2,
+                        variant: 'DANGER',
+                        onClick() {
+                            right_sidebar.isOpen = true; right_sidebar.equipment = context_menu.equipment; modal_delete = true; context_menu.isOpen = false
+                        },
+                    }
+                ]" />
+                </div>
+
+            </div>
+            <div class="py-4 px-6   bg-white w-full   flex flex-row justify-end">
+                <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total"
+                    :items-per-page="15" :max-pages-shown="4" v-model="pagination.current_page"
+                    @click="(page: number) => pagination.current_page = page" />
+            </div>
+
+            <CenterModal class="w-30" title="Supprimer le suivi d’équipement ?" :is-open="modal_delete"
+                @close="modal_delete = false" @confirm="deleteEquipments" confirm-title="Supprimer"
+                :confirm-variant="'danger'" :confirm-loading="loading_delete">
+                <p>Êtes-vous sûr de vouloir supprimer ce suivi d’équipement ? Cette action est irréversible.</p>
+            </CenterModal>
+        </div>
+        <div class="
+        
+        h-fit
+        border-l
+        border-gray-200
+        scrollbar-hide
+        bg-white
+        p-5
+        sticky top-0
+        
+       
+        
+    " :class="right_sidebar.isOpen ? 'w-90 min-w-90' : 'w-0'" v-if="right_sidebar.isOpen">
+            <!-- HEADER -->
+
+            <div class="
+            flex
+            items-center
+            justify-between
+            border-b
+            border-gray-200
+            pb-4
+        ">
+                <div>
+                    <h5>
+                        Détails du matériel
+                    </h5>
+
+                    <p class="
+                    text-sm
+                    text-gray-500
+                ">
+                        {{
+                            right_sidebar.equipment?.site_name.name
+                        }}
+                    </p>
+                </div>
+
+                <button class="
+                rounded-lg
+                p-2
+                hover:bg-slate-100
+            " @click="
+                right_sidebar.isOpen = false
+                ">
+                    <XIcon />
+                </button>
+            </div>
+
+            <!-- KPI -->
+
+            <div class="
+            mt-5
+            grid
+            grid-cols-2
+            gap-3
+        ">
+                <div class="
+                rounded-xl
+                bg-slate-50
+                p-4
+            ">
+                    <p class="
+                    text-xs
+                    text-gray-500
+                ">
+                        P50
+                    </p>
+
+                    <h4>
+                        {{
+                            right_sidebar.equipment?.p50
+                        }}
+                    </h4>
+                </div>
+
+                <div class="
+                rounded-xl
+                bg-slate-50
+                p-4
+            ">
+                    <p class="
+                    text-xs
+                    text-gray-500
+                ">
+                        CO₂
+                    </p>
+
+                    <h4>
+                        {{
+                            right_sidebar.equipment?.co2
+                        }}
+                    </h4>
+                </div>
+            </div>
+
+            <!-- EXTINCTEURS -->
+
+            <div class="
+            mt-6
+            border-t
+            border-gray-200
+            pt-5
+        ">
+                <h6 class="mb-4">
+                    Extincteurs
+                </h6>
+
+                <div class="
+                grid
+                grid-cols-2
+                gap-3
+            ">
+                    <div>
+                        <span class="
+                        text-xs
+                        text-gray-500
+                    ">
+                            P50
+                        </span>
+
+                        <p>
+                            {{
+                                right_sidebar.equipment?.p50
+                            }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <span class="
+                        text-xs
+                        text-gray-500
+                    ">
+                            P9
+                        </span>
+
+                        <p>
+                            {{
+                                right_sidebar.equipment?.p9
+                            }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <span class="
+                        text-xs
+                        text-gray-500
+                    ">
+                            P6
+                        </span>
+
+                        <p>
+                            {{
+                                right_sidebar.equipment?.p6
+                            }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <span class="
+                        text-xs
+                        text-gray-500
+                    ">
+                            CO₂
+                        </span>
+
+                        <p>
+                            {{
+                                right_sidebar.equipment?.co2
+                            }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MATERIEL -->
+
+            <div class="
+            mt-6
+            border-t
+            border-gray-200
+            pt-5
+        ">
+                <h6 class="mb-4">
+                    Matériel
+                </h6>
+
+                <div class="
+                flex
+                flex-col
+                gap-4
+            ">
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>Pelles</span>
+
+                        <strong>
+                            {{
+                                right_sidebar.equipment?.pelles
+                            }}
+                        </strong>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Bac métal
+                        </span>
+
+                        <strong>
+                            {{
+                                right_sidebar.equipment?.bas_met
+                            }}
+                        </strong>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Bac plastique
+                        </span>
+
+                        <strong>
+                            {{
+                                right_sidebar.equipment?.bas_plast
+                            }}
+                        </strong>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Poubelle 120L
+                        </span>
+
+                        <strong>
+                            {{
+                                right_sidebar.equipment
+                                    ?.poubelles_120l
+                            }}
+                        </strong>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Poubelle 240L
+                        </span>
+
+                        <strong>
+                            {{
+                                right_sidebar.equipment
+                                    ?.poubelles_240l
+                            }}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIGNALISATION -->
+
+            <div class="
+            mt-6
+            border-t
+            border-gray-200
+            pt-5
+        ">
+                <h6 class="mb-4">
+                    Signalisation
+                </h6>
+
+                <div class="
+                flex
+                flex-wrap
+                gap-2
+            ">
+                    <span class="
+                    rounded-full
+                    bg-primary/10
+                    px-3
+                    py-1
+                    text-xs
+                ">
+                        Ext :
+                        {{
+                            right_sidebar.equipment?.picto_ext
+                        }}
+                    </span>
+
+                    <span class="
+                    rounded-full
+                    bg-primary/10
+                    px-3
+                    py-1
+                    text-xs
+                ">
+                        CAF :
+                        {{
+                            right_sidebar.equipment?.picto_caf
+                        }}
+                    </span>
+
+                    <span class="
+                    rounded-full
+                    bg-primary/10
+                    px-3
+                    py-1
+                    text-xs
+                ">
+                        Défense fumer :
+                        {{
+                            right_sidebar.equipment
+                                ?.picto_defense_de_fumer
+                        }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- CONTROLES -->
+
+            <div class="
+            mt-6
+            border-t
+            border-gray-200
+            pt-5
+        ">
+                <h6 class="mb-4">
+                    Contrôles
+                </h6>
+
+                <div class="
+                flex
+                flex-col
+                gap-4
+            ">
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Danger TGBT
+                        </span>
+
+                        <span :class="right_sidebar.equipment?.picto_danger_tgbt
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                            ">
+                            {{
+                                right_sidebar.equipment?.picto_danger_tgbt
+                                    ? "Oui"
+                                    : "Non"
+                            }}
+                        </span>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Panneau Event
+                        </span>
+
+                        <span :class="right_sidebar.equipment?.panneau_event
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                            ">
+                            {{
+                                right_sidebar.equipment?.panneau_event
+                                    ? "Oui"
+                                    : "Non"
+                            }}
+                        </span>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Livret réflexe
+                        </span>
+
+                        <span :class="right_sidebar.equipment?.livret_fiche_reflexe
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                            ">
+                            {{
+                                right_sidebar.equipment?.livret_fiche_reflexe
+                                    ? "Oui"
+                                    : "Non"
+                            }}
+                        </span>
+                    </div>
+
+                    <div class="
+                    flex
+                    justify-between
+                ">
+                        <span>
+                            Politique HSSE
+                        </span>
+
+                        <span :class="right_sidebar.equipment?.politique
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                            ">
+                            {{
+                                right_sidebar.equipment?.politique
+                                    ? "Oui"
+                                    : "Non"
+                            }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATE -->
+
+            <div class="
+            mt-6
+            border-t
+            border-gray-200
+            pt-5
+        ">
+                <span class="
+                text-xs
+                text-gray-500
+            ">
+                    Dernier relevé
+                </span>
+
+                <p class="mt-1">
+                    {{
+                        right_sidebar.equipment?.created_at
+                    }}
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
 <script setup lang="ts">
-    import { h, onMounted, ref, watch } from 'vue';
+    import { onMounted, ref, watch } from 'vue';
     import Header from '../../../components/shared/Header.vue';
-    import type { EquipmentMonitoringFilterType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type.ts';
-    import { EquipmentMonitoringData } from '../../../@data/EquipementMonitoring.data.ts';
+    import type { EquipmentMonitoringFilterType, EquipmentMonitoringFormType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type.ts';
+    import { EquipmentMonitoringFormData } from '../../../@data/EquipementMonitoring.data.ts';
     import type { contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-    import { Calendar, CloudDownloadIcon, Download, DownloadIcon, Eye, FileUp, PlusCircle, SearchIcon, SquarePlusIcon, XIcon } from '@lucide/vue';
+    import { CloudDownloadIcon, DownloadIcon, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
     import { useEquipmentMonitoringService } from '../../../core/services/equipmentMonitoring.service.ts';
+    import { exportUtils } from '../../../core/utils/export.utils.ts';
+    import CenterModal from '../../../components/ui/centerModal.vue';
+    import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
 
     const searchQuery = ref<string>("")
     const right_sidebar = ref<{
@@ -54,7 +732,7 @@
         "Picto Danger TGBT",
         "Panneau Event",
         "Livret / Fiche Réflexe",
-    
+
 
     ]
     const data = ref<EquipmentMonitoringType[]>()
@@ -81,30 +759,31 @@
         }
     )
     const equipments = useEquipmentMonitoringService()
+    const modal_delete = ref<boolean>(false)
     const showDateFilter = ref<boolean>(false)
     const pagination = ref<PaginationType>({
         'current_page': 1,
         'to': 0,
         'total': 0
     })
-    const loading_data=ref<boolean>(false)
-    const loading_export=ref<boolean>(false)
-    const loading_delete=ref<boolean>(false)
+    const loading_data = ref<boolean>(false)
+    const loading_export = ref<boolean>(false)
+    const loading_delete = ref<boolean>(false)
 
 
     function fetchData(params?: EquipmentMonitoringFilterType) {
-        loading_data.value=true
+        loading_data.value = true
         equipments.index(params)
             .then(res => {
                 console.log(res.data)
-                data.value=res.data.data as EquipmentMonitoringType[]
-                pagination.value.to=res.data.meta.to
-                pagination.value.total=res.data.meta.total
+                data.value = res.data.data as EquipmentMonitoringType[]
+                pagination.value.to = res.data.meta.to
+                pagination.value.total = res.data.meta.total
             })
             .catch(err => {
                 console.error(err)
-            }).finally(()=>{
-                loading_data.value=false
+            }).finally(() => {
+                loading_data.value = false
             })
 
     }
@@ -118,13 +797,73 @@
                 console.error(err)
             })
     }
-    function clearAllFilters(){
-       filters.value.site=[]
-        dateRange.value.from='',
-        dateRange.value.to='',
-        searchQuery.value=""
+    function clearAllFilters() {
+        filters.value.site = []
+        dateRange.value.from = '',
+            dateRange.value.to = '',
+            searchQuery.value = ""
     }
-    watch([filters.value,dateRange.value,()=>searchQuery.value], () => {
+
+    const exportFields: {
+        key: keyof EquipmentMonitoringFormType, excelName: string
+    }[] = Object.keys(EquipmentMonitoringFormData).map(item => ({
+        key: item as keyof EquipmentMonitoringFormType,
+        excelName: item.replace("d_", "d'").replace("site_name", 'ss').replace("poubelles", 'poubelle').toUpperCase().replaceAll('_', ' ')
+    }))
+    function exportData() {
+        loading_export.value = true
+        equipments.export({
+            site: filters.value.site,
+            date: dateRange.value,
+            search: searchQuery.value
+        })
+            .then(res => {
+                // console.log(res.data.data)
+                const equipmentsData: EquipmentMonitoringType[] = res.data.data
+                console.log(equipmentsData)
+                const convertedData = equipmentsData.map(item => {
+
+                    return Object.fromEntries(
+                        Object.entries(item).map(([key, value]) => {
+                            // console.log(key,value,typeof value)
+                            if (typeof value === 'boolean') {
+                                return [key, value ? 'Oui' : 'Non']
+                            }
+                            return [key, value]
+                        })
+                    )
+                })
+                exportUtils(convertedData, exportFields, undefined, undefined, 'export_equipment_monitoring')
+            })
+            .catch(err => {
+                console.error(err)
+            })
+            .finally(() => {
+                loading_export.value = false
+            })
+    }
+    function deleteEquipments() {
+        loading_delete.value = true
+        equipments.delete(right_sidebar.value.equipment?.id as string | number)
+            .then(res => {
+                console.log(res.data)
+                fetchData({
+                    page: pagination.value.current_page,
+                    site: filters.value.site,
+                    date: dateRange.value,
+                    search: searchQuery.value
+                })
+                modal_delete.value = false
+            })
+            .catch(err => {
+                console.error(err)
+            })
+            .finally(() => {
+                loading_delete.value = false
+            })
+    }
+
+    watch([filters.value, dateRange.value, () => searchQuery.value], () => {
         console.log(searchQuery.value)
         fetchData({
             page: 1,
@@ -152,679 +891,3 @@
         fetchData()
     })
 </script>
-
-<template>
-    <div class="flex flex-col ">
-        <Header title="Suivi du matériel" :thumbnails="[
-            { 'label': 'home', name: 'DASHBOARD' },
-            { 'label': 'home', name: 'DASHBOARD' },
-        ]" />
-        <!-- ======================= RIBBON TOOLBAR ======================= -->
-        <div class="bg-white border-b border-gray-200">
-            <div class="h-16 px-4 flex flex-row items-center justify-between">
-                <div class="flex flex-row items-center gap-1">
-                    <button class="ribbon-btn ribbon-btn-primary" @click="router.push({
-                        name: 'EQUIPMENT_MONITORING_NEW'
-                    })"">
-                        <SquarePlusIcon :size="18" />
-                    <span> Ajout </span>
-                    </button>
-                    <button class="ribbon-btn" @click="router.push({
-                        name: 'EQUIPMENT_MONITORING_IMPORT'
-                    })">
-                        <CloudDownloadIcon :size="18" />
-                        <span> Import </span>
-                    </button>
-
-                    <button class="ribbon-btn">
-                        <DownloadIcon :size="18" />
-                        <!-- <Loader v-else class="animate-spin" /> -->
-                        <span>Exporter </span>
-
-                    </button>
-
-
-                    <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
-
-
-                </div>
-
-                <div class="flex flex-row items-center gap-2">
-
-                    <div class="relative">
-                        <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input v-model="searchQuery" type="text" placeholder="Rechercher ..."
-                            class="h-9 w-64 rounded-lg border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                        <button v-if="searchQuery" @click="searchQuery = ''"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <XIcon :size="14" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLables" :date-range="dateRange" :filters="filters"
-                :column-options="columnOptions as Record<filtersKeyType, string[]>" @clear-all="clearAllFilters()"/>
-
-
-        </div>
-
-        <div class="flex flex-row transition-all overflow-x-auto scrollbar-hide" @click.self="right_sidebar.isOpen = false">
-            <div class="min-h-fit " @click.self="right_sidebar.isOpen = false"
-                :class="right_sidebar ? 'w-9/12 max-w-9/12' : 'w-full max-w-full'">
-                <table class="min-w-max mb-30">
-                    <thead>
-                        <tr class="">
-                            <th v-for="header in headers" :key="header">
-                                {{ header }}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="h-fit">
-                        <tr @contextmenu.prevent="context_menu.context_menu = $event; context_menu.equipment = item; context_menu.isOpen = true"
-                            v-for="(item, index) in data" :key="index" class="cursor-pointer" @click="
-                                right_sidebar = {
-                                    isOpen: true,
-                                    equipment: item,
-                                }
-                                " :class="right_sidebar.equipment?.id == item.id ? 'bg-primary/10' : ''">
-                            <td>
-                                {{ item.id }}
-                            </td>
-                            <td>
-                                {{ item.date }}
-                            </td>
-
-                            <td>
-                                {{ item.site_name }}
-                            </td>
-
-                            <td>
-                                {{ item.p50 }}
-                            </td>
-
-                            <td>
-                                {{ item.p9 }}
-                            </td>
-
-                            <td>
-                                {{ item.p6 }}
-                            </td>
-
-                            <td>
-                                {{ item.co2 }}
-                            </td>
-
-                            <td>
-                                {{ item.bas_met }}
-                            </td>
-
-                            <td>
-                                {{ item.bas_plast }}
-                            </td>
-
-                            <td>
-                                {{ item.pelles }}
-                            </td>
-
-                            <td>
-                                {{ item.poubelles_120l }}
-                            </td>
-
-                            <td>
-                                {{ item.poubelles_240l }}
-                            </td>
-
-                            <td>
-                                {{ item.caf }}
-                            </td>
-
-                            <td>
-                                {{ item.picto_ext }}
-                            </td>
-
-                            <td>
-                                {{ item.picto_caf }}
-                            </td>
-
-                            <td>
-                                {{ item.picto_defense_de_fumer }}
-                            </td>
-
-                            <td>
-                                {{ item.point_de_rasso }}
-                            </td>
-
-                            <td>
-                                {{ item.contact_d_urgence }}
-                            </td>
-
-                            <td>
-                                {{ item.canne_d_enfutage }}
-                            </td>
-
-                            <td>
-                                {{ item.panneau_depotage_en_cours }}
-                            </td>
-
-                            <td>
-                                <span :class="item.picto_danger_tgbt
-                                    ? 'text-green-600'
-                                    : 'text-red-600'
-                                    ">
-                                    {{
-                                        item.picto_danger_tgbt
-                                            ? 'Oui'
-                                            : 'Non'
-                                    }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span :class="item.panneau_event
-                                    ? 'text-green-600'
-                                    : 'text-red-600'
-                                    ">
-                                    {{
-                                        item.panneau_event
-                                            ? 'Oui'
-                                            : 'Non'
-                                    }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span :class="item.livret_fiche_reflexe
-                                    ? 'text-green-600'
-                                    : 'text-red-600'
-                                    ">
-                                    {{
-                                        item.livret_fiche_reflexe
-                                            ? 'Oui'
-                                            : 'Non'
-                                    }}
-                                </span>
-                            </td>
-
-                            <td>
-                                {{ item.created_at }}
-                            </td>
-
-
-                        </tr>
-                       
-                    </tbody>
-                    <tfoot class="">
-                        
-                    </tfoot>
-                    
-                </table>
-               <!-- Pagination indépendante du scroll horizontal -->
-               
-                <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="[
-                    {
-                        label: 'Details',
-                        icon: Eye,
-                        onClick: () => { right_sidebar.isOpen = true; right_sidebar.equipment = context_menu.equipment }
-                    }
-                ]" />
-            </div>
-            <div class="
-        
-        h-fit
-        border-l
-        border-gray-200
-        scrollbar-hide
-        bg-white
-        p-5
-        sticky
-        top-0
-       bottom-0
-        left-9/12
-        right-0
-       
-        
-    " :class="right_sidebar.isOpen ? 'w-3/12' : 'w-0'" v-if="right_sidebar.isOpen">
-                <!-- HEADER -->
-
-                <div class="
-            flex
-            items-center
-            justify-between
-            border-b
-            border-gray-200
-            pb-4
-        ">
-                    <div>
-                        <h5>
-                            Détails du matériel
-                        </h5>
-
-                        <p class="
-                    text-sm
-                    text-gray-500
-                ">
-                            {{
-                                right_sidebar.equipment?.site_name.name
-                            }}
-                        </p>
-                    </div>
-
-                    <button class="
-                rounded-lg
-                p-2
-                hover:bg-slate-100
-            " @click="
-                right_sidebar.isOpen = false
-                ">
-                        <XIcon />
-                    </button>
-                </div>
-
-                <!-- KPI -->
-
-                <div class="
-            mt-5
-            grid
-            grid-cols-2
-            gap-3
-        ">
-                    <div class="
-                rounded-xl
-                bg-slate-50
-                p-4
-            ">
-                        <p class="
-                    text-xs
-                    text-gray-500
-                ">
-                            P50
-                        </p>
-
-                        <h4>
-                            {{
-                                right_sidebar.equipment?.p50
-                            }}
-                        </h4>
-                    </div>
-
-                    <div class="
-                rounded-xl
-                bg-slate-50
-                p-4
-            ">
-                        <p class="
-                    text-xs
-                    text-gray-500
-                ">
-                            CO₂
-                        </p>
-
-                        <h4>
-                            {{
-                                right_sidebar.equipment?.co2
-                            }}
-                        </h4>
-                    </div>
-                </div>
-
-                <!-- EXTINCTEURS -->
-
-                <div class="
-            mt-6
-            border-t
-            border-gray-200
-            pt-5
-        ">
-                    <h6 class="mb-4">
-                        Extincteurs
-                    </h6>
-
-                    <div class="
-                grid
-                grid-cols-2
-                gap-3
-            ">
-                        <div>
-                            <span class="
-                        text-xs
-                        text-gray-500
-                    ">
-                                P50
-                            </span>
-
-                            <p>
-                                {{
-                                    right_sidebar.equipment?.p50
-                                }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="
-                        text-xs
-                        text-gray-500
-                    ">
-                                P9
-                            </span>
-
-                            <p>
-                                {{
-                                    right_sidebar.equipment?.p9
-                                }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="
-                        text-xs
-                        text-gray-500
-                    ">
-                                P6
-                            </span>
-
-                            <p>
-                                {{
-                                    right_sidebar.equipment?.p6
-                                }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="
-                        text-xs
-                        text-gray-500
-                    ">
-                                CO₂
-                            </span>
-
-                            <p>
-                                {{
-                                    right_sidebar.equipment?.co2
-                                }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MATERIEL -->
-
-                <div class="
-            mt-6
-            border-t
-            border-gray-200
-            pt-5
-        ">
-                    <h6 class="mb-4">
-                        Matériel
-                    </h6>
-
-                    <div class="
-                flex
-                flex-col
-                gap-4
-            ">
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>Pelles</span>
-
-                            <strong>
-                                {{
-                                    right_sidebar.equipment?.pelles
-                                }}
-                            </strong>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Bac métal
-                            </span>
-
-                            <strong>
-                                {{
-                                    right_sidebar.equipment?.bas_met
-                                }}
-                            </strong>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Bac plastique
-                            </span>
-
-                            <strong>
-                                {{
-                                    right_sidebar.equipment?.bas_plast
-                                }}
-                            </strong>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Poubelle 120L
-                            </span>
-
-                            <strong>
-                                {{
-                                    right_sidebar.equipment
-                                        ?.poubelles_120l
-                                }}
-                            </strong>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Poubelle 240L
-                            </span>
-
-                            <strong>
-                                {{
-                                    right_sidebar.equipment
-                                        ?.poubelles_240l
-                                }}
-                            </strong>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SIGNALISATION -->
-
-                <div class="
-            mt-6
-            border-t
-            border-gray-200
-            pt-5
-        ">
-                    <h6 class="mb-4">
-                        Signalisation
-                    </h6>
-
-                    <div class="
-                flex
-                flex-wrap
-                gap-2
-            ">
-                        <span class="
-                    rounded-full
-                    bg-primary/10
-                    px-3
-                    py-1
-                    text-xs
-                ">
-                            Ext :
-                            {{
-                                right_sidebar.equipment?.picto_ext
-                            }}
-                        </span>
-
-                        <span class="
-                    rounded-full
-                    bg-primary/10
-                    px-3
-                    py-1
-                    text-xs
-                ">
-                            CAF :
-                            {{
-                                right_sidebar.equipment?.picto_caf
-                            }}
-                        </span>
-
-                        <span class="
-                    rounded-full
-                    bg-primary/10
-                    px-3
-                    py-1
-                    text-xs
-                ">
-                            Défense fumer :
-                            {{
-                                right_sidebar.equipment
-                                    ?.picto_defense_de_fumer
-                            }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- CONTROLES -->
-
-                <div class="
-            mt-6
-            border-t
-            border-gray-200
-            pt-5
-        ">
-                    <h6 class="mb-4">
-                        Contrôles
-                    </h6>
-
-                    <div class="
-                flex
-                flex-col
-                gap-4
-            ">
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Danger TGBT
-                            </span>
-
-                            <span :class="right_sidebar.equipment?.picto_danger_tgbt
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                                ">
-                                {{
-                                    right_sidebar.equipment?.picto_danger_tgbt
-                                        ? "Oui"
-                                        : "Non"
-                                }}
-                            </span>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Panneau Event
-                            </span>
-
-                            <span :class="right_sidebar.equipment?.panneau_event
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                                ">
-                                {{
-                                    right_sidebar.equipment?.panneau_event
-                                        ? "Oui"
-                                        : "Non"
-                                }}
-                            </span>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Livret réflexe
-                            </span>
-
-                            <span :class="right_sidebar.equipment?.livret_fiche_reflexe
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                                ">
-                                {{
-                                    right_sidebar.equipment?.livret_fiche_reflexe
-                                        ? "Oui"
-                                        : "Non"
-                                }}
-                            </span>
-                        </div>
-
-                        <div class="
-                    flex
-                    justify-between
-                ">
-                            <span>
-                                Politique HSSE
-                            </span>
-
-                            <span :class="right_sidebar.equipment?.politique
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                                ">
-                                {{
-                                    right_sidebar.equipment?.politique
-                                        ? "Oui"
-                                        : "Non"
-                                }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DATE -->
-
-                <div class="
-            mt-6
-            border-t
-            border-gray-200
-            pt-5
-        ">
-                    <span class="
-                text-xs
-                text-gray-500
-            ">
-                        Dernier relevé
-                    </span>
-
-                    <p class="mt-1">
-                        {{
-                            right_sidebar.equipment?.created_at
-                        }}
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="fixed py-4 px-6  right-0 bottom-0 bg-white w-full left-0  flex flex-row justify-end">
-            <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total" :items-per-page="15"
-                :max-pages-shown="4" v-model="pagination.current_page"
-                @click="(page: number) => pagination.current_page = page" />
-        </div>
-    </div>
-</template>

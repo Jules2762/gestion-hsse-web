@@ -1,198 +1,201 @@
 <template>
-    <div class="">
-        <Header title="formation.title" :thumbnails="[
-            {
-                'label': 'thumbnails.home',
-                'name': 'DASHBOARD'
-            }, {
-                'label': 'thumbnails.training',
-                'name': 'FORMATION'
-            }
-        ]" />
+    <div class="flex flex-row transition-all">
+        <div class="w-full ">
+           <Header title="formation.title" :thumbnails="[
+                {
+                    'label': 'thumbnails.home',
+                    'name': 'DASHBOARD'
+                }, {
+                    'label': 'thumbnails.training',
+                    'name': 'FORMATION'
+                }
+            ]" />
 
-        <!-- ======================= RIBBON TOOLBAR ======================= -->
-        <div class="bg-white border-b border-gray-200">
-            <div class="h-16 px-4 flex flex-row items-center justify-between">
-                <div class="flex flex-row items-center gap-1">
-                    <button class="ribbon-btn ribbon-btn-primary" @click="router.push({ name: 'FORMATION_NEW' })">
-                        <SquarePlusIcon :size="18" />
-                        <span>{{ t('formation.actions.add') }}</span>
-                    </button>
-                    <button class="ribbon-btn" @click="router.push({ name: 'FORMATION_IMPORT' })">
-                        <CloudDownloadIcon :size="18" />
-                        <span>{{ t('formation.actions.import') }}</span>
-                    </button>
-
-                    <button class="ribbon-btn" :disabled="loading_export"
-                        :class="{ 'ribbon-btn-disabled': pagination.total === 0 || loading_export }"
-                        @click="exportData()">
-                        <DownloadIcon :size="18" v-if="loading_export == false" />
-                        <Loader v-else class="animate-spin" />
-                        <span>{{ t('formation.actions.export') }}</span>
-                        <span v-if="pagination.total" class="ribbon-btn-count">{{ pagination.total
-                            }}</span>
-                    </button>
-
-
-                    <div class="w-px h-8 bg-gray-300 mx-2" />
-
-                    
-                </div>
-
-                <div class="flex flex-row items-center gap-2">
-                    <div class="relative">
-                        <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input v-model="searchQuery" type="text" :placeholder="t('formation.filters.input')"
-                            class="h-9 w-64 rounded-lg border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                        <button v-if="searchQuery" @click="searchQuery = ''"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <XIcon :size="14" />
+            <!-- ======================= RIBBON TOOLBAR ======================= -->
+            <div class="bg-white border-b border-gray-200">
+                <div class="h-16 px-4 flex flex-row items-center justify-between">
+                    <div class="flex flex-row items-center gap-1">
+                        <button class="ribbon-btn ribbon-btn-primary" @click="router.push({ name: 'FORMATION_NEW' })">
+                            <SquarePlusIcon :size="18" />
+                            <span>{{ t('formation.actions.add') }}</span>
                         </button>
+                        <button class="ribbon-btn" @click="router.push({ name: 'FORMATION_IMPORT' })">
+                            <CloudDownloadIcon :size="18" />
+                            <span>{{ t('formation.actions.import') }}</span>
+                        </button>
+
+                        <button class="ribbon-btn" :disabled="loading_export"
+                            :class="{ 'ribbon-btn-disabled': pagination.total === 0 || loading_export }"
+                            @click="exportData()">
+                            <DownloadIcon :size="18" v-if="loading_export == false" />
+                            <Loader v-else class="animate-spin" />
+                            <span>{{ t('formation.actions.export') }}</span>
+                            <span v-if="pagination.total" class="ribbon-btn-count">{{ pagination.total
+                                }}</span>
+                        </button>
+
+
+                        <div class="w-px h-8 bg-gray-300 mx-2" />
+
+
+                    </div>
+
+                    <div class="flex flex-row items-center gap-2">
+                        <div class="relative">
+                            <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input v-model="searchQuery" type="text" :placeholder="t('formation.filters.input')"
+                                class="h-9 w-64 rounded-lg border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                            <button v-if="searchQuery" @click="searchQuery = ''"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <XIcon :size="14" />
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- ======================= FILTER STRIP ======================= -->
+                <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLabels" :filters="filters"
+                    :column-options="columnOptions as Record<string, string[]>" :date-range="dateRange"
+                    :results-count="pagination.to" :results-total="pagination.total" @clear-all="clearAllFilters" />
             </div>
 
-            <!-- ======================= FILTER STRIP ======================= -->
-            <ChipFilter  :filterable-keys="filterableKeys" :column-labels="columnLabels" :filters="filters"
-                :column-options="columnOptions as Record<string, string[]>" :date-range="dateRange"
-                :results-count="pagination.to" :results-total="pagination.total" @clear-all="clearAllFilters" />
-        </div>
-
-        <div class="flex flex-row transition-all">
-            <table class="transition-all"
-                :class=" selectedFormation && data.length > 0 ? 'w-9/12' : 'w-12/12'">
-                <thead>
-                    <tr>
-                        <th v-for="(item, index) in headers" :key="index" class="relative z-50">
-                            <div class="flex items-center gap-1 select-none"
-                                :class="sortableKeys[index] ? 'cursor-pointer' : ''"
-                                @click="sortableKeys[index] && toggleSort(sortableKeys[index]!)">
-                                <span>{{ item }}</span>
-                                <component v-if="sortableKeys[index]" :is="sortIcon(sortableKeys[index])" :size="12"
-                                    class="text-gray-400" />
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template v-if="loading_data == false && data.length > 0">
-                        <tr v-for="(item, index) in data" :key="index" @click="selectedFormation = item"
-                            @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.formation = item as FormationDataType"
-                            :class="selectedFormation?.id==item.id ? 'bg-primary/10' : ''">
-                            <td>{{ item.id }}</td>
-                            <td>{{ item.date }}</td>
-                            <td>{{ item.title }}</td>
-                            <td>{{ item.type }}</td>
-                            <td>{{ item.volet }}</td>
-                            <td>{{ item.trainer }}</td>
-                            <td>{{ item.duration }}</td>
-                            <td>{{ item.target }}</td>
-
-                        </tr>
+            <div class="flex flex-row transition-all">
+                <table class="transition-all" >
+                    <thead>
                         <tr>
-                            <td colspan="8" class="w-full">
-                                <div class="flex flex-row items-center text-sm justify-end ">
-                                    <vue-awesome-paginate :hide-prev-next-when-ends="true"
-                                        :total-items="pagination.total" :items-per-page="15" :max-pages-shown="4"
-                                        v-model="pagination.current_page"
-                                        @click="(page: number) => { pagination.current_page = page }" />
+                            <th v-for="(item, index) in headers" :key="index" class="relative z-50">
+                                <div class="flex items-center gap-1 select-none"
+                                    :class="sortableKeys[index] ? 'cursor-pointer' : ''"
+                                    @click="sortableKeys[index] && toggleSort(sortableKeys[index]!)">
+                                    <span>{{ item }}</span>
+                                    <component v-if="sortableKeys[index]" :is="sortIcon(sortableKeys[index])" :size="12"
+                                        class="text-gray-400" />
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="loading_data == false && data.length > 0">
+                            <tr v-for="(item, index) in data" :key="index" @click="selectedFormation = item"
+                                @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.formation = item as FormationDataType"
+                                :class="selectedFormation?.id == item.id ? 'bg-primary/10' : ''">
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.date }}</td>
+                                <td>{{ item.title }}</td>
+                                <td>{{ item.type }}</td>
+                                <td>{{ item.volet }}</td>
+                                <td>{{ item.trainer }}</td>
+                                <td>{{ item.duration }}</td>
+                                <td>{{ item.target }}</td>
+
+                            </tr>
+                            <tr>
+                                <td colspan="8" class="w-full">
+                                    <div class="flex flex-row items-center text-sm justify-end ">
+                                        <vue-awesome-paginate :hide-prev-next-when-ends="true"
+                                            :total-items="pagination.total" :items-per-page="15" :max-pages-shown="4"
+                                            v-model="pagination.current_page"
+                                            @click="(page: number) => { pagination.current_page = page }" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr v-else-if="loading_data == false && data.length > 0">
+                            <td colspan="8" class="py-10 text-center text-gray-500">
+                                <div class="flex flex-col items-center gap-2">
+                                    <span>Aucun résultat pour ces filtres</span>
+                                    <button class="text-xs font-medium text-primary hover:underline"
+                                        @click="clearAllFilters">
+                                        Réinitialiser les filtres
+                                    </button>
                                 </div>
                             </td>
                         </tr>
-                    </template>
-                    <tr v-else-if="loading_data == false && data.length > 0">
-                        <td colspan="8" class="py-10 text-center text-gray-500">
-                            <div class="flex flex-col items-center gap-2">
-                                <span>Aucun résultat pour ces filtres</span>
-                                <button class="text-xs font-medium text-primary hover:underline"
-                                    @click="clearAllFilters">
-                                    Réinitialiser les filtres
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-else-if="data.length === 0 && loading_data == false">
-                        <td colspan="8" class="py-10 text-center text-gray-500">
-                            Aucune formation trouvée
-                        </td>
-                    </tr>
-                    <tr v-else>
-                        <td colspan="8" class="py-10">
-                            <div class="flex flex-col items-center justify-center gap-3">
-                                <Loader :size="30" class="animate-spin text-primary" />
+                        <tr v-else-if="data.length === 0 && loading_data == false">
+                            <td colspan="8" class="py-10 text-center text-gray-500">
+                                Aucune formation trouvée
+                            </td>
+                        </tr>
+                        <tr v-else>
+                            <td colspan="8" class="py-10">
+                                <div class="flex flex-col items-center justify-center gap-3">
+                                    <Loader :size="30" class="animate-spin text-primary" />
 
-                                <span class="text-sm text-gray-500">
-                                    Chargement des formations...
-                                </span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                    <span class="text-sm text-gray-500">
+                                        Chargement des formations...
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-            <div :class="selectedFormation && data.length > 0 ? 'w-3/12' : 'w-0'"
-                v-if=" selectedFormation && data.length > 0" class="
+              
+            </div>
+        </div>
+        <div :class="selectedFormation && data.length > 0 ? 'w-120' : 'w-0'"
+            v-if="selectedFormation && data.length > 0" class="
             scrollbar-hide
             bg-white
             border-l
             border-gray-200
-            transition-all
+            
             p-5
             h-fit
-            sticky top-0
+            sticky top-0 bottom-0
             overflow-y-auto
         ">
-                <template v-if="selectedFormation || data.length > 0">
+            <template v-if="selectedFormation || data.length > 0">
 
-                    <!-- HEADER -->
+                <!-- HEADER -->
 
-                    <div class="
+                <div class="
                     pb-5
                     border-b
                     border-gray-200
                 ">
-                        <div class="
+                    <div class="
                         flex
                         items-start
                         justify-between
                     ">
-                            <div>
-                                <p class="
+                        <div>
+                            <p class="
                                 text-xs
                                 uppercase
                                 tracking-widest
                                 text-gray-500
                             ">
-                                    Formation
-                                </p>
+                                Formation
+                            </p>
 
-                                <h4 class="mt-1">
-                                    {{
-                                        selectedFormation.title
-                                    }}
-                                </h4>
-                            </div>
+                            <h4 class="mt-1">
+                                {{
+                                    selectedFormation.title
+                                }}
+                            </h4>
+                        </div>
 
-                            <button class="
+                        <button class="
                             rounded-lg
                             p-2
                             hover:bg-slate-100
                         " @click="
-                            selectedFormation=null
+                            selectedFormation = null
                             ">
-                                <XIcon :size="18" />
-                            </button>
-                        </div>
+                            <XIcon :size="18" />
+                        </button>
+                    </div>
 
-                        <!-- BADGES -->
+                    <!-- BADGES -->
 
-                        <div class="
+                    <div class="
                         mt-4
                         flex
                         flex-wrap
                         gap-2
                     ">
-                            <span class="
+                        <span class="
                             rounded-full
                             bg-primary/10
                             px-3
@@ -201,12 +204,12 @@
                             font-medium
                             text-primary
                         ">
-                                {{
-                                    selectedFormation.type
-                                }}
-                            </span>
+                            {{
+                                selectedFormation.type
+                            }}
+                        </span>
 
-                            <span class="
+                        <span class="
                             rounded-full
                             bg-blue-100
                             px-3
@@ -215,263 +218,262 @@
                             font-medium
                             text-blue-700
                         ">
-                                {{
-                                    selectedFormation.volet
-                                }}
-                            </span>
-                        </div>
+                            {{
+                                selectedFormation.volet
+                            }}
+                        </span>
                     </div>
+                </div>
 
-                    <!-- KPI -->
+                <!-- KPI -->
 
-                    <div class="
+                <div class="
                     mt-5
                     grid
                     grid-cols-3
                     gap-3
                 ">
-                        <div class="
+                    <div class="
                         rounded-xl
                         bg-slate-50
                         p-3
                         text-center
                     ">
-                            <p class="
+                        <p class="
                             text-xs
                             text-gray-500
                         ">
-                                Participants
-                            </p>
+                            Participants
+                        </p>
 
-                            <h5>
-                                {{
-                                    selectedFormation.participant
-                                }}
-                            </h5>
-                        </div>
-
-                        <div class="
-                        rounded-xl
-                        bg-slate-50
-                        p-3
-                        text-center
-                    ">
-                            <p class="
-                            text-xs
-                            text-gray-500
-                        ">
-                                Durée
-                            </p>
-
-                            <h5>
-                                {{
-                                    selectedFormation.duration
-                                }}h
-                            </h5>
-                        </div>
-
-                        <div class="
-                        rounded-xl
-                        bg-slate-50
-                        p-3
-                        text-center
-                    ">
-                            <p class="
-                            text-xs
-                            text-gray-500
-                        ">
-                                Public
-                            </p>
-
-                            <h5 class="
-                            text-sm
-                        ">
-                                {{
-                                    selectedFormation.target_type
-                                }}
-                            </h5>
-                        </div>
+                        <h5>
+                            {{
+                                selectedFormation.participant
+                            }}
+                        </h5>
                     </div>
 
-                    <!-- INFORMATIONS -->
+                    <div class="
+                        rounded-xl
+                        bg-slate-50
+                        p-3
+                        text-center
+                    ">
+                        <p class="
+                            text-xs
+                            text-gray-500
+                        ">
+                            Durée
+                        </p>
+
+                        <h5>
+                            {{
+                                selectedFormation.duration
+                            }}h
+                        </h5>
+                    </div>
 
                     <div class="
+                        rounded-xl
+                        bg-slate-50
+                        p-3
+                        text-center
+                    ">
+                        <p class="
+                            text-xs
+                            text-gray-500
+                        ">
+                            Public
+                        </p>
+
+                        <h5 class="
+                            text-sm
+                        ">
+                            {{
+                                selectedFormation.target_type
+                            }}
+                        </h5>
+                    </div>
+                </div>
+
+                <!-- INFORMATIONS -->
+
+                <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                        <h6 class="
+                    <h6 class="
                         mb-4
                         text-gray-500
                     ">
-                            Informations générales
-                        </h6>
+                        Informations générales
+                    </h6>
 
-                        <div class="
+                    <div class="
                         grid
                         grid-cols-2
                         gap-4
                     ">
-                            <div>
-                                <p class="
+                        <div>
+                            <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                    Date
-                                </p>
+                                Date
+                            </p>
 
-                                <p>
-                                    {{
-                                        selectedFormation.date
-                                    }}
-                                </p>
-                            </div>
+                            <p>
+                                {{
+                                    selectedFormation.date
+                                }}
+                            </p>
+                        </div>
 
-                            <div>
-                                <p class="
+                        <div>
+                            <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                    Formateur
-                                </p>
+                                Formateur
+                            </p>
 
-                                <p>
-                                    {{
-                                        selectedFormation.trainer
-                                    }}
-                                </p>
-                            </div>
+                            <p>
+                                {{
+                                    selectedFormation.trainer
+                                }}
+                            </p>
+                        </div>
 
-                            <div>
-                                <p class="
+                        <div>
+                            <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                    Type
-                                </p>
+                                Type
+                            </p>
 
-                                <p>
-                                    {{
-                                        selectedFormation.type
-                                    }}
-                                </p>
-                            </div>
+                            <p>
+                                {{
+                                    selectedFormation.type
+                                }}
+                            </p>
+                        </div>
 
-                            <div>
-                                <p class="
+                        <div>
+                            <p class="
                                 text-xs
                                 text-gray-500
                             ">
-                                    Volet
-                                </p>
+                                Volet
+                            </p>
 
-                                <p>
-                                    {{
-                                        selectedFormation.volet
-                                    }}
-                                </p>
-                            </div>
+                            <p>
+                                {{
+                                    selectedFormation.volet
+                                }}
+                            </p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- PUBLIC CIBLE -->
+                <!-- PUBLIC CIBLE -->
 
-                    <div class="
+                <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                        <h6 class="mb-3">
-                            Public concerné
-                        </h6>
+                    <h6 class="mb-3">
+                        Public concerné
+                    </h6>
 
-                        <p>
-                            {{
-                                selectedFormation.target
-                            }}
-                        </p>
+                    <p>
+                        {{
+                            selectedFormation.target
+                        }}
+                    </p>
 
-                        <p class="
+                    <p class="
                         mt-2
                         text-sm
                         text-gray-500
                     ">
-                            {{
-                                selectedFormation.target_type
-                            }}
-                        </p>
-                    </div>
+                        {{
+                            selectedFormation.target_type
+                        }}
+                    </p>
+                </div>
 
-                    <!-- PARTICIPATION -->
+                <!-- PARTICIPATION -->
 
-                    <div class="
+                <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                        <h6 class="mb-3">
-                            Participation
-                        </h6>
+                    <h6 class="mb-3">
+                        Participation
+                    </h6>
 
-                        <div class="
+                    <div class="
                         rounded-xl
                         bg-green-50
                         border
                         border-green-200
                         p-4
                     ">
-                            <div class="
+                        <div class="
                             flex
                             items-center
                             justify-between
                         ">
-                                <span>
-                                    Participants
-                                </span>
+                            <span>
+                                Participants
+                            </span>
 
-                                <span class="
+                            <span class="
                                 text-lg
                                 font-semibold
                                 text-green-700
                             ">
-                                    {{
-                                        selectedFormation.participant
-                                    }}
-                                </span>
-                            </div>
+                                {{
+                                    selectedFormation.participant
+                                }}
+                            </span>
                         </div>
                     </div>
+                </div>
 
-                    <!-- ACTIONS -->
+                <!-- ACTIONS -->
 
-                    <div class="
+                <div class="
                     mt-6
                     border-t
                     border-gray-200
                     pt-5
                 ">
-                        <div class="
+                    <div class="
                         flex
                         flex-col
                         gap-2
                     ">
-                            <Button class="w-full" variant="danger" @click="contextMenu.formation=selectedFormation;modal_delete=true">
-                               Supprimer
-                            </Button>
-                            <Button class="w-full" variant="outline">
-                               Modifier
-                            </Button>
+                        <Button class="w-full" variant="danger"
+                            @click="contextMenu.formation = selectedFormation; modal_delete = true">
+                            Supprimer
+                        </Button>
+                        <Button class="w-full" variant="outline">
+                            Modifier
+                        </Button>
 
 
-                        </div>
                     </div>
+                </div>
 
-                </template>
-            </div>
-
+            </template>
         </div>
         <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
             :actions="contextMenu.actions" :bottom_actions="contextMenu.bottom_actions" />
@@ -489,18 +491,17 @@
         ArrowUpDownIcon,
         ArrowUpIcon,
         CloudDownloadIcon,
-        Download,
+       
         DownloadIcon,
         Edit,
         Eye,
         Loader,
-        LoaderCircleIcon,
+      
         SearchIcon,
         SquarePlusIcon,
         Trash2,
         XIcon,
     } from '@lucide/vue';
-    import * as XLSX from 'xlsx-js-style';
 
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
     import { router } from '../../../router/index.ts';
@@ -512,6 +513,7 @@
     import { toast } from 'vue3-toastify';
 import CenterModal from '../../../components/ui/centerModal.vue';
 import Button from '../../../components/ui/Button.vue';
+import { exportUtils } from '../../../core/utils/export.utils.ts';
     const headers = ["#", "DATE", "INTITULE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible"]
     const data = ref<FormationDataType[]>([])
   
@@ -619,55 +621,7 @@ import Button from '../../../components/ui/Button.vue';
 
 
 
-    function setCellStyle(worksheet: Record<string, any>, rowIndex: number, colIndex: number, style: Record<string, any>) {
-        const ref = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex })
-        if (!worksheet[ref]) worksheet[ref] = { t: 's', v: '' }
-        worksheet[ref].s = style
-    }
-
-    function exportFilteredData(data: FormationDataType[]) {
-
-        if (data.length === 0) return
-
-        try {
-            const headerRow = exportFields.map(field => field.excelName)
-
-            const dataRows = data.map(item =>
-                exportFields.map(field => (item as any)[field.key] ?? ''),
-            )
-
-            const worksheet = XLSX.utils.aoa_to_sheet([headerRow, ...dataRows])
-
-            worksheet['!cols'] = exportFields.map(field => ({ wch: Math.max(field.excelName.length + 3, 15) }))
-            worksheet['!rows'] = [{ hpx: 28 }]
-
-            // Header style aligned with the app's import template (primary green, white bold text)
-            exportFields.forEach((field, colIndex) => {
-                setCellStyle(worksheet, 0, colIndex, {
-                    fill: { patternType: 'solid', fgColor: { rgb: '0F9D58' } },
-                    font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
-                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-                    border: {
-                        top: { style: 'thin', color: { rgb: 'FFFFFF' } },
-                        bottom: { style: 'thin', color: { rgb: 'FFFFFF' } },
-                        left: { style: 'thin', color: { rgb: 'FFFFFF' } },
-                        right: { style: 'thin', color: { rgb: 'FFFFFF' } },
-                    },
-                })
-            })
-
-            const workbook = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Registre de formation')
-
-            const timestamp = new Date().toISOString().slice(0, 10)
-            XLSX.writeFile(workbook, `export_formations_${timestamp}.xlsx`)
-            toast.success(t("formation.notification.export.success"))
-        } catch (error) {
-            toast.error(t("formation.notification.export.error"))
-        }
-
-    }
-
+  
     function fetchData(params?: FormationFilterType) {
         loading_data.value = true
         formation.fetchData(params).then((res) => {
@@ -698,6 +652,12 @@ import Button from '../../../components/ui/Button.vue';
                 columnOptions.value = res.data
             })
     }
+    function onSuccessExported(){
+        toast.success(t('formation.notification.export.success'))
+    }
+    function onErrorExported(){
+        toast.error(t('formation.notification.export.error'))
+    }
     function exportData() {
         loading_export.value = true
         formation.getAllData({
@@ -709,10 +669,7 @@ import Button from '../../../components/ui/Button.vue';
             search: searchQuery.value
         })
             .then(res => {
-                console.log(res.data)
-                // allData.value=res.data
-
-                exportFilteredData(res.data.data as FormationDataType[])
+                exportUtils(res.data.data as FormationDataType[], exportFields,onSuccessExported,onErrorExported,'export_training')
             })
             .catch(err => {
                 console.error(err)

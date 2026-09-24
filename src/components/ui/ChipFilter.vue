@@ -18,7 +18,7 @@
                     <ChevronDownIcon :size="13" />
                 </button>
 
-                <div v-if="openFilter === '__date__'" class="popover w-64" @click.stop>
+                <div v-if="openFilter === '__date__'" class="popover w-64 " @click.stop>
                     <p class="popover-title">Filtrer par {{ dateLabel.toLowerCase() }}</p>
                     <div class="flex flex-col gap-2 px-1">
                         <ChipInputFilter type="date" label="Du" v-model="dateRange.from" />
@@ -40,7 +40,7 @@
                     <ChevronDownIcon :size="13" />
                 </button>
 
-                <div v-if="openFilter === key" class="popover w-56" @click.stop>
+                <div v-if="openFilter === key" class="popover min-w-56 max-w-120 w-fit" @click.stop>
                     <p class="popover-title">{{ columnLabels[key] }}</p>
                     <input v-model="filterSearch" type="text" placeholder="Rechercher..." class="popover-input mb-2" />
                     <div class="max-h-44 overflow-y-auto pr-1 flex flex-col gap-0.5">

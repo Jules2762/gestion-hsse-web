@@ -1,14 +1,14 @@
 <template>
     <transition name="center_modal">
-        <div class="fixed z-50 top-0 left-0 bg-black/10 w-screen min-h-screen min-w-screen h-screen flex flex-row items-center justify-center" v-if="isOpen" @click.self="onClose">
-            <div class=" center_modal_content bg-white shadow shadow-gray-300  flex flex-col rounded min-w-100 min-h-60 -translate-y-30">
+        <div class="fixed z-50 top-0 left-0 bg-black/10 w-screen min-h-screen min-w-screen h-screen flex flex-row items-center justify-center"  v-if="isOpen" @click.self="onClose">
+            <div class=" center_modal_content bg-white shadow shadow-gray-300  flex flex-col rounded min-w-100 min-h-60 -translate-y-30" :class="`w-${width}`">
                 <div class="bg-gray-50 h-16 p-4 flex flex-row justify-between items-center border-b border-gray-300">
                     <h4 :class="themeTitle">{{ title }}</h4>
                     <button @click="onClose">
                         <XIcon :size="18"/>
                     </button>
                 </div>
-                <div class="bg-white flex-1 p-4">
+                <div class="bg-white flex-1 p-4 w-full">
                     <slot></slot>
                 </div>
                 <div class="bg-gray-50 h-16 p-4 flex  flex-row justify-between gap-3 items-center border-t border-gray-300">
@@ -34,12 +34,14 @@ type propsType={
     cancelTitle?:string,
     confirmTitle?:string,
     confirmVariant?:ButtonVariant,
-    confirmLoading?:boolean
+    confirmLoading?:boolean,
+    width?:number
 }
 const props=withDefaults(defineProps<propsType>(),{
     cancelTitle:"Annuler",
     confirmTitle:"Confirmer",
-    titleVariant:"normal"
+    titleVariant:"normal",
+    width:80
 })
 const themeTitle=computed(()=>{
     switch (props.titleVariant) {
