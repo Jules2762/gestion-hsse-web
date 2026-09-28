@@ -12,6 +12,8 @@ import DocumentLibraryPage from "../views/home/document-library/DocumentLibraryP
 import FormationImport from "../views/home/Formation/FormationImport.vue";
 import FormationNewPage from "../views/home/Formation/FormationNewPage.vue";
 import FormationPage from "../views/home/Formation/FormationPage.vue";
+import Participants from "../views/home/Formation/Participants.vue";
+import Personnels from "../views/home/administration/Personnels.vue";
 import ActionPage from "../views/home/Iinspections/ActionPage.vue";
 import ChecklistDetailsPage from "../views/home/Iinspections/ChecklistDetailsPage.vue";
 import ChecklistNewPage from "../views/home/Iinspections/ChecklistNewPage.vue";
@@ -23,6 +25,7 @@ import TemplatePage from "../views/home/Iinspections/TemplatePage.vue";
 import ProfilePage from "../views/home/profile/ProfilePage.vue";
 import ProfileUpdatePage from "../views/home/profile/ProfileUpdatePage.vue";
 import SettingPage from "../views/home/settings/SettingPage.vue";
+import FormationUpdate from "../views/home/Formation/FormationUpdate.vue";
 
 
 const routes = [
@@ -62,8 +65,8 @@ const routes = [
             {
                 path: 'administration',
                 name: 'ADMINISTRATION',
-                redirect:{
-                    name:"USERS"
+                redirect: {
+                    name: "USERS"
                 },
                 children: [
                     {
@@ -87,37 +90,53 @@ const routes = [
                         component: UserUpdatePage
                     },
                     {
+                        path: "personnels",
+                        name: "PERSONNEL",
+                        component: Personnels
+                    },
+                    {
                         path: "/activity",
                         name: "ACTIVITY",
                         component: ActivityPage
                     },
                 ]
             },
-             {
+            {
                 path: "document-library",
                 name: "DOCUMENT_LIBRARY",
                 component: DocumentLibraryPage
             },
-             {
+            {
                 path: "formation",
                 name: "FORMATION",
                 component: FormationPage
             },
-             {
+            {
+                path: "formation/participants/:id",
+                name: "FORMATION_PARTICIPANT",
+                component: Participants
+            },
+            {
+                path: "formation/update/:id",
+                name: "FORMATION_UPDATE",
+                component: FormationUpdate
+            },
+            {
                 path: "formation/new",
                 name: "FORMATION_NEW",
                 component: FormationNewPage
             },
-             {
+            {
                 path: "formation/import",
                 name: "FORMATION_IMPORT",
                 component: FormationImport
             },
+
             {
                 path: 'inspection',
                 name: 'INSPECTION',
-                redirect:{
-                    name:"ACTION"
+                redirect: {
+                    name: "ACTION"
                 },
                 children: [
                     {
@@ -162,7 +181,7 @@ const routes = [
                     },
                 ]
             },
-           
+
             {
                 path: "profile/:id?",
                 name: "PROFILE",

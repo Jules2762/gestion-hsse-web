@@ -18,13 +18,13 @@
         ]" />
 
         <div class="p-4 grid grid-cols-12 gap-4">
-            <form @submit.prevent="onSubmit()" class=" col-span-8 grid grid-cols-2  p-6 bg-white rounded border border-gray-200 gap-4">
+            <form @submit.prevent.once="onSubmit()" class=" col-span-8 grid grid-cols-2  p-6 bg-white rounded border border-gray-200 gap-4">
                 <div class="col-span-2 flex flex-col gap-y-3">
                     <h4>Informations de l'inspection</h4>
                     <p>Sélectionnez le type d'inspection puis renseignez les informations de planification.</p>
                 </div>
-                <Select :options="ChecklistTypeData" v-model="data.type" label="Type d'inspection" class="col-span-2" />
-                <Select :options="SiteTypeDataJson" label="Site" v-model="data.site" class="col-span-2" />
+                <Select required :options="ChecklistTypeData" v-model="data.type" label="Type d'inspection" class="col-span-2" />
+                <Select required :options="SiteTypeDataJson" label="Site" v-model="data.site" class="col-span-2" />
                 <Input label="Date prévue" type="date" v-model="data.date" />
                 <Input label="Heure prévue" type="time" v-model="data.time" />
                 <div class="flex flex-row items-center col-span-2 justify-end gap-x-3">
@@ -270,7 +270,7 @@
     }
     function onSubmit() {
         loading_submit.value = true
-        checklistService.store(data.value)
+        // checklistService.store(data.value)
         checklistService.store(data.value)
         .then(res=>{
             console.log(res.data)
@@ -290,5 +290,9 @@
     })
     watch(data.value, () => {
         disabled_submit.value=Object.values(data.value).some(value=>value==undefined||value=='')
+    })
+    watch(()=>data.value.type,()=>{
+        const site=ChecklistTypeData.find(item=>data.value.type==item.value)?.site
+        data.value.site=site
     })
 </script>

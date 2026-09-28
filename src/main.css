@@ -106,11 +106,11 @@
   }
 
   thead {
-    @apply bg-slate-50;
+    @apply bg-slate-50 z-0;
   }
 
   thead th {
-    @apply px-6 py-4 text-left text-xs w-fit font-bold uppercase tracking-wider text-text-secondary;
+    @apply px-6 py-4 text-left text-xs w-fit z-0  font-bold uppercase tracking-wider text-text-secondary;
   }
 
   tbody {
@@ -118,7 +118,7 @@
   }
 
   tbody td {
-    @apply border-t border-border px-6 py-4 h-fit text-sm text-text-primary;
+    @apply border-t border-border px-6  py-4 h-fit text-sm text-text-primary;
   }
 
   tbody tr {

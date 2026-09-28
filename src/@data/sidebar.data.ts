@@ -22,6 +22,11 @@ const sidebar_routes = [
                 name: "USERS",
 
             },
+            {
+                label: "personnels",
+                name: "PERSONNEL",
+
+            },
 
             {
                 label: "activity",

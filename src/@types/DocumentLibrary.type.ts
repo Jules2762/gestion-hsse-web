@@ -1,3 +1,5 @@
+import type { UserDataType } from "./User.type"
+
 type FolderType={
     id:string|number,
     name:string,
@@ -5,6 +7,9 @@ type FolderType={
     description?:string,
     created_by:string|number,
     created_at:string,
+    creator:UserDataType,
+    children?:FolderType[],
+    documents?: DocumentType[]
     
 }
 type DocumentType={
@@ -19,6 +24,10 @@ type DocumentType={
     uploaded_by:string|number,
     created_at:string
 }
+type FolderContentType={
+    folders?:FolderType[],
+    documents?:DocumentType[]
+}
 export type{
-    DocumentType,FolderType
+    DocumentType,FolderType,FolderContentType
 }

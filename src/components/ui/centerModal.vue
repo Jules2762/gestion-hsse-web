@@ -13,7 +13,7 @@
                 </div>
                 <div class="bg-gray-50 h-16 p-4 flex  flex-row justify-between gap-3 items-center border-t border-gray-300">
                     <Button variant="outline" @click="onClose" full-width>{{ cancelTitle }}</Button>
-                    <Button @click="onConfirm()" :variant="confirmVariant" :loading="confirmLoading" full-width>{{ confirmTitle }}</Button>
+                    <Button @click="onConfirm" :variant="confirmVariant" :loading="confirmLoading" full-width>{{ confirmTitle }}</Button>
                     
                 </div>
             </div>
@@ -27,10 +27,10 @@ import { computed } from 'vue';
 
 type propsType={
     isOpen?:boolean,
-    onClose?:()=>{},
+    onClose?:()=>void,
     title?:string,
     titleVariant?:"primary"|"danger"|"warning"|"normal",
-    onConfirm:()=>void,
+    onConfirm?:()=>void,
     cancelTitle?:string,
     confirmTitle?:string,
     confirmVariant?:ButtonVariant,
