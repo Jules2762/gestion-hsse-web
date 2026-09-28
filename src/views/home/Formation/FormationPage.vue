@@ -1,7 +1,8 @@
 <template>
-    <div class="flex flex-row transition-all">
-        <div class="w-full ">
-           <Header title="formation.title" :thumbnails="[
+    <div class="flex flex-row transition-all w-full ">
+        <div class="w-full "
+            :class="selectedFormation && data.length > 0 ? 'w-[calc(100%-400px)] min-w-[calc(100%-400px)] max-w-[calc(100%-400px)]' : 'w-full'">
+            <Header title="formation.title" :thumbnails="[
                 {
                     'label': 'thumbnails.home',
                     'name': 'DASHBOARD'
@@ -15,31 +16,17 @@
             <div class="bg-white border-b border-gray-200">
                 <div class="h-16 px-4 flex flex-row items-center justify-between">
                     <div class="flex flex-row items-center gap-1">
-                        <button class="ribbon-btn ribbon-btn-primary" @click="router.push({ name: 'FORMATION_NEW' })">
-                            <SquarePlusIcon :size="18" />
-                            <span>{{ t('formation.actions.add') }}</span>
-                        </button>
-                        <button class="ribbon-btn" @click="router.push({ name: 'FORMATION_IMPORT' })">
-                            <CloudDownloadIcon :size="18" />
-                            <span>{{ t('formation.actions.import') }}</span>
-                        </button>
-
-                        <button class="ribbon-btn" :disabled="loading_export"
-                            :class="{ 'ribbon-btn-disabled': pagination.total === 0 || loading_export }"
-                            @click="exportData()">
-                            <DownloadIcon :size="18" v-if="loading_export == false" />
-                            <Loader v-else class="animate-spin" />
-                            <span>{{ t('formation.actions.export') }}</span>
-                            <span v-if="pagination.total" class="ribbon-btn-count">{{ pagination.total
-                                }}</span>
-                        </button>
-
-
-                        <div class="w-px h-8 bg-gray-300 mx-2" />
-
-
+                        <ButtonFilter is-primary :text="t('formation.actions.add')" :icon="SquarePlusIcon"
+                            @click="router.push({ name: 'FORMATION_NEW' })" />
+                        <ButtonFilter :text="t('formation.actions.import')"
+                            @click="router.push({ name: 'FORMATION_IMPORT' })" :icon="CloudDownloadIcon" />
+                        <ButtonFilter :text="t('formation.actions.export')" @click="exportData()"
+                            :loading="loading_export" :icon="DownloadIcon" :badge="pagination.total.toString()" />
+                        <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
+                        <!-- <ButtonFilter text="Personnels" :icon="Users" :badge="'100'" @click="router.push({
+                            name:'PERSONNEL'
+                        })"/> -->
                     </div>
-
                     <div class="flex flex-row items-center gap-2">
                         <div class="relative">
                             <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -60,16 +47,16 @@
             </div>
 
             <div class="flex flex-row transition-all">
-                <table class="transition-all" >
+                <table class="w-full">
                     <thead>
                         <tr>
-                            <th v-for="(item, index) in headers" :key="index" class="relative z-50">
+                            <th v-for="(item, index) in headers" :key="index">
                                 <div class="flex items-center gap-1 select-none"
                                     :class="sortableKeys[index] ? 'cursor-pointer' : ''"
                                     @click="sortableKeys[index] && toggleSort(sortableKeys[index]!)">
                                     <span>{{ item }}</span>
-                                    <component v-if="sortableKeys[index]" :is="sortIcon(sortableKeys[index])" :size="12"
-                                        class="text-gray-400" />
+                                    <!-- <component v-if="sortableKeys[index]" :is="sortIcon(sortableKeys[index])" :size="12"
+                                        class="text-gray-400" /> -->
                                 </div>
                             </th>
                         </tr>
@@ -80,13 +67,24 @@
                                 @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.formation = item as FormationDataType"
                                 :class="selectedFormation?.id == item.id ? 'bg-primary/10' : ''">
                                 <td>{{ item.id }}</td>
-                                <td>{{ item.date }}</td>
-                                <td>{{ item.title }}</td>
+                                <td class="text-nowrap">{{ item.date }}</td>
+                                <td class="truncate text-nowrap max-w-50">{{ item.title }}</td>
                                 <td>{{ item.type }}</td>
                                 <td>{{ item.volet }}</td>
                                 <td>{{ item.trainer }}</td>
                                 <td>{{ item.duration }}</td>
                                 <td>{{ item.target }}</td>
+                                <td>
+                                    <div class="inline-flex
+      items-center
+      rounded-full
+      border
+      px-3
+      py-1
+      text-xs
+      font-semibold" :class="getStyleStatus(item.status)">{{
+        FormationStatusJsonData.find(i=>i.value==item.status)?.label }}</div>
+                                </td>
 
                             </tr>
                             <tr>
@@ -130,19 +128,20 @@
                     </tbody>
                 </table>
 
-              
+
             </div>
         </div>
-        <div :class="selectedFormation && data.length > 0 ? 'w-120' : 'w-0'"
+        <div :class="selectedFormation && data.length > 0 ? 'w-100 min-w-100' : 'w-0'"
             v-if="selectedFormation && data.length > 0" class="
             scrollbar-hide
             bg-white
             border-l
             border-gray-200
-            
+            self-start
             p-5
             h-fit
             sticky top-0 bottom-0
+            
             overflow-y-auto
         ">
             <template v-if="selectedFormation || data.length > 0">
@@ -269,7 +268,7 @@
                         <h5>
                             {{
                                 selectedFormation.duration
-                            }}h
+                            }}
                         </h5>
                     </div>
 
@@ -319,7 +318,7 @@
                         <div>
                             <p class="
                                 text-xs
-                                text-gray-500
+                                text-gray-500 text-nowrap
                             ">
                                 Date
                             </p>
@@ -419,31 +418,60 @@
                         Participation
                     </h6>
 
-                    <div class="
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="
                         rounded-xl
                         bg-green-50
                         border
                         border-green-200
                         p-4
                     ">
-                        <div class="
+                            <div class="
                             flex
                             items-center
                             justify-between
                         ">
-                            <span>
-                                Participants
-                            </span>
+                                <span>
+                                    Prévus
+                                </span>
 
-                            <span class="
+                                <span class="
                                 text-lg
                                 font-semibold
                                 text-green-700
                             ">
-                                {{
-                                    selectedFormation.participant
-                                }}
-                            </span>
+                                    {{
+                                        selectedFormation.participant
+                                    }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="
+                        rounded-xl
+                        bg-green-50
+                        border
+                        border-green-200
+                        p-4
+                    ">
+                            <div class="
+                            flex
+                            items-center
+                            justify-between
+                        ">
+                                <span>
+                                    Présents
+                                </span>
+
+                                <span class="
+                                text-lg
+                                font-semibold
+                                text-green-700
+                            ">
+                                    {{
+                                        selectedFormation.participant
+                                    }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -475,81 +503,130 @@
 
             </template>
         </div>
-        <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
-            :actions="contextMenu.actions" :bottom_actions="contextMenu.bottom_actions" />
+        <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu" :actions="context_actions"
+            :bottom_actions="context_bottom_actions" />
     </div>
-    <CenterModal :confirm-loading="loading_delete" title-variant="danger" :is-open="modal_delete" @close="modal_delete=false" @confirm="deleteFormation(contextMenu?.formation?.id as string | number)" :title="t('formation.notification.delete.confirmation.title')" confirm-variant="danger">
+    <CenterModal :confirm-loading="loading_delete" title-variant="danger" :is-open="modal_delete"
+        @close="modal_delete = false" @confirm="deleteFormation(contextMenu?.formation?.id as string | number)"
+        :title="t('formation.notification.delete.confirmation.title')" confirm-variant="danger">
         <p>{{ t('formation.notification.delete.confirmation.message') }}</p>
     </CenterModal>
+    <LoadingUI v-if="loading_fetch" />
 </template>
 
 <script setup lang="ts">
-    import {  onMounted, reactive, ref, watch } from 'vue';
+    import { computed, onMounted, reactive, ref, watch } from 'vue';
     import Header from '../../../components/shared/Header.vue';
     import {
         ArrowDownIcon,
         ArrowUpDownIcon,
         ArrowUpIcon,
+        CircleSlash,
         CloudDownloadIcon,
-       
+
         DownloadIcon,
         Edit,
         Eye,
         Loader,
-      
+
         SearchIcon,
         SquarePlusIcon,
         Trash2,
+        Users,
         XIcon,
     } from '@lucide/vue';
 
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
     import { router } from '../../../router/index.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
-    import type { FormationDataType, FormationFilterType, FormationType, VoletType } from '../../../@types/Formation.type.ts';
+    import type { FormationDataType, FormationFilterType, FormationStatusType, FormationType, VoletType } from '../../../@types/Formation.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
     import { useFormationService } from '../../../core/services/formation.service.ts';
     import { useI18n } from 'vue-i18n';
     import { toast } from 'vue3-toastify';
-import CenterModal from '../../../components/ui/centerModal.vue';
-import Button from '../../../components/ui/Button.vue';
-import { exportUtils } from '../../../core/utils/export.utils.ts';
-    const headers = ["#", "DATE", "INTITULE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible"]
+    import CenterModal from '../../../components/ui/centerModal.vue';
+    import Button from '../../../components/ui/Button.vue';
+    import { exportUtils } from '../../../core/utils/export.utils.ts';
+    import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
+    import LoadingUI from '../../../components/ui/LoadingUI.vue';
+    import { FormationStatusJsonData } from '../../../@data/Formation.data.ts';
+    const headers = ["Ref", "DATE", "INTITULE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible", "Status"]
     const data = ref<FormationDataType[]>([])
-  
-    const selectedFormation = ref<FormationDataType|null>()
-    const modal_delete=ref(false)
-    const contextMenu = ref<
+
+    const selectedFormation = ref<FormationDataType | null>()
+    const modal_delete = ref(false)
+    type ContextMenuState = {
+        isOpen: boolean
+        contextMenu?: contextMenuType
+        formation?: FormationDataType
+
+    }
+    const loading_fetch = ref<boolean>(false)
+        const loading_cancel=ref<boolean>(false)
+            const contextMenu = ref<ContextMenuState>(
         {
-            isOpen: boolean, contextMenu?: contextMenuType, formation?: FormationDataType, actions?: ContextMenuActionType[], bottom_actions: ContextMenuActionType[]
-        }>(
-            {
-                isOpen: false,
-                formation: undefined,
-                actions: [
-                    {
-                        label: "Détails",
-                        icon: Eye,
-                        onClick:()=>selectedFormation.value=contextMenu.value.formation
-                    },
-                    {
-                        label: "Modifier",
-                        icon: Edit,
-                        variant:'WARNING'
-                    },
-
-
-                ],
-                bottom_actions: [
-                    {
-                        label: "Suprimer",
-                        icon: Trash2,
-                        variant: "DANGER",
-                        onClick: () => modal_delete.value=true
-                    },
-                ]
+            isOpen: false,
+            formation: undefined
+        }
+    )
+    const context_actions = computed<ContextMenuActionType[]>(() => [
+        {
+            label: "Détails",
+            icon: Eye,
+            onClick: () => {
+                selectedFormation.value = contextMenu.value.formation
             }
-        )
+        },
+
+        {
+            label: "Participants",
+            icon: Users,
+            onClick: () => {
+                router.push({
+                    name: 'FORMATION_PARTICIPANT',
+                    params: {
+                        id: contextMenu.value.formation?.id
+                    }
+                })
+            }
+        },
+
+        {
+            label: "Modifier",
+            icon: Edit,
+            variant: 'WARNING',
+            onClick() {
+                router.push({
+                    name: 'FORMATION_UPDATE',
+                    params: {
+                        id: contextMenu.value.formation?.id
+                    }
+                })
+            },
+        },
+
+        ...(contextMenu.value.formation?.status !== 'CANCELLED'
+            ? [
+                {
+                    label: "Annuler",
+                    variant: "DANGER",
+                    icon: CircleSlash,
+                    onClick: () => cancelFormation(),
+                    loading: loading_cancel.value
+                } as ContextMenuActionType
+            ]
+            : []
+        ),
+    ])
+    const context_bottom_actions: ContextMenuActionType[] = [
+        {
+            label: "Suprimer",
+            icon: Trash2,
+            variant: "DANGER",
+            onClick: () => modal_delete.value = true
+        },
+    ]
+    
     const { t } = useI18n()
     const formation = useFormationService()
     type FilterKey = 'type' | 'volet' | 'trainer' | 'target'
@@ -579,7 +656,7 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
     const columnOptions = ref<Record<string, string[]>>()
     const loading_data = ref<boolean>(false)
     const loading_export = ref<boolean>(false)
-        const loading_delete=ref<boolean>(false)
+    const loading_delete = ref<boolean>(false)
     function clearAllFilters() {
         for (const key of filterableKeys) filters[key] = []
         dateRange.from = ''
@@ -621,7 +698,7 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
 
 
 
-  
+
     function fetchData(params?: FormationFilterType) {
         loading_data.value = true
         formation.fetchData(params).then((res) => {
@@ -652,10 +729,10 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
                 columnOptions.value = res.data
             })
     }
-    function onSuccessExported(){
+    function onSuccessExported() {
         toast.success(t('formation.notification.export.success'))
     }
-    function onErrorExported(){
+    function onErrorExported() {
         toast.error(t('formation.notification.export.error'))
     }
     function exportData() {
@@ -669,7 +746,7 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
             search: searchQuery.value
         })
             .then(res => {
-                exportUtils(res.data.data as FormationDataType[], exportFields,onSuccessExported,onErrorExported,'export_training')
+                exportUtils(res.data.data as FormationDataType[], exportFields, onSuccessExported, onErrorExported, 'export_training')
             })
             .catch(err => {
                 console.error(err)
@@ -686,8 +763,25 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
                 loading_export.value = false
             })
     }
+    function cancelFormation(){
+        loading_cancel.value=true
+        formation.cancel(contextMenu.value.formation?.id as string)
+            .then(res=>{
+                data.value = data.value.map(item =>
+                    item.id === contextMenu.value.formation?.id
+                        ? { ...item, status: "CANCELLED" }
+                        : item
+                )
+            })
+            .catch(err=>{
+                console.error(err)
+            })
+            .finally(()=>{
+                loading_cancel.value=false
+            })
+    }
     function deleteFormation(id: string | number) {
-        loading_delete.value=true
+        loading_delete.value = true
         formation.delete(id)
             .then(res => {
 
@@ -696,7 +790,7 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
                 )
 
                 fetchData({
-                    page:pagination.value.current_page,
+                    page: pagination.value.current_page,
                     type: filters.type as FormationType[],
                     section: filters.volet as VoletType[],
                     date: dateRange,
@@ -704,8 +798,8 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
                     target: filters.target,
                     search: searchQuery.value
                 })
-                modal_delete.value=false
-                selectedFormation.value=null
+                modal_delete.value = false
+                selectedFormation.value = null
             })
             .catch(
                 err => {
@@ -717,9 +811,40 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
                     }
                 }
             )
-            .finally(()=>{
+            .finally(() => {
                 loading_delete.value = false
             })
+    }
+    function getStyleStatus(value: FormationStatusType) {
+        switch (value) {
+            case "POSTPONED":
+                return `
+        bg-amber-100
+        text-amber-700
+        border-amber-200
+      `
+
+            case 'COMPLETED':
+                return `
+        bg-green-100
+        text-green-700
+        border-green-200
+      `
+
+            case 'CANCELLED':
+                return `
+        bg-red-100
+        text-red-700
+        border-red-200
+      `
+
+            default:
+                return `
+        bg-slate-100
+        text-slate-700
+        border-slate-200
+      `
+        }
     }
     watch([filters, dateRange, searchQuery], () => {
         pagination.value.current_page = 1
@@ -750,17 +875,21 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
     }, {
         immediate: false
     })
-    watch(()=>modal_delete.value,()=>{
-        if(modal_delete.value==true){
-           
-                selectedFormation.value = contextMenu.value.formation
-            
-            contextMenu.value.isOpen=false
+
+    watch(() => modal_delete.value, () => {
+        if (modal_delete.value == true) {
+
+            selectedFormation.value = contextMenu.value.formation
+
+            contextMenu.value.isOpen = false
         }
     })
     onMounted(() => {
+
+
         fetchDataFilters()
         fetchData()
+
     })
 
 </script>
@@ -778,5 +907,4 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
     transition:
         all 0.25s ease-in-out;
 }
-
 </style>

@@ -49,6 +49,7 @@ type LangType = {
         "dashboard": string,
         "administration": string,
         "users": string,
+        "personnels": string,
         "activity": string,
         "documents": string,
         "training": string,
@@ -65,8 +66,10 @@ type LangType = {
     },
     "thumbnails": {
         "home": string,
+        "administration": string,
         "document library": string,
         "training": string,
+        "personnels": string,
         "inspection":string,
         "equipment-monitoring":string,
         "new":string,

@@ -35,6 +35,7 @@ export const en: LangType = {
         "dashboard": "Dashboard",
         "administration": "Administration",
         "users": "Users",
+        "personnels": 'Personnels',
         "activity": "Activity",
         "documents": "Documents",
         "training": "Training",
@@ -63,8 +64,10 @@ export const en: LangType = {
     //============================
     "thumbnails": {
         "home": "Home",
+        "administration": 'Administration',
         "document library": "Document Library",
         "training": "Training",
+        "personnels": 'Personnel',
         "equipment-monitoring": "Equipment monitoring",
         "inspection": "Inspection",
         "new": "New",

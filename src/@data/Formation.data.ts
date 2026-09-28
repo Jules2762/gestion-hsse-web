@@ -1,8 +1,26 @@
-import type { FormationType, VoletType } from "../@types/Formation.type"
+import type { FormationType, VoletType, FormationStatusType, FormationStatusJsonType } from "../@types/Formation.type"
 
 const VoletData: VoletType[] = ["Environnement", "Santé", "Sécurité", "Sûreté"]
-const FormationTypeData: FormationType[] = ["Atelier", "Exercice d urgence", "Formation", "Induction", "Sensibilisation"]
-
+const FormationTypeData: FormationType[] = ["Atelier", "Exercice d'urgence", "Formation", "Induction", "Sensibilisation"]
+const FormationStatusData:FormationStatusType[]=["SCHEDULED","COMPLETED","CANCELLED","POSTPONED"]
+const FormationStatusJsonData: FormationStatusJsonType[] = [
+    {
+        label: 'Planifiée',
+        value: 'SCHEDULED'
+    },
+    {
+        label: 'Terminée',
+        value: 'COMPLETED'
+    },
+    {
+        label: 'Annulée',
+        value: 'CANCELLED'
+    },
+    {
+        label: 'Reportée',
+        value: 'POSTPONED'
+    }
+]
 
 const FormationTypeJsonData: {
     label: string,
@@ -21,7 +39,8 @@ const VoletJsonData: {
 export {
     VoletData,
     FormationTypeData,
-   
     FormationTypeJsonData,
-    VoletJsonData
+    VoletJsonData,
+    FormationStatusData,
+    FormationStatusJsonData
 }

@@ -14,13 +14,15 @@
     " :style="contextMenuStyle" @click.stop>
         <button v-for="(item, index) in actions" :key="index" @click="item.onClick"
             class="flex flex-row gap-x-3 items-center  w-full p-2 " :class="themeVariant(item.variant)">
-            <component :is="item.icon" :size="21"/>
+            <component :is="item.icon" :size="21" v-if="!item.loading"/>
+            <Loader2Icon v-else class="animate-spin"/>
             <span class="text-[14px]">{{ item.label }}</span>
         </button>
        <div class="border-t border-gray-300" v-if="bottom_actions?.length">
            <button v-for="(item, index) in bottom_actions" :key="index" @click="item.onClick"
                 class="flex flex-row gap-x-3 items-center   w-full p-2 " :class="themeVariant(item.variant)">
-                <component :is="item.icon" :size="21" />
+                <component :is="item.icon" :size="21" v-if="!item.loading"/>
+                <Loader2Icon v-else class="animate-spin" />
                 <span class="text-[14px]">{{ item.label }}</span>
             </button>
        </div>
@@ -29,6 +31,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import type { ContextMenuPropsType, ContextMenuVariantType } from '../../@types/ContextMenu.type';
+import { Loader2Icon } from '@lucide/vue';
 
 const props = defineProps<ContextMenuPropsType>()
 const div_ref = ref<HTMLDivElement | null>(null)

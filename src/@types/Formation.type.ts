@@ -1,5 +1,10 @@
 type VoletType="Environnement"|"Santé"|"Sécurité"|"Sûreté"
 type FormationType="Atelier"|"Exercice d'urgence"|"Formation"|"Induction"|"Sensibilisation"
+type FormationStatusType="SCHEDULED"|"COMPLETED"|"CANCELLED"|"POSTPONED"
+type FormationStatusJsonType={
+    label:string,
+    value: FormationStatusType
+}
 type FormationFilterType={
     page?:number,
     per_page?:number,
@@ -22,7 +27,8 @@ type FormationFormType={
     duration:string,
     target:string,
     participant:number,
-    target_type:string
+    target_type:string,
+    status?:FormationStatusType
 }
 type FormationDataType={
     id:number|string,
@@ -34,7 +40,8 @@ type FormationDataType={
     duration:string,
     target:string,
     participant:number,
-    target_type:string
+    target_type:string,
+    status:FormationStatusType,
     creator:{
         id:string|number,
         first_name:string,
@@ -50,5 +57,7 @@ export type {
     FormationFormType,
     FormationType,
     FormationDataType,
-    FormationFilterType
+    FormationFilterType,
+    FormationStatusJsonType,
+    FormationStatusType
 }

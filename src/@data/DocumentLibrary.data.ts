@@ -1,4 +1,4 @@
-import type { DocumentType, FolderType } from "../@types/documentLibrary.type";
+import type { DocumentType, FolderType } from "../@types/DocumentLibrary.type"
 
 const DocumentData: DocumentType[] = [
     {

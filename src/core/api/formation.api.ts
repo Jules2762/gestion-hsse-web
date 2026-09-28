@@ -4,8 +4,14 @@ export default {
     index(params?: FormationFilterType){
         return api.get("/home/formations", { params });
     },
+    show(id:string|number){
+        return api.get("/home/formations/"+id)
+    },
     store(data:FormationFormType){
         return api.post("/home/formations", data);
+    },
+    update(id:string|number,data:FormationFormType){
+        return api.put("/home/formations/"+id, data);
     },
     storeBatch(formations:FormationFormType[]){
         return api.post("/home/formations/import",{formations})
@@ -18,7 +24,8 @@ export default {
     },
     delete(id: string | number) {
         return api.delete(`/home/formations/${id}`)
+    },
+    cancel(id:string|number){
+        return api.put("/home/formations/cancel/"+id)
     }
-    
-    
 }

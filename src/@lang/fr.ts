@@ -34,6 +34,7 @@ export const fr: LangType = {
         "dashboard": "Tableau de bord",
         "administration": "Administration",
         "users": "Utilisateurs",
+        "personnels": 'Personnels',
         "activity": "Activité",
         "documents": "Documents",
         "training": "Formation",
@@ -62,8 +63,10 @@ export const fr: LangType = {
     //============================
     "thumbnails": {
         "home": "Accueil",
+        "administration": 'Administration',
         "document library": "Bibliothèque documentaire",
         "training": "Formation",
+        "personnels": 'Personnel',
         "equipment-monitoring": "Equipment monitoring",
         "inspection": "Inspection",
         "new": "Nouveau",

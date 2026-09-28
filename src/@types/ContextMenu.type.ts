@@ -9,6 +9,7 @@ type ContextMenuActionType = {
     label?: string,
     icon?: Component,
     variant?:ContextMenuVariantType,
+    loading?:boolean,
     onClick?: () => void
 }
 type ContextMenuPropsType = {

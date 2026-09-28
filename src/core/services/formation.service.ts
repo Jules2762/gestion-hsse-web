@@ -11,6 +11,14 @@ export const useFormationService=defineStore('formation-service',{
             const response=await formationApi.store(data)
             return response
         },
+        async update(id:string|number,data:FormationFormType){
+            const response=await formationApi.update(id,data)
+            return response
+        },
+        async show(id:string|number){
+            const response=await formationApi.show(id)
+            return response
+        },
         async storeBatch(data:FormationFormType[]){
             const response=await formationApi.storeBatch(data)
             return response
@@ -23,6 +31,9 @@ export const useFormationService=defineStore('formation-service',{
         },
         async delete(id: string | number) {
             return await formationApi.delete(id)
+        },
+        async cancel(id: string | number) {
+            return await formationApi.cancel(id)
         }
 
     }

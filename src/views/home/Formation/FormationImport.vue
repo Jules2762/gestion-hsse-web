@@ -128,9 +128,9 @@
 
                 </div>
                 <!-- Télécharger modèle -->
-               <div v-if="hasFile" class=" flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <div v-if="hasFile" class=" flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 
-           
+
                     <button type="button" @click="downloadTemplate"
                         class="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-surface px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:shadow-md">
 
@@ -140,7 +140,7 @@
 
                     </button>
 
-              </div>
+                </div>
 
             </div>
 
@@ -233,8 +233,8 @@
                         </div>
 
                     </div>
-                   <div class="flex flex-row items-center gap-x-3">
-                       <!-- Importer -->
+                    <div class="flex flex-row items-center gap-x-3">
+                        <!-- Importer -->
 
                         <button type="button" :disabled="!canImport && loading_btn" @click="prepareImport"
                             class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
@@ -257,7 +257,7 @@
                             Supprimer
 
                         </button>
-                   </div>
+                    </div>
 
                 </div>
 
@@ -359,8 +359,7 @@
             <!-- PREVIEW -->
             <!-- ========================================================= -->
 
-            <div v-if="hasFile"
-                class="preview-panel overflow-hidden rounded border border-gray-200  ">
+            <div v-if="hasFile" class="preview-panel overflow-hidden rounded border border-gray-200  ">
 
                 <!-- Header preview -->
 
@@ -669,7 +668,7 @@
             <!-- ACTIONS -->
             <!-- ========================================================= -->
 
-           
+
 
             <!-- ========================================================= -->
             <!-- MESSAGE -->
@@ -760,7 +759,7 @@
     | TYPES
     |--------------------------------------------------------------------------
     */
-    const loading_btn=ref(false)
+    const loading_btn = ref(false)
     type ImportFieldType =
         | "string"
         | "number"
@@ -1496,7 +1495,58 @@
     | MAPPING DES COLONNES
     |--------------------------------------------------------------------------
     */
+    function convertDurationToTime(value: any): string {
+        if (
+            value === null ||
+            value === undefined ||
+            String(value).trim() === ""
+        ) {
+            return ""
+        }
 
+        const stringValue = String(value).trim()
+
+        // Déjà au format HH:mm
+        if (/^\d{1,3}:\d{2}$/.test(stringValue)) {
+            const [hours, minutes] = stringValue.split(":").map(Number)
+
+            if (
+                Number.isInteger(hours) &&
+                minutes >= 0 &&
+                minutes <= 59
+            ) {
+                return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+            }
+
+            return ""
+        }
+
+        // Accepte 14.6 ou 15,6
+        const normalized = stringValue.replace(",", ".")
+        const number = Number(normalized)
+
+        if (
+            Number.isNaN(number) ||
+            number < 0
+        ) {
+            return ""
+        }
+
+        const hours = Math.floor(number)
+
+        // Partie décimale convertie en minutes
+        const minutes = Math.round((number - hours) * 60)
+
+        // Exemple :
+        // 14.6 -> 14h + 0.6 * 60 = 36 min
+        // 15.6 -> 15h + 0.6 * 60 = 36 min
+
+        if (minutes === 60) {
+            return `${String(hours + 1).padStart(2, "0")}:00`
+        }
+
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+    }
     function initializeMapping() {
 
         const mapping:
@@ -1958,19 +2008,18 @@
                     |--------------------------------------------------------------------------
                     */
 
-                    else if (
-                        field.type === "number"
-                    ) {
+                    else if (field.type === "number") {
 
-                        result[field.key] =
-                            value === "" ||
-                                value === null ||
-                                value === undefined
-                                ? 0
-                                : Number(
-                                    value
-                                )
-
+                        if (field.key === "duration") {
+                            result[field.key] = convertDurationToTime(value)
+                        } else {
+                            result[field.key] =
+                                value === "" ||
+                                    value === null ||
+                                    value === undefined
+                                    ? 0
+                                    : Number(value)
+                        }
                     }
 
 
@@ -2016,7 +2065,7 @@
     const importErrors = ref<string[]>([])
     async function prepareImport() {
         if (!canImport.value) return
-        loading_btn.value=true
+        loading_btn.value = true
         isImporting.value = true
         importErrors.value = []
 
@@ -2044,7 +2093,7 @@
             })
             .finally(() => {
                 isImporting.value = false
-                loading_btn.value=false
+                loading_btn.value = false
             })
 
 

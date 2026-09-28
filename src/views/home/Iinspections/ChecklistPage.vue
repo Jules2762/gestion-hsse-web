@@ -39,7 +39,7 @@
                     <table class="">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>Ref</th>
                                 <th>Titre</th>
                                 <th>Site</th>
                                 <th>Lieu</th>

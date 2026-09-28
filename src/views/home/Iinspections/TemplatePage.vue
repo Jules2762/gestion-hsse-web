@@ -31,7 +31,7 @@
                         <tr>
                             <th>#</th>
                             <th>Titre</th>
-                            <th>Description</th>
+                            <th>Site</th>
                             <th>Section</th>
                             <th>Question</th>
 
@@ -43,7 +43,7 @@
                             :key="index" @click="right_sidebar.isOpen = true; right_sidebar.template = item">
                             <td>{{ item.id }}</td>
                             <td>{{ item.title }}</td>
-                            <td class="truncate max-w-70">{{ item.description }}</td>
+                            <td class="truncate max-w-70">{{ item.site??'' }}</td>
                             <td>{{ item.sections.length }}</td>
                             <td>{{item.sections.reduce((total, section) => total + section.items.length, 0)}}</td>
 
