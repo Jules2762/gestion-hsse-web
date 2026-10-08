@@ -3,7 +3,7 @@
         <!-- Click-outside overlay to close any open popover -->
         <div v-if="openFilter" class="fixed inset-0 z-40" @click="openFilter = null" />
 
-        <div class="px-4 pb-3 flex flex-row flex-wrap items-center gap-2 min-h-[2.25rem]">
+        <div class="px-4 pb-3 flex flex-row flex-wrap items-center gap-2 min-h-9">
             <span class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400 mr-1">
                 <SlidersHorizontalIcon :size="13" />
                 Filtres
@@ -138,17 +138,14 @@
 
     const activeFilterChips = computed<Chip[]>(() => {
         const chips: Chip[] = []
-
         if (hasDateFilter.value) {
             chips.push({ key: '__date__', label: props.dateLabel, value: dateFilterLabel.value })
         }
-
         for (const key of props.filterableKeys) {
             for (const value of props.filters[key] ?? []) {
                 chips.push({ key, label: props.columnLabels[key], value })
             }
         }
-
         return chips
     })
 

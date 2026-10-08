@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import formationApi from "../api/formation.api"
-import type { FormationFilterType, FormationFormType } from "../../@types/Formation.type";
+import type { FormationFilterType, FormationFormType, ParticipantStoreFormType } from "../../@types/Formation.type";
 
 export const useFormationService=defineStore('formation-service',{
     actions:{
@@ -34,6 +34,18 @@ export const useFormationService=defineStore('formation-service',{
         },
         async cancel(id: string | number) {
             return await formationApi.cancel(id)
+        },async getParticipants(id:string|number){
+            return await formationApi.getParticipant(id)
+        },
+        async addParticipant(data:ParticipantStoreFormType){
+            return await formationApi.addParticipant(data)
+        },
+        async deleteParticipant(formation_id: string | number, participant_id: string | number){
+            return await formationApi.deleteParticipant(formation_id, participant_id)
+        } 
+        ,
+        async reschedule(id:string|number,date:string){
+            return await formationApi.reschedule(id,date)
         }
 
     }

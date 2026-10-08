@@ -131,12 +131,14 @@
                         label: 'Modifier',
                         icon: Edit,
                         variant: 'WARNING',
-                        onClick: () => router.push({
-                            name: 'UPDATE_USER',
-                            params: {
-                                id: context_menu_user?.id
-                            }
-                        })
+                        onClick() {
+                            router.push({
+                                name: 'UPDATE_USER',
+                                params: {
+                                    id: context_menu_user?.id
+                                }
+                            }) 
+                        }
                     } satisfies ContextMenuActionType] : []),
                 ...(canChangeStatus
                     ? [{
@@ -401,7 +403,6 @@
 
     import { UserExportFields, UserRoleData, UserRoleDataJson, UserStatusData } from '../../../@data/User.data';
 
-    import { router } from '../../../router/index.ts';
     import CenterModal from '../../../components/ui/centerModal.vue';
     import UserStatus from '../../../components/features/user/UserStatus.vue';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
@@ -414,6 +415,7 @@
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
     import InputFilter from '../../../components/ui/InputFilter.vue';
     import { exportUtils } from '../../../core/utils/export.utils.ts';
+    import { router } from '../../../router';
 
     const data = ref<UserDataType[]>()
     const ban_modal = ref(false)

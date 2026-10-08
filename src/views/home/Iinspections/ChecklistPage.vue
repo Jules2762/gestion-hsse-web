@@ -32,7 +32,8 @@
                     <InputFilter :icon="Search" v-model="search" />
                 </div>
                 <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLabels" :filters="filters"
-                    :column-options="columnOptions" :results-count="pagination.to" :results-total="pagination.total" @clear-all="clearFilters()"/>
+                    :column-options="columnOptions" :results-count="pagination.to" :results-total="pagination.total"
+                    @clear-all="clearFilters()" />
             </div>
             <div class="  flex flex-row ">
                 <div class="transition-all w-full">
@@ -81,7 +82,7 @@
 
             </div>
             <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
-                :actions="contextMenu.actions" />
+                :actions="context_menu_actions" />
         </div>
 
         <div v-if="selected_checklist" class="
@@ -485,7 +486,7 @@
     import { Download, Edit, Eye, LayoutTemplateIcon, Plus, Search, Send, Trash2, UploadCloud } from '@lucide/vue';
     import Header from '../../../components/shared/Header.vue';
     import Button from '../../../components/ui/Button.vue';
-    import { onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch, type ComputedRef } from 'vue';
 
     import { ChecklistsData, ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
@@ -508,10 +509,13 @@
         isOpen: boolean,
         contextMenu?: contextMenuType,
         checklist?: Checklistype,
-        actions?: ContextMenuActionType[]
+
     }>({
         isOpen: false,
-        actions: [
+
+    })
+    const context_menu_actions: ComputedRef<ContextMenuActionType[]> = computed(() => [
+        ...(contextMenu.value.checklist?.status == 'COMPLETED' ? [
             {
                 label: "Détails",
                 icon: Eye,
@@ -534,14 +538,14 @@
                 variant: 'WARNING',
                 icon: Edit
             },
-            {
-                label: "Supprimer",
-                variant: 'DANGER',
-                icon: Trash2
-            },
+        ] as ContextMenuActionType[] : []),
+        ...(contextMenu.value.checklist?.status == 'DRAFT' ? [{
+            label: "Supprimer",
+            variant: 'DANGER',
+            icon: Trash2
+        }] as ContextMenuActionType[] : []),
 
-        ]
-    })
+    ])
     const filterableKeys: string[] = ['type', 'status', 'inspector']
     const columnLabels: Record<string, string> = {
         'type': 'Type',
@@ -586,13 +590,13 @@
                 console.error(err)
             })
     }
-    function clearFilters(){
-        filters.value.type=[]
-        filters.value.status=[]
-        filters.value.inspector=[]
-        search.value=''
-        dateRange.value.from=''
-        dateRange.value.to=''
+    function clearFilters() {
+        filters.value.type = []
+        filters.value.status = []
+        filters.value.inspector = []
+        search.value = ''
+        dateRange.value.from = ''
+        dateRange.value.to = ''
     }
     onMounted(() => {
         fetchFilters()
@@ -601,19 +605,19 @@
     watch([
         filters.value, () => search.value, dateRange.value
     ], () => {
-      
 
-       
+
+
         fetchData({
             page: 1,
             search: search.value,
-            status: filters.value.status.map(item=>ChecklistStatusJsonData.find(i=>i.label==item)?.value) as string[],
+            status: filters.value.status.map(item => ChecklistStatusJsonData.find(i => i.label == item)?.value) as string[],
             type: filters.value.type,
             inspector: filters.value.inspector,
             date: dateRange.value
         })
-    },{
-        immediate:false
+    }, {
+        immediate: false
     })
-   
+
 </script>

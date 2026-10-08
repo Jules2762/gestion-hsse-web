@@ -11,6 +11,8 @@ import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import "vue-awesome-paginate/dist/style.css";
 import i18n from './@lang/index.ts';
+import { VueDatePicker } from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const pinia=createPinia();
 const app=createApp(App)
@@ -26,4 +28,5 @@ app.use(VueAwesomePaginate)
 app.component('l-map', LMap);
 app.component('l-tile-layer', LTileLayer);
 app.component('l-marker', LMarker);
+app.component('VueDatePicker', VueDatePicker);
 app.mount('#app')
