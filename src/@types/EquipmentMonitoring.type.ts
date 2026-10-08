@@ -33,7 +33,7 @@ export type EquipmentMonitoringType = {
     panneau_event: boolean
     livret_fiche_reflexe: boolean
     politique: boolean
-
+    bac_de_retention:number,
     created_at?: string
 }
 
@@ -61,8 +61,8 @@ export type EquipmentMonitoringFormType = {
     point_de_rasso: number
     contact_d_urgence: number
     canne_d_enfutage: number
-    panneau_depotage_en_cours: number
-
+    panneau_depotage_en_cours: number,
+    bac_de_retention: number,
     picto_danger_tgbt: boolean
     panneau_event: boolean
     livret_fiche_reflexe: boolean

@@ -40,6 +40,7 @@ type FormationDataType={
     duration:string,
     target:string,
     participant:number,
+    participant_count?:number,
     target_type:string,
     status:FormationStatusType,
     creator:{
@@ -50,7 +51,10 @@ type FormationDataType={
     },
     created_at:string,
     updated_at:string
-
+}
+type ParticipantStoreFormType = {
+    formation_id: string | number,
+    personnel_id: string | number
 }
 export type {
     VoletType,
@@ -59,5 +63,6 @@ export type {
     FormationDataType,
     FormationFilterType,
     FormationStatusJsonType,
-    FormationStatusType
+    FormationStatusType,
+    ParticipantStoreFormType
 }

@@ -7,6 +7,9 @@ export const useEquipmentMonitoringService=defineStore("equipment-monitoring",{
         async index(params?:EquipmentMonitoringFilterType){
             return await equipmentMonitoringApi.index(params)
         },
+        async show(id:string|number){
+            return await equipmentMonitoringApi.show(id)
+        },
         async export(params?:EquipmentMonitoringFilterType){
             return await equipmentMonitoringApi.export(params)
         },
@@ -18,6 +21,9 @@ export const useEquipmentMonitoringService=defineStore("equipment-monitoring",{
         },
         async store(data:EquipmentMonitoringFormType){
             return await equipmentMonitoringApi.store(data);
+        },
+        async update(id:string|number,data:EquipmentMonitoringFormType){
+            return await equipmentMonitoringApi.update(id,data);
         },
         async storeBatch(data: {
             "equipments": EquipmentMonitoringFormType[]

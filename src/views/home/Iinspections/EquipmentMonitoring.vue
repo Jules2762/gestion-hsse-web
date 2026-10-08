@@ -94,6 +94,9 @@
                                     <td>
                                         {{ item.bas_plast }}
                                     </td>
+                                    <td>
+                                        {{ item.bac_de_retention }}
+                                    </td>
 
                                     <td>
                                         {{ item.pelles }}
@@ -177,10 +180,20 @@
                                             }}
                                         </span>
                                     </td>
-
                                     <td>
-                                        {{ item.created_at }}
+                                        <span :class="item.politique
+                                            ? 'text-green-600'
+                                            : 'text-red-600'
+                                            ">
+                                            {{
+                                                item.livret_fiche_reflexe
+                                                    ? 'Oui'
+                                                    : 'Non'
+                                            }}
+                                        </span>
                                     </td>
+
+                                  
 
 
                                 </tr>
@@ -191,13 +204,7 @@
                     </table>
 
 
-                    <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="[
-                        {
-                            label: 'Details',
-                            icon: Eye,
-                            onClick: () => { right_sidebar.isOpen = true; right_sidebar.equipment = context_menu.equipment }
-                        }
-                    ]" :bottom_actions="[
+                    <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="context_actions" :bottom_actions="[
                     {
                         label: 'Supprimer',
                         icon: Trash2,
@@ -674,13 +681,13 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch, type ComputedRef } from 'vue';
     import Header from '../../../components/shared/Header.vue';
     import type { EquipmentMonitoringFilterType, EquipmentMonitoringFormType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type.ts';
     import { EquipmentMonitoringFormData } from '../../../@data/EquipementMonitoring.data.ts';
-    import type { contextMenuType } from '../../../@types/ContextMenu.type.ts';
+    import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-    import { CloudDownloadIcon, DownloadIcon, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, XIcon } from '@lucide/vue';
+    import { CloudDownloadIcon, DownloadIcon, Edit, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
@@ -698,6 +705,31 @@
             isOpen: false,
             equipment: undefined
         }
+    )
+    const context_actions:ComputedRef<ContextMenuActionType[]>=computed( 
+         ()=>{return [
+            {
+                label: 'Details',
+                icon: Eye,
+                onClick: () => { right_sidebar.value.isOpen = true; right_sidebar.value.equipment = context_menu.value.equipment }
+            },
+            {
+                label: 'Modifier',
+                icon: Edit,
+                variant: 'WARNING',
+                onClick: () => {
+                    router.push(
+                        {
+                            name: 'EQUIPMENT_MONITORING_UPDATE',
+                            params: {
+                                id: context_menu.value.equipment?.id
+                            }
+                        }
+
+                    )
+                }
+            },
+        ]}
     )
     const context_menu = ref<{
         isOpen?: boolean,
@@ -718,6 +750,7 @@
         "CO₂",
         "Bac Métal",
         "Bac Plastique",
+        "Bac de retention",
         "Pelles",
         "Poubelles 120L",
         "Poubelles 240L",
@@ -732,6 +765,8 @@
         "Picto Danger TGBT",
         "Panneau Event",
         "Livret / Fiche Réflexe",
+        "Politique",
+        
 
 
     ]

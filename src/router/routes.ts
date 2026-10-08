@@ -26,6 +26,10 @@ import ProfilePage from "../views/home/profile/ProfilePage.vue";
 import ProfileUpdatePage from "../views/home/profile/ProfileUpdatePage.vue";
 import SettingPage from "../views/home/settings/SettingPage.vue";
 import FormationUpdate from "../views/home/Formation/FormationUpdate.vue";
+import EquipmentMonitoringUpdatePage from "../views/home/Iinspections/EquipmentMonitoringUpdatePage.vue";
+import PersonnelAddPage from "../views/home/administration/PersonnelAddPage.vue";
+import VmcPage from "../views/home/Iinspections/VmcPage.vue";
+import VMCAddPage from "../views/home/Iinspections/VMCAddPage.vue";
 
 
 const routes = [
@@ -95,6 +99,11 @@ const routes = [
                         component: Personnels
                     },
                     {
+                        path: "personnels/add",
+                        name: "PERSONNEL_ADD",
+                        component: PersonnelAddPage
+                    },
+                    {
                         path: "/activity",
                         name: "ACTIVITY",
                         component: ActivityPage
@@ -136,7 +145,7 @@ const routes = [
                 path: 'inspection',
                 name: 'INSPECTION',
                 redirect: {
-                    name: "ACTION"
+                    name: "CHECKLIST"
                 },
                 children: [
                     {
@@ -160,6 +169,16 @@ const routes = [
                         component: ChecklistDetailsPage
                     },
                     {
+                        path: "/vmc",
+                        name: "VMC",
+                        component: VmcPage
+                    },
+                    {
+                        path: "/vmc/add",
+                        name: "VMC_NEW",
+                        component: VMCAddPage
+                    },
+                    {
                         path: "/action",
                         name: "ACTION",
                         component: ActionPage
@@ -173,6 +192,11 @@ const routes = [
                         path: "/equipment-monitoring/new",
                         name: "EQUIPMENT_MONITORING_NEW",
                         component: EquipmentMonitoringNewPage
+                    },
+                    {
+                        path: "/equipment-monitoring/update/:id",
+                        name: "EQUIPMENT_MONITORING_UPDATE",
+                        component: EquipmentMonitoringUpdatePage
                     },
                     {
                         path: "/equipment-monitoring/import",

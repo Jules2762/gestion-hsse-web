@@ -28,6 +28,10 @@ type FolderContentType={
     folders?:FolderType[],
     documents?:DocumentType[]
 }
+type CreateFolderFormType={
+    parent_id?:string|number,
+    name:string
+}
 export type{
-    DocumentType,FolderType,FolderContentType
+    DocumentType,FolderType,FolderContentType,CreateFolderFormType
 }

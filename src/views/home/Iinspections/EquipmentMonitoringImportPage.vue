@@ -1,681 +1,485 @@
 <template>
-    <div class="min-h-screen  p-6 lg:p-8">
+    <div class="min-h-screen p-6 lg:p-8">
 
+        <div class="mx-auto max-w-7xl">
 
+            <!-- ========================================================= -->
+            <!-- HEADER + ETAPES -->
+            <!-- ========================================================= -->
 
+            <div class="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
 
-        <!-- ========================================================= -->
-        <!-- ETAPES -->
-        <!-- ========================================================= -->
-
-        <div
-            class="mb-6 rounded-2xl border flex flex-row items-center justify-between border-border bg-surface p-4 shadow-sm">
-
-            <div class="flex flex-wrap items-center gap-3">
-
-                <!-- STEP 1 -->
-
-                <div class="flex items-center gap-2">
-
-                    <div class="
-                            flex
-                            h-8
-                            w-8
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-primary
-                            text-sm
-                            font-bold
-                            text-white
-                        ">
-                        1
-                    </div>
-
-                    <span class="text-sm font-medium text-text-primary">
-                        Fichier
-                    </span>
-
+                <div class="max-w-xl">
+                    <h1 class="text-2xl font-semibold text-text-primary">
+                        Importer le suivi matériel
+                    </h1>
+                    <p class="mt-1.5 text-sm text-text-secondary">
+                        Chargez votre fichier Excel, contrôlez les données, puis lancez l'importation.
+                    </p>
                 </div>
 
+                <ol class="flex items-center" aria-label="Progression de l'importation">
+                    <template v-for="(step, i) in [
+                        { n: 1, label: 'Fichier', state: hasFile ? 'done' : 'active' },
+                        { n: 2, label: 'Prévisualisation', state: canImport ? 'done' : hasFile ? 'active' : 'todo' },
+                        { n: 3, label: 'Importation', state: canImport ? 'active' : 'todo' }
+                    ]" :key="step.n">
 
-                <div class="h-px w-10 bg-border"></div>
+                        <li class="flex items-center gap-2.5"
+                            :aria-current="step.state === 'active' ? 'step' : undefined">
+                            <span
+                                class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors"
+                                :class="step.state === 'done'
+                                    ? 'bg-primary text-white'
+                                    : step.state === 'active'
+                                        ? 'bg-primary-light text-primary ring-2 ring-primary'
+                                        : 'bg-surface-alt text-text-muted'">
+                                {{ step.state === 'done' ? '✓' : step.n }}
+                            </span>
+                            <span class="hidden text-sm font-medium sm:block"
+                                :class="step.state === 'todo' ? 'text-text-muted' : 'text-text-primary'">
+                                {{ step.label }}
+                            </span>
+                        </li>
 
+                        <li v-if="i < 2" aria-hidden="true" class="mx-3 h-0.5 w-8 rounded transition-colors sm:w-14"
+                            :class="step.state === 'done' ? 'bg-primary' : 'bg-border'" />
 
-                <!-- STEP 2 -->
-
-                <div class="flex items-center gap-2">
-
-                    <div class="
-                            flex
-                            h-8
-                            w-8
-                            items-center
-                            justify-center
-                            rounded-full
-                            text-sm
-                            font-bold
-                        " :class="hasFile
-                            ? 'bg-primary text-white'
-                            : 'bg-surface-alt text-text-muted'
-                            ">
-                        2
-                    </div>
-
-                    <span class="text-sm font-medium" :class="hasFile
-                        ? 'text-text-primary'
-                        : 'text-text-muted'
-                        ">
-                        Prévisualisation
-                    </span>
-
-                </div>
-
-
-                <div class="h-px w-10 bg-border"></div>
-
-
-                <!-- STEP 3 -->
-
-                <div class="flex items-center gap-2">
-
-                    <div class="
-                            flex
-                            h-8
-                            w-8
-                            items-center
-                            justify-center
-                            rounded-full
-                            text-sm
-                            font-bold
-                        " :class="canImport
-                            ? 'bg-success text-white'
-                            : 'bg-surface-alt text-text-muted'
-                            ">
-                        3
-                    </div>
-
-                    <span class="text-sm font-medium" :class="canImport
-                        ? 'text-success'
-                        : 'text-text-muted'
-                        ">
-                        Importation
-                    </span>
-
-                </div>
-
-            </div>
-            <!-- Télécharger modèle -->
-
-            <button type="button" @click="downloadTemplate"
-                class="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-surface px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-light hover:shadow-md">
-
-                <Download class="h-4 w-4" />
-
-                Télécharger le modèle
-
-            </button>
-
-        </div>
-
-
-        <!-- ========================================================= -->
-        <!-- UPLOAD -->
-        <!-- ========================================================= -->
-
-        <div v-if="!hasFile"
-            class="rounded-2xl border border-dashed border-primary/30 bg-surface p-10 text-center shadow-sm">
-
-            <div
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-light ring-8 ring-primary/5">
-
-                <Upload class="h-7 w-7 text-primary" />
+                    </template>
+                </ol>
 
             </div>
 
 
-            <h2 class="mt-5 text-lg font-semibold text-text-primary">
-                Importer un fichier
-            </h2>
+            <!-- ========================================================= -->
+            <!-- UPLOAD -->
+            <!-- ========================================================= -->
 
+            <template v-if="!hasFile">
 
-            <p class="mx-auto mt-2 max-w-lg text-sm text-text-secondary">
-                Sélectionnez un fichier Excel contenant les informations
-                du suivi matériel.
-            </p>
+                <div class="grid gap-6 lg:grid-cols-3">
 
-
-            <label
-                class="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-md">
-
-                <Upload class="h-4 w-4" />
-
-                Choisir un fichier
-
-                <input ref="fileInput" type="file" class="hidden" accept=".xlsx,.xls,.csv" @change="handleFile" />
-
-            </label>
-
-
-            <p class="mt-4 text-xs text-text-muted">
-                Formats acceptés : XLSX, XLS, CSV
-            </p>
-
-        </div>
-
-
-        <!-- ========================================================= -->
-        <!-- INFORMATIONS FICHIER -->
-        <!-- ========================================================= -->
-
-        <div v-if="hasFile" class="mb-6 rounded-2xl border border-border bg-surface p-5 shadow-sm">
-
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
-                <div class="flex items-center gap-4">
+                    <!-- Zone de dépôt : l'input recouvre toute la zone (clic + glisser-déposer natifs) -->
 
                     <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-light ring-8 ring-primary/5">
+                        class="group relative flex min-h-96 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-surface px-6 py-14 text-center transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 hover:border-primary hover:bg-primary-light/40 lg:col-span-2">
 
-                        <FileSpreadsheet class="h-6 w-6 text-success" />
+                        <div class="flex flex-col items-center">
+
+                            <div class="relative mb-6">
+                                <div
+                                    class="flex h-20 w-20 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-border transition-transform duration-200 group-hover:-translate-y-1">
+                                    <FileSpreadsheet class="h-10 w-10 text-success" />
+                                </div>
+                                <div
+                                    class="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md ring-4 ring-white">
+                                    <Upload class="h-4 w-4" />
+                                </div>
+                            </div>
+
+                            <h2 class="text-lg font-semibold text-text-primary">
+                                Glissez votre fichier Excel ici
+                            </h2>
+
+                            <p class="mt-1.5 max-w-sm text-sm text-text-secondary">
+                                ou sélectionnez-le depuis votre ordinateur. Le fichier est lu dans votre navigateur,
+                                rien n'est enregistré avant la dernière étape.
+                            </p>
+
+                            <span
+                                class="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-primary-dark">
+                                <Upload class="h-4 w-4" />
+                                Choisir un fichier
+                            </span>
+
+                            <div class="mt-6 flex items-center gap-2 text-xs text-text-muted">
+                                <span>Formats acceptés</span>
+                                <span v-for="ext in ['XLSX', 'XLS', 'CSV']" :key="ext"
+                                    class="rounded-md bg-surface-alt px-2 py-0.5 font-medium text-text-secondary">
+                                    {{ ext }}
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <input ref="fileInput" type="file" title="" aria-label="Choisir un fichier Excel"
+                            class="absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".xlsx,.xls,.csv"
+                            @change="handleFile" />
 
                     </div>
 
 
+                    <!-- Colonne d'aide -->
+
+                    <aside class="flex flex-col gap-4">
+
+                        <div class="rounded-2xl border border-border bg-surface p-5">
+                            <h2 class="text-base font-semibold text-text-primary">
+                                Pas encore de fichier ?
+                            </h2>
+                            <p class="mt-1.5 text-sm text-text-secondary">
+                                Le modèle contient les bons en-têtes, une ligne d'exemple et une feuille d'instructions.
+                            </p>
+                            <button type="button" @click="downloadTemplate"
+                                class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light">
+                                <Download class="h-4 w-4" />
+                                Télécharger le modèle
+                            </button>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-surface p-5">
+                            <h3 class="text-sm font-semibold text-text-primary">Avant d'importer</h3>
+                            <ul class="mt-3 space-y-3 text-sm text-text-secondary">
+                                <li class="flex gap-2.5">
+                                    <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
+                                    <span>Seule la première feuille du classeur est lue.</span>
+                                </li>
+                                <li class="flex gap-2.5">
+                                    <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
+                                    <span>Une ligne correspond au relevé d'un site (SS) pour une date.</span>
+                                </li>
+                                <li class="flex gap-2.5">
+                                    <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
+                                    <span>Date au format AAAA-MM-JJ ou JJ/MM/AAAA.</span>
+                                </li>
+                                <li class="flex gap-2.5">
+                                    <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
+                                    <span>Colonnes Oui/Non : Oui, Non, 1, 0, True ou False.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </aside>
+
+                </div>
+
+
+                <!-- Structure attendue (même code couleur que le modèle Excel) -->
+
+                <div class="mt-6 rounded-2xl border border-border bg-surface p-5">
+
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-semibold text-text-primary">Structure attendue</h2>
+                            <p class="mt-0.5 text-sm text-text-secondary">
+                                Les en-têtes de la première ligne doivent porter exactement ces noms.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs text-text-secondary">
+                            <span class="flex items-center gap-1.5">
+                                <span class="h-3 w-3 rounded-sm bg-primary"></span>Obligatoire
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="h-3 w-3 rounded-sm bg-accent-dark"></span>Optionnel
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 space-y-5">
+                        <div v-for="group in [
+                            { label: 'Identification', fields: importFields.filter(f => f.type === 'string' || f.type === 'date') },
+                            { label: 'Quantités', fields: importFields.filter(f => f.type === 'number') },
+                            { label: 'Conformité (Oui / Non)', fields: importFields.filter(f => f.type === 'boolean') }
+                        ]" :key="group.label">
+
+                            <p class="mb-2 text-sm font-medium text-text-primary">
+                                {{ group.label }}
+                                <span class="ml-1 text-xs font-normal text-text-muted">
+                                    {{ group.fields.length }} colonne(s)
+                                </span>
+                            </p>
+
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="field in group.fields" :key="field.key"
+                                    class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white"
+                                    :class="field.required ? 'bg-primary' : 'bg-accent-dark'">
+                                    {{ field.excelName }}
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </template>
+
+
+            <!-- ========================================================= -->
+            <!-- INFORMATIONS FICHIER + ACTIONS -->
+            <!-- ========================================================= -->
+
+            <div v-if="hasFile"
+                class="sticky top-4 z-10 mb-6 rounded-2xl border border-border bg-surface p-5 shadow-sm">
+
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+                    <div class="flex min-w-0 items-center gap-4">
+
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-light">
+                            <FileSpreadsheet class="h-6 w-6 text-success" />
+                        </div>
+
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold text-text-primary">{{ fileName }}</p>
+
+                            <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                                <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
+                                    {{ formatFileSize(fileSize) }}
+                                </span>
+                                <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
+                                    {{ rows.length }} ligne(s)
+                                </span>
+                                <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
+                                    {{ headers.length }} colonne(s)
+                                </span>
+
+                                <span v-if="canImport"
+                                    class="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 font-semibold text-success">
+                                    <CheckCircle2 class="h-3.5 w-3.5" /> Prêt à importer
+                                </span>
+                                <span v-else-if="missingColumns.length"
+                                    class="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2.5 py-0.5 font-semibold text-danger">
+                                    <CircleAlert class="h-3.5 w-3.5" /> {{ missingColumns.length }} colonne(s)
+                                    manquante(s)
+                                </span>
+                                <span v-else
+                                    class="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2.5 py-0.5 font-semibold text-warning">
+                                    <CircleAlert class="h-3.5 w-3.5" /> {{ validationErrors.length }} erreur(s) à
+                                    corriger
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+
+                        <button type="button" @click="downloadTemplate"
+                            class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-light">
+                            <Download class="h-4 w-4" />
+                            Modèle
+                        </button>
+
+                        <button type="button" @click="removeFile()"
+                            class="inline-flex items-center gap-2 rounded-xl border border-danger/30 px-3 py-2 text-sm font-semibold text-danger transition-colors hover:bg-danger/10">
+                            <Trash2 class="h-4 w-4" />
+                            Supprimer
+                        </button>
+
+                        <button type="button" :disabled="!canImport || loading_import" @click="prepareImport"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
+                            :class="!canImport || loading_import
+                                ? 'cursor-not-allowed bg-surface-alt text-text-muted'
+                                : 'bg-linear-to-r from-success to-primary-dark text-white hover:-translate-y-0.5 hover:shadow-md'">
+                            <Upload class="h-4 w-4" v-if="loading_import == false" />
+                            <Loader class="h-4 w-4 animate-spin" v-else />
+                            Préparer l'importation
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- ERREUR GLOBALE -->
+            <!-- ========================================================= -->
+
+            <div v-if="globalError" role="alert"
+                class="mb-6 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+                <CircleAlert class="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                    <p class="font-semibold">Erreur d'importation</p>
+                    <p class="mt-1">{{ globalError }}</p>
+                </div>
+            </div>
+
+
+            <!-- ========================================================= -->
+            <!-- VERIFICATION DES COLONNES -->
+            <!-- ========================================================= -->
+
+            <div v-if="hasFile" class="mb-6 rounded-2xl border border-border bg-surface p-5">
+
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
-
-                        <p class="font-semibold text-text-primary">
-                            {{ fileName }}
-                        </p>
-
-                        <p class="mt-1 text-xs text-text-secondary">
-
-                            {{ formatFileSize(fileSize) }}
-
-                            <span class="mx-1">·</span>
-
-                            {{ rows.length }} ligne(s)
-
-                            <span class="mx-1">·</span>
-
-                            {{ headers.length }} colonne(s)
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <button type="button" @click="removeFile()"
-                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2 text-sm font-semibold text-danger transition-all duration-200 hover:-translate-y-0.5 hover:bg-danger/20">
-
-                    <Trash2 class="h-4 w-4" />
-
-                    Supprimer
-
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- ========================================================= -->
-        <!-- ERREUR GLOBALE -->
-        <!-- ========================================================= -->
-
-        <div v-if="globalError" class="
-                mb-6
-                flex
-                items-start
-                gap-3
-                rounded-xl
-                border
-                border-danger/30
-                bg-danger/10
-                p-4
-                text-sm
-                text-danger
-            ">
-
-            <CircleAlert class="mt-0.5 h-5 w-5 shrink-0" />
-
-            <div>
-
-                <p class="font-semibold">
-                    Erreur d'importation
-                </p>
-
-                <p class="mt-1">
-                    {{ globalError }}
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <!-- ========================================================= -->
-        <!-- VERIFICATION DES COLONNES -->
-        <!-- ========================================================= -->
-
-        <div v-if="hasFile" class="mb-6 rounded-2xl border border-border bg-surface p-5 shadow-sm">
-            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h2 class="text-base font-semibold text-text-primary">
-                        Vérification des colonnes
-                    </h2>
-                    <p class="mt-1 text-sm text-text-secondary">
-                        Vérifiez que la structure de votre fichier correspond au modèle attendu.
-                    </p>
-                </div>
-
-                <div class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
-                    :class="missingColumns.length === 0 ? 'bg-primary-light text-primary ring-1 ring-primary/20' : 'bg-danger/10 text-danger ring-1 ring-danger/20'">
-                    {{ missingColumns.length === 0 ? 'Structure valide' : `${missingColumns.length} colonne(s)
-                    manquante(s)` }}
-                </div>
-            </div>
-
-            <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <div v-for="field in importFields" :key="field.key"
-                    class="flex items-center justify-between rounded-lg border p-3"
-                    :class="columnMapping[field.key] ? 'border-success/30 bg-primary-light/60' : field.required ? 'border-danger/30 bg-danger/10' : 'border-border bg-surface-alt'">
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-text-primary">
-                            {{ field.excelName }}
-                        </p>
-                        <p class="mt-0.5 text-xs text-text-muted">
-                            {{ field.key }}
+                        <h2 class="text-base font-semibold text-text-primary">Vérification des colonnes</h2>
+                        <p class="mt-1 text-sm text-text-secondary">
+                            Vérifiez que la structure de votre fichier correspond au modèle attendu.
                         </p>
                     </div>
 
-                    <CheckCircle2 v-if="columnMapping[field.key]" class="h-5 w-5 shrink-0 text-success" />
-                    <CircleAlert v-else-if="field.required" class="h-5 w-5 shrink-0 text-danger" />
-                    <Circle v-else class="h-5 w-5 shrink-0 text-text-muted" />
+                    <div class="inline-flex rounded-full px-3 py-1 text-xs font-semibold" :class="missingColumns.length === 0
+                        ? 'bg-primary-light text-primary ring-1 ring-primary/20'
+                        : 'bg-danger/10 text-danger ring-1 ring-danger/20'">
+                        {{ missingColumns.length === 0 ? 'Structure valide' : `${missingColumns.length} colonne(s)
+                        manquante(s)` }}
+                    </div>
                 </div>
+
+                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div v-for="field in importFields" :key="field.key"
+                        class="flex items-center justify-between gap-2 rounded-lg border p-3" :class="columnMapping[field.key]
+                            ? 'border-success/30 bg-primary-light/60'
+                            : field.required ? 'border-danger/30 bg-danger/10' : 'border-border bg-surface-alt'">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-text-primary">{{ field.excelName }}</p>
+                            <p class="mt-0.5 text-xs text-text-muted">
+                                {{ columnMapping[field.key] ? 'Trouvée' : field.required ? 'Obligatoire, introuvable' :
+                                'Optionnelle, absente' }}
+                            </p>
+                        </div>
+
+                        <CheckCircle2 v-if="columnMapping[field.key]" class="h-5 w-5 shrink-0 text-success" />
+                        <CircleAlert v-else-if="field.required" class="h-5 w-5 shrink-0 text-danger" />
+                        <Circle v-else class="h-5 w-5 shrink-0 text-text-muted" />
+                    </div>
+                </div>
+
+                <div v-if="missingColumns.length" class="mt-5 rounded-lg border border-danger/30 bg-danger/10 p-4">
+                    <p class="text-sm font-semibold text-danger">Colonnes obligatoires manquantes :</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <span v-for="column in missingColumns" :key="column"
+                            class="rounded-full bg-surface px-3 py-1 text-xs font-medium text-danger">
+                            {{ column }}
+                        </span>
+                    </div>
+                </div>
+
             </div>
 
-            <div v-if="missingColumns.length" class="mt-5 rounded-lg border border-danger/30 bg-danger/10 p-4">
-                <p class="text-sm font-semibold text-danger">
-                    Colonnes obligatoires manquantes :
-                </p>
 
-                <div class="mt-2 flex flex-wrap gap-2">
-                    <span v-for="column in missingColumns" :key="column"
-                        class="rounded-full bg-surface px-3 py-1 text-xs font-medium text-danger">
-                        {{ column }}
-                    </span>
-                </div>
-            </div>
-        </div>
+            <!-- ========================================================= -->
+            <!-- PREVIEW -->
+            <!-- ========================================================= -->
 
-
-        <!-- ========================================================= -->
-        <!-- PREVIEW -->
-        <!-- ========================================================= -->
-
-        <div v-if="hasFile" class="preview-panel overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-
-            <!-- Header preview -->
-
-            <div
-                class="flex flex-col gap-3 border-b border-border bg-surface-alt/80 p-5 md:flex-row md:items-center md:justify-between">
-
-                <div>
-
-                    <h2 class="text-base font-semibold text-text-primary">
-                        Prévisualisation des données
-                    </h2>
-
-                    <p class="mt-1 text-sm text-text-secondary">
-                        Voici les données qui seront préparées pour l'importation.
-                    </p>
-
-                </div>
-
+            <div v-if="hasFile" class="preview-panel overflow-hidden rounded-2xl border border-border bg-surface">
 
                 <div
-                    class="inline-flex items-center gap-2 rounded-xl bg-accent-dark/5 px-3 py-2 text-xs font-semibold text-accent-dark ring-1 ring-accent-dark/10">
+                    class="flex flex-col gap-3 border-b border-border bg-surface-alt/80 p-5 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 class="text-base font-semibold text-text-primary">Prévisualisation des données</h2>
+                        <p class="mt-1 text-sm text-text-secondary">
+                            Voici les données qui seront préparées pour l'importation.
+                        </p>
+                    </div>
 
-                    <Eye class="h-4 w-4" />
-
-                    {{ previewRows.length }} ligne(s) affichée(s)
-
+                    <div
+                        class="inline-flex items-center gap-2 rounded-xl bg-accent-dark/5 px-3 py-2 text-xs font-semibold text-accent-dark ring-1 ring-accent-dark/10">
+                        <Eye class="h-4 w-4" />
+                        {{ previewRows.length }} ligne(s) affichée(s)
+                    </div>
                 </div>
 
-            </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-max border-collapse">
 
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th v-for="field in importFields" :key="field.key">{{ field.label }}</th>
+                            </tr>
+                        </thead>
 
-            <!-- TABLE -->
+                        <tbody>
+                            <tr v-for="(row, rowIndex) in previewRows" :key="rowIndex"
+                                class="border-b border-border transition hover:bg-surface-alt">
 
-            <div class="overflow-x-auto">
+                                <td
+                                    class="sticky left-0 z-1 border-r border-border bg-surface px-4 py-3 text-xs font-medium text-text-secondary">
+                                    {{ rowIndex + 1 }}
+                                </td>
 
-                <table class="min-w-max w-full border-collapse">
+                                <td v-for="field in importFields" :key="field.key"
+                                    class="whitespace-nowrap px-4 py-3 text-sm text-text-secondary">
 
-                    <!-- HEAD -->
+                                    <template v-if="field.key === 'site_name'">
+                                        <span
+                                            class="inline-flex rounded-md bg-accent-dark/5 px-2 py-1 font-medium text-accent-dark">
+                                            {{ getDisplayValue(row, field) }}
+                                        </span>
+                                    </template>
 
-                    <thead>
+                                    <template v-else-if="field.type === 'date'">
+                                        <span
+                                            class="inline-flex rounded-md bg-accent-medium/10 px-2 py-1 font-medium text-accent-dark">
+                                            {{ getDisplayValue(row, field) }}
+                                        </span>
+                                    </template>
 
-                        <tr>
+                                    <template v-else-if="field.type === 'boolean'">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+                                            :class="parseBoolean(getRawValue(row, field))
+                                                ? 'bg-success/10 text-success'
+                                                : 'bg-surface-alt text-text-secondary'">
+                                            <Check v-if="parseBoolean(getRawValue(row, field))" class="h-3.5 w-3.5" />
+                                            <X v-else class="h-3.5 w-3.5" />
+                                            {{ parseBoolean(getRawValue(row, field)) ? 'Oui' : 'Non' }}
+                                        </span>
+                                    </template>
 
-                            <!-- Numéro -->
-
-                            <th>
-                                #
-                            </th>
-
-
-                            <!-- Colonnes -->
-
-                            <th v-for="field in importFields" :key="field.key">
-                                {{ field.label }}
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <!-- BODY -->
-
-                    <tbody>
-
-                        <tr v-for="(row, rowIndex) in previewRows" :key="rowIndex" class="
-                                border-b
-                                border-border
-                                transition
-                                hover:bg-surface-alt
-                            ">
-
-                            <!-- INDEX -->
-
-                            <td class="
-                                    sticky
-                                    left-0
-                                    z-1
-                                    border-r
-                                    border-border
-                                    bg-surface
-                                    px-4
-                                    py-3
-                                    text-xs
-                                    font-medium
-                                    text-text-secondary
-                                ">
-                                {{ rowIndex + 1 }}
-                            </td>
-
-
-                            <!-- DATA -->
-
-                            <td v-for="field in importFields" :key="field.key" class="
-                                    whitespace-nowrap
-                                    px-4
-                                    py-3
-                                    text-sm
-                                    text-text-secondary
-                                ">
-
-                                <!-- SITE -->
-
-                                <template v-if="field.key === 'site_name'">
-
-                                    <span class="
-                                            inline-flex
-                                            rounded-md
-                                            bg-accent-dark/5
-                                            px-2
-                                            py-1
-                                            font-medium
-                                            text-accent-dark
-                                        ">
+                                    <template v-else>
                                         {{ getDisplayValue(row, field) }}
-                                    </span>
+                                    </template>
 
-                                </template>
+                                </td>
+                            </tr>
 
+                            <tr v-if="previewRows.length === 0">
+                                <td :colspan="importFields.length + 1" class="px-5 py-12 text-center">
+                                    <div
+                                        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-surface-alt">
+                                        <FileX class="h-6 w-6 text-text-muted" />
+                                    </div>
+                                    <p class="mt-3 text-sm font-medium text-text-secondary">Aucune donnée à afficher</p>
+                                </td>
+                            </tr>
+                        </tbody>
 
-                                <!-- DATE -->
+                    </table>
+                </div>
 
-                                <template v-else-if="field.type === 'date'">
-
-                                    <span class="
-                                            inline-flex
-                                            rounded-md
-                                            bg-accent-medium/10
-                                            px-2
-                                            py-1
-                                            font-medium
-                                            text-accent-dark
-                                        ">
-                                        {{ getDisplayValue(row, field) }}
-                                    </span>
-
-                                </template>
-
-
-                                <!-- BOOLEAN -->
-
-                                <template v-else-if="field.type === 'boolean'">
-
-                                    <span class="
-                                            inline-flex
-                                            items-center
-                                            gap-1.5
-                                            rounded-full
-                                            px-2.5
-                                            py-1
-                                            text-xs
-                                            font-medium
-                                        " :class="parseBoolean(
-                                            getRawValue(
-                                                row,
-                                                field
-                                            )
-                                        )
-                                            ? 'bg-status-success/10 text-status-success'
-                                            : 'bg-surface-alt text-text-secondary'
-                                            ">
-
-                                        <Check v-if="
-                                            parseBoolean(
-                                                getRawValue(
-                                                    row,
-                                                    field
-                                                )
-                                            )
-                                        " class="h-3.5 w-3.5" />
-
-                                        <X v-else class="h-3.5 w-3.5" />
-
-                                        {{
-                                            parseBoolean(
-                                                getRawValue(
-                                                    row,
-                                                    field
-                                                )
-                                            )
-                                                ? 'Oui'
-                                                : 'Non'
-                                        }}
-
-                                    </span>
-
-                                </template>
-
-
-                                <!-- NUMBER -->
-
-                                <template v-else>
-
-                                    {{ getDisplayValue(row, field) }}
-
-                                </template>
-
-                            </td>
-
-                        </tr>
-
-
-                        <!-- EMPTY -->
-
-                        <tr v-if="previewRows.length === 0">
-
-                            <td :colspan="importFields.length + 1" class="px-5 py-12 text-center">
-
-                                <div class="
-                                        mx-auto
-                                        flex
-                                        h-12
-                                        w-12
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        bg-surface-alt
-                                    ">
-
-                                    <FileX class="h-6 w-6 text-text-muted" />
-
-                                </div>
-
-
-                                <p class="
-                                        mt-3
-                                        text-sm
-                                        font-medium
-                                        text-text-secondary
-                                    ">
-                                    Aucune donnée à afficher
-                                </p>
-
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-
-            <!-- Info preview -->
-
-            <div v-if="rows.length > previewLimit" class="
-                    border-t
-                    border-border
-                    bg-surface-alt
-                    px-5
-                    py-3
-                    text-center
-                    text-xs
-                    text-text-secondary
-                ">
-
-                Seules les {{ previewLimit }} premières lignes sont affichées.
-
-                Les {{ rows.length }} lignes seront prises en compte.
-
-            </div>
-
-        </div>
-
-
-        <!-- ========================================================= -->
-        <!-- ERREURS DE VALIDATION -->
-        <!-- ========================================================= -->
-
-        <div v-if="validationErrors.length"
-            class="mt-6 rounded-2xl border border-warning/30 bg-linear-to-r from-warning/10 to-warning/20 p-5 shadow-sm">
-
-            <div class="flex items-start gap-3">
-
-                <CircleAlert class="mt-0.5 h-5 w-5 text-warning" />
-
-                <div>
-
-                    <h3 class="font-semibold text-warning">
-                        Données à vérifier
-                    </h3>
-
-                    <p class="mt-1 text-sm text-warning/80">
-                        {{ validationErrors.length }}
-                        erreur(s) détectée(s).
-                    </p>
-
+                <div v-if="rows.length > previewLimit"
+                    class="border-t border-border bg-surface-alt px-5 py-3 text-center text-xs text-text-secondary">
+                    Seules les {{ previewLimit }} premières lignes sont affichées.
+                    Les {{ rows.length }} lignes seront prises en compte.
                 </div>
 
             </div>
 
 
-            <div class="mt-4 max-h-60 overflow-y-auto">
+            <!-- ========================================================= -->
+            <!-- ERREURS DE VALIDATION -->
+            <!-- ========================================================= -->
 
-                <div v-for="(error, index) in validationErrors" :key="index" class="
-                        border-b
-                        border-warning/20
-                        py-2
-                        text-sm
-                        text-warning
-                        last:border-0
-                    ">
+            <div v-if="validationErrors.length" class="mt-6 rounded-2xl border border-warning/30 bg-warning/10 p-5">
 
-                    <span class="font-semibold">
-                        Ligne {{ error.row }} :
-                    </span>
+                <div class="flex items-start gap-3">
+                    <CircleAlert class="mt-0.5 h-5 w-5 text-warning" />
+                    <div>
+                        <h3 class="font-semibold text-warning">Données à vérifier</h3>
+                        <p class="mt-1 text-sm text-warning/80">
+                            {{ validationErrors.length }} erreur(s) détectée(s).
+                        </p>
+                    </div>
+                </div>
 
-                    {{ error.message }}
-
+                <div class="mt-4 max-h-60 overflow-y-auto">
+                    <div v-for="(error, index) in validationErrors" :key="index"
+                        class="border-b border-warning/20 py-2 text-sm text-warning last:border-0">
+                        <span class="font-semibold">Ligne {{ error.row }} :</span>
+                        {{ error.message }}
+                    </div>
                 </div>
 
             </div>
 
         </div>
 
-
-        <!-- ========================================================= -->
-        <!-- ACTIONS -->
-        <!-- ========================================================= -->
-
-        <div v-if="hasFile" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-
-            <!-- Annuler -->
-
-            <button type="button" @click="removeFile()"
-                class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-alt hover:shadow-md">
-
-                <X class="h-4 w-4" />
-
-                Annuler
-
-            </button>
-
-
-            <!-- Importer -->
-
-            <button type="button" :disabled="!canImport||loading_import" @click="prepareImport"
-                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
-                :class="!canImport||loading_import
-                    ? 'cursor-not-allowed bg-surface-alt text-text-muted'
-                    : 'bg-linear-to-r from-success to-primary-dark text-white hover:-translate-y-0.5 hover:shadow-md'
-                    ">
-
-                <Upload class="h-4 w-4" v-if="loading_import==false"/>
-                <Loader class="h-4 w-4 animate-spin" v-else/>
-
-                Préparer l'importation
-
-            </button>
-
-        </div>
-
-
-        <!-- ========================================================= -->
-        <!-- MESSAGE -->
-        <!-- ========================================================= -->
-
-       
     </div>
 </template>
 
@@ -812,6 +616,12 @@
             key: "bas_plast",
             label: "BAS PLAST",
             excelName: "BAS PLAST",
+            type: "number"
+        },
+        {
+            key: "bac_de_retention",
+            label: "BAC DE RETENTION",
+            excelName: "BAC DE RETENTION",
             type: "number"
         },
 
@@ -2174,6 +1984,8 @@ const loading_import=ref<boolean>(false)
                 2,
 
             "BAS PLAST":
+                3,
+            "BAC DE RETENTION":
                 3,
 
             PELLES:

@@ -9,14 +9,15 @@ type ContextMenuActionType = {
     label?: string,
     icon?: Component,
     variant?:ContextMenuVariantType,
-    loading?:boolean,
+    loading?:boolean,badge?:string|number,
     onClick?: () => void
 }
 type ContextMenuPropsType = {
     contextMenu?: contextMenuType,
     modelValue?: boolean,
     actions?: ContextMenuActionType[],
-    bottom_actions?:ContextMenuActionType[]
+    bottom_actions?:ContextMenuActionType[],
+    
 }
 
 export type {

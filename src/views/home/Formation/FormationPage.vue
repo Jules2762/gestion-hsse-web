@@ -13,7 +13,7 @@
             ]" />
 
             <!-- ======================= RIBBON TOOLBAR ======================= -->
-            <div class="bg-white border-b border-gray-200">
+            <div class="bg-white border-b border-gray-200 sticky top-0">
                 <div class="h-16 px-4 flex flex-row items-center justify-between">
                     <div class="flex flex-row items-center gap-1">
                         <ButtonFilter is-primary :text="t('formation.actions.add')" :icon="SquarePlusIcon"
@@ -67,7 +67,7 @@
                                 @contextmenu.prevent="contextMenu.contextMenu = $event; contextMenu.isOpen = true; contextMenu.formation = item as FormationDataType"
                                 :class="selectedFormation?.id == item.id ? 'bg-primary/10' : ''">
                                 <td>{{ item.id }}</td>
-                                <td class="text-nowrap">{{ item.date }}</td>
+                                <td class="text-nowrap">{{ getDate(item.date) }}</td>
                                 <td class="truncate text-nowrap max-w-50">{{ item.title }}</td>
                                 <td>{{ item.type }}</td>
                                 <td>{{ item.volet }}</td>
@@ -83,12 +83,12 @@
       py-1
       text-xs
       font-semibold" :class="getStyleStatus(item.status)">{{
-        FormationStatusJsonData.find(i=>i.value==item.status)?.label }}</div>
+        FormationStatusJsonData.find(i => i.value==item.status)?.label }}</div>
                                 </td>
 
                             </tr>
                             <tr>
-                                <td colspan="8" class="w-full">
+                                <td colspan="9" class="w-full">
                                     <div class="flex flex-row items-center text-sm justify-end ">
                                         <vue-awesome-paginate :hide-prev-next-when-ends="true"
                                             :total-items="pagination.total" :items-per-page="15" :max-pages-shown="4"
@@ -99,7 +99,7 @@
                             </tr>
                         </template>
                         <tr v-else-if="loading_data == false && data.length > 0">
-                            <td colspan="8" class="py-10 text-center text-gray-500">
+                            <td colspan="9" class="py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center gap-2">
                                     <span>Aucun résultat pour ces filtres</span>
                                     <button class="text-xs font-medium text-primary hover:underline"
@@ -110,12 +110,12 @@
                             </td>
                         </tr>
                         <tr v-else-if="data.length === 0 && loading_data == false">
-                            <td colspan="8" class="py-10 text-center text-gray-500">
+                            <td colspan="9" class="py-10 text-center text-gray-500">
                                 Aucune formation trouvée
                             </td>
                         </tr>
                         <tr v-else>
-                            <td colspan="8" class="py-10">
+                            <td colspan="9" class="py-10">
                                 <div class="flex flex-col items-center justify-center gap-3">
                                     <Loader :size="30" class="animate-spin text-primary" />
 
@@ -242,7 +242,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Participants
+                            Taux de participation
                         </p>
 
                         <h5>
@@ -511,16 +511,33 @@
         :title="t('formation.notification.delete.confirmation.title')" confirm-variant="danger">
         <p>{{ t('formation.notification.delete.confirmation.message') }}</p>
     </CenterModal>
+    <CenterModal title="Reporter la formation" :is-open="modal.reporting_date"
+        @close="modal.reporting_date = false; reporting_date = ''" @confirm="onResceduleDate()"
+        :confirm-loading="loading_reschedule_date">
+        <div class="flex flex-col gap-2">
+            <label for="reporting_date" class="text-sm font-medium text-gray-700">
+                Nouvelle date de la formation
+            </label>
+
+            <p class="text-xs text-gray-500">
+                Sélectionnez la nouvelle date à laquelle la formation sera organisée.
+            </p>
+
+            <VueDatePicker id="reporting_date" v-model="reporting_date" :min-date="new Date()"
+                :time-config="{ enableTimePicker: false }" />
+        </div>
+    </CenterModal>
     <LoadingUI v-if="loading_fetch" />
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, reactive, ref, watch } from 'vue';
+    import { computed, onMounted, reactive, ref, watch, type ComputedRef } from 'vue';
     import Header from '../../../components/shared/Header.vue';
     import {
         ArrowDownIcon,
         ArrowUpDownIcon,
         ArrowUpIcon,
+        CalendarClock,
         CircleSlash,
         CloudDownloadIcon,
 
@@ -550,6 +567,7 @@
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
     import LoadingUI from '../../../components/ui/LoadingUI.vue';
     import { FormationStatusJsonData } from '../../../@data/Formation.data.ts';
+import { VueDatePicker } from '@vuepic/vue-datepicker';
     const headers = ["Ref", "DATE", "INTITULE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible", "Status"]
     const data = ref<FormationDataType[]>([])
 
@@ -562,14 +580,20 @@
 
     }
     const loading_fetch = ref<boolean>(false)
-        const loading_cancel=ref<boolean>(false)
-            const contextMenu = ref<ContextMenuState>(
+    const loading_cancel = ref<boolean>(false)
+    const contextMenu = ref<ContextMenuState>(
         {
             isOpen: false,
             formation: undefined
         }
     )
-    const context_actions = computed<ContextMenuActionType[]>(() => [
+    const reporting_date=ref<string>('')
+        const modal=ref<{
+            reporting_date:boolean
+        }>({
+            reporting_date:false
+        })
+    const context_actions: ComputedRef<ContextMenuActionType[]> = computed(() => [
         {
             label: "Détails",
             icon: Eye,
@@ -578,18 +602,29 @@
             }
         },
 
-        {
-            label: "Participants",
-            icon: Users,
-            onClick: () => {
-                router.push({
-                    name: 'FORMATION_PARTICIPANT',
-                    params: {
-                        id: contextMenu.value.formation?.id
-                    }
-                })
+        ...(contextMenu.value.formation?.status==="SCHEDULED"|| contextMenu.value.formation?.status === "POSTPONED"|| contextMenu.value.formation?.status === "COMPLETED" ? [
+            {
+                label: "Participants",
+                icon: Users,
+                badge: contextMenu.value.formation?.participant_count?.toString(),
+                onClick: () => {
+                    router.push({
+                        name: 'FORMATION_PARTICIPANT',
+                        params: {
+                            id: contextMenu.value.formation?.id
+                        }
+                    })
+                }
             }
-        },
+        ] : []),
+
+        ...(contextMenu.value.formation?.status != 'COMPLETED' ? [
+            {
+                label: 'Reporter',
+                icon: CalendarClock,
+                onClick: () => { modal.value.reporting_date=true;contextMenu.value.isOpen=false }
+            }
+        ] as ContextMenuActionType[] : []),
 
         {
             label: "Modifier",
@@ -605,7 +640,8 @@
             },
         },
 
-        ...(contextMenu.value.formation?.status !== 'CANCELLED'
+        ...(contextMenu.value.formation?.status === 'SCHEDULED' ||
+            contextMenu.value.formation?.status === 'POSTPONED'
             ? [
                 {
                     label: "Annuler",
@@ -613,8 +649,8 @@
                     icon: CircleSlash,
                     onClick: () => cancelFormation(),
                     loading: loading_cancel.value
-                } as ContextMenuActionType
-            ]
+                }
+            ] as ContextMenuActionType[]
             : []
         ),
     ])
@@ -626,7 +662,7 @@
             onClick: () => modal_delete.value = true
         },
     ]
-    
+
     const { t } = useI18n()
     const formation = useFormationService()
     type FilterKey = 'type' | 'volet' | 'trainer' | 'target'
@@ -682,6 +718,7 @@
         { key: 'participant', excelName: 'Participants' },
         { key: 'target_type', excelName: 'Type cibles' },
     ]
+    const loading_reschedule_date=ref<boolean>(false)
     function toggleSort(key: string) {
         if (sortKey.value === key) {
             sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
@@ -690,19 +727,17 @@
             sortDir.value = 'asc'
         }
     }
-
-    function sortIcon(key: string | null) {
-        if (!key || sortKey.value !== key) return ArrowUpDownIcon
-        return sortDir.value === 'asc' ? ArrowUpIcon : ArrowDownIcon
+    function getDate(dateString: string): string {
+        const date = new Date(dateString)
+        return date.toLocaleDateString()
     }
-
 
 
 
     function fetchData(params?: FormationFilterType) {
         loading_data.value = true
         formation.fetchData(params).then((res) => {
-            // console.log(res.data)
+            console.log(res.data.data)
             const meta = res.data.meta
             data.value = res.data.data
             pagination.value.to = meta.to
@@ -763,21 +798,21 @@
                 loading_export.value = false
             })
     }
-    function cancelFormation(){
-        loading_cancel.value=true
+    function cancelFormation() {
+        loading_cancel.value = true
         formation.cancel(contextMenu.value.formation?.id as string)
-            .then(res=>{
+            .then(res => {
                 data.value = data.value.map(item =>
                     item.id === contextMenu.value.formation?.id
                         ? { ...item, status: "CANCELLED" }
                         : item
                 )
             })
-            .catch(err=>{
+            .catch(err => {
                 console.error(err)
             })
-            .finally(()=>{
-                loading_cancel.value=false
+            .finally(() => {
+                loading_cancel.value = false
             })
     }
     function deleteFormation(id: string | number) {
@@ -846,6 +881,26 @@
       `
         }
     }
+function onResceduleDate(){
+    loading_reschedule_date.value=true
+    formation.reschedule(contextMenu.value.formation?.id as string,reporting_date.value)
+    .then(res=>{
+        console.log(res.data)
+        data.value = data.value.map(item =>
+            item.id === contextMenu.value.formation?.id
+                ? { ...item, date: reporting_date.value,status:"POSTPONED" }
+                : item
+        )
+    })
+    .catch(err=>{
+        console.error(err)
+    })
+    .finally(()=>{
+        loading_reschedule_date.value = false
+    })
+}
+
+
     watch([filters, dateRange, searchQuery], () => {
         pagination.value.current_page = 1
         console.log(filters, dateRange, searchQuery.value)

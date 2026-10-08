@@ -5,6 +5,9 @@ export default {
     index(params?: EquipmentMonitoringFilterType) {
         return api.get("/home/equipments-monitoring/equipments", { params })
     },
+    show(id:string|number){
+        return api.get('/home/equipments-monitoring/equipments/'+id)
+    },
     export(params?: EquipmentMonitoringFilterType) {
         return api.get("/home/equipments-monitoring/export", { params })
     },
@@ -16,6 +19,9 @@ export default {
     },
     store(data:EquipmentMonitoringFormType){
         return api.post("/home/equipments-monitoring/equipments",data)
+    },
+    update(id:string|number,data:EquipmentMonitoringFormType){
+        return api.put("/home/equipments-monitoring/equipments/"+id,data)
     },
     storeBatch(data: {
         "equipments": EquipmentMonitoringFormType[]

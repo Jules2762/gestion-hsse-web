@@ -59,6 +59,7 @@ import { toast } from "vue3-toastify"
         // Matériel
         bas_met: 0,
         bas_plast: 0,
+        bac_de_retention: 0,
         pelles: 0,
         poubelles_120l: 0,
         poubelles_240l: 0,
@@ -575,6 +576,8 @@ import { toast } from "vue3-toastify"
 
                                     <Input v-model.number="form.bas_plast" label="Bac plastique" type="number" :min="0"
                                         :error="errors?.bas_plast?.[0]" />
+                                    <Input v-model.number="form.bac_de_retention" label="Bac de retention" type="number" :min="0"
+                                        :error="errors?.bac_de_retention?.[0]" />
 
                                     <Input v-model.number="form.pelles" label="Pelles" type="number" :min="0"
                                         :error="errors?.pelles?.[0]" />
