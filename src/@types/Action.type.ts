@@ -1,22 +1,62 @@
 import type { UserDataType } from "./User.type"
 
-type ActionStatusType="PENDING"|"IN_PROGRESS"|"FINISHED"
-type ActionEmailStatusType="NOT_SENT"|"SENT"
-type ActionStatusJsonType={
-    label: string,
+export type ActionStatusType = "PENDING" | "IN_PROGRESS" | "FINISHED"
+export type ActionEmailStatusType = "NOT_SENT" | "SENT"
+export type ActionOriginType = "CHECKLIST" | "VMC"
+
+export type ActionStatusJsonType = {
+    label: string
     value: ActionStatusType
 }[]
-type ActionType={
-    id?:string|number,
-    description?:string,
-    status?:ActionStatusType,
-    assigned_to?:UserDataType,
-    checklist_item_id?:string|number,
-    created_at?:string,
-    email_status?:ActionEmailStatusType
+
+export type ActionResponsibleType = {
+    id?: string | number
+    raw_id?: number
+    first_name?: string
+    last_name?: string
+    name?: string
+    email?: string
+    phone_number?: string | null
+    department?: string
+    job?: string
+    type?: 'USER' | 'PERSONNEL'
 }
-export type {
-    ActionStatusType,
-    ActionStatusJsonType,
-    ActionType,ActionEmailStatusType
+
+export type ActionType = {
+    id?: string | number
+    raw_id?: number
+    origin?: ActionOriginType
+    origin_label?: string
+    description?: string
+    status?: ActionStatusType
+    email_status?: ActionEmailStatusType
+    created_at?: string
+    created_at_date?: string
+    parent_id?: string | number | null
+    parent_title?: string
+    parent_site?: string
+    parent_type?: string
+    item_id?: string | number | null
+    item_title?: string
+    item_answer?: string
+    item_observation?: string
+    checklist_item_id?: string | number
+    assigned_to?: ActionResponsibleType | UserDataType | any
+}
+
+export type ActionFilterParams = {
+    origin?: 'ALL' | 'CHECKLIST' | 'VMC'
+    status?: ActionStatusType | ''
+    search?: string
+    date?: string
+}
+
+export type ActionMetaType = {
+    total: number
+    pending: number
+    in_progress: number
+    finished: number
+    checklist_count: number
+    vmc_count: number
+    current_count?: number
 }

@@ -1,14 +1,15 @@
 <template>
-    <div class="flex flex-row">
-        <div class="flex flex-col " :class="right_sidebar.isOpen?'w-[calc(100%-360px)]':'w-full'">
+    <div class="flex flex-row w-full">
+        <div class="flex flex-col transition-all" :class="right_sidebar.isOpen ? 'w-[calc(100%-400px)]' : 'w-full'">
             <Header title="Suivi du matériel" :thumbnails="[
-                { 'label': 'home', name: 'DASHBOARD' },
-                { 'label': 'home', name: 'DASHBOARD' },
+                { label: 'Accueil', name: 'DASHBOARD' },
+                { label: 'Inspections', name: 'INSPECTION' },
+                { label: 'Suivi du matériel', name: 'EQUIPMENT_MONITORING' },
             ]" />
             <!-- ======================= RIBBON TOOLBAR ======================= -->
-            <div class="bg-white border-b border-gray-200">
-                <div class="h-16 px-4 flex flex-row items-center justify-between">
-                    <div class="flex flex-row items-center gap-1">
+            <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+                <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
+                    <div class="flex flex-row items-center gap-1.5">
                         <ButtonFilter is-primary text="Ajout" :icon="SquarePlusIcon" @click="router.push({
                             name: 'EQUIPMENT_MONITORING_NEW'
                         })" />
@@ -17,27 +18,15 @@
                         })" />
                         <ButtonFilter text="Exporter" :icon="DownloadIcon" :loading="loading_export"
                             :badge="pagination.total.toString()" @click="exportData()" />
-                        <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
                     </div>
 
                     <div class="flex flex-row items-center gap-2">
-
-                        <div class="relative">
-                            <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input v-model="searchQuery" type="text" placeholder="Rechercher ..."
-                                class="h-9 w-64 rounded-lg border border-gray-300 bg-white pl-8 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                            <button v-if="searchQuery" @click="searchQuery = ''"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                <XIcon :size="14" />
-                            </button>
-                        </div>
+                        <InputFilter :icon="SearchIcon" placeholder="Rechercher un équipement..." v-model="searchQuery" />
                     </div>
                 </div>
                 <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLables" :date-range="dateRange"
                     :filters="filters" :column-options="columnOptions as Record<filtersKeyType, string[]>"
                     @clear-all="clearAllFilters()" />
-
-
             </div>
 
             <div class="flex flex-row transition-all overflow-x-auto scrollbar-hide"
@@ -217,7 +206,10 @@
                 </div>
 
             </div>
-            <div class="py-4 px-6   bg-white w-full   flex flex-row justify-end">
+            <div class="py-4 px-6 bg-white w-full border-t border-gray-200 flex flex-row items-center justify-between text-sm">
+                <span class="text-xs text-gray-500 font-medium">
+                    Affichage de {{ pagination.to }} sur {{ pagination.total }} équipements
+                </span>
                 <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total"
                     :items-per-page="15" :max-pages-shown="4" v-model="pagination.current_page"
                     @click="(page: number) => pagination.current_page = page" />
@@ -229,52 +221,24 @@
                 <p>Êtes-vous sûr de vouloir supprimer ce suivi d’équipement ? Cette action est irréversible.</p>
             </CenterModal>
         </div>
-        <div class="
-        
-        h-fit
-        border-l
-        border-gray-200
-        scrollbar-hide
-        bg-white
-        p-5
-        sticky top-0
-        
-       
-        
-    " :class="right_sidebar.isOpen ? 'w-90 min-w-90' : 'w-0'" v-if="right_sidebar.isOpen">
+
+        <!-- ======================= DRAWER LATÉRAL ======================= -->
+        <aside class="h-screen border-l border-gray-200 scrollbar-hide bg-white p-5 sticky top-0 overflow-y-auto shrink-0 shadow-xl z-20 w-[400px] min-w-[400px] max-w-[400px]" v-if="right_sidebar.isOpen">
             <!-- HEADER -->
-
-            <div class="
-            flex
-            items-center
-            justify-between
-            border-b
-            border-gray-200
-            pb-4
-        ">
-                <div>
-                    <h5>
-                        Détails du matériel
-                    </h5>
-
-                    <p class="
-                    text-sm
-                    text-gray-500
-                ">
-                        {{
-                            right_sidebar.equipment?.site_name.name
-                        }}
+            <div class="flex items-start justify-between border-b border-gray-200 pb-4">
+                <div class="min-w-0 flex-1">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                        Équipement n° {{ right_sidebar.equipment?.id }}
                     </p>
+                    <h4 class="mt-1 font-bold text-gray-900 truncate">
+                        {{ right_sidebar.equipment?.site_name?.name || right_sidebar.equipment?.site_name || 'Détails du matériel' }}
+                    </h4>
                 </div>
 
-                <button class="
-                rounded-lg
-                p-2
-                hover:bg-slate-100
-            " @click="
-                right_sidebar.isOpen = false
-                ">
-                    <XIcon />
+                <button type="button" aria-label="Fermer l'aperçu"
+                    class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                    @click="right_sidebar.isOpen = false">
+                    <XIcon :size="18" />
                 </button>
             </div>
 
@@ -677,7 +641,7 @@
                     }}
                 </p>
             </div>
-        </div>
+        </aside>
     </div>
 </template>
 <script setup lang="ts">
@@ -691,6 +655,7 @@
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
+    import InputFilter from '../../../components/ui/InputFilter.vue';
     import { useEquipmentMonitoringService } from '../../../core/services/equipmentMonitoring.service.ts';
     import { exportUtils } from '../../../core/utils/export.utils.ts';
     import CenterModal from '../../../components/ui/centerModal.vue';

@@ -1,179 +1,279 @@
 <!-- src/components/features/profile/RecentActivitySection.vue -->
 <script setup lang="ts">
-    import { ClipboardCheck, ClipboardList, UserPlus, PencilLine, ShieldCheck, Loader2, Inbox } from '@lucide/vue'
-    import { computed, onMounted, ref } from 'vue'
-    import Button from '../../ui/Button.vue'
-    import { useUserService } from '../../../core/services/user.service.ts'
+import {
+  ClipboardCheck,
+  ClipboardList,
+  UserPlus,
+  PencilLine,
+  ShieldCheck,
+  Loader2,
+  Inbox,
+  RotateCw,
+  Activity as ActivityIcon,
+  CheckCircle,
+  FileText
+} from '@lucide/vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import Button from '../../ui/Button.vue'
+import activityApi from '../../../core/api/activity.api.ts'
 
-    interface Activity {
-        id: string | number
-        type: string
-        title: string
-        description: string
-        created_at: string
+const props = defineProps<{
+  userId?: string | number
+}>()
+
+interface Activity {
+  id: string | number
+  type: string
+  title: string
+  description: string
+  created_at: string
+}
+
+const PAGE_SIZE = 6
+
+const TYPE_CONFIG: Record<
+  string,
+  { icon: any; bg: string; text: string; label: string }
+> = {
+  CHECKLIST_CREATED: {
+    icon: ClipboardList,
+    bg: 'bg-blue-50 border-blue-200',
+    text: 'text-blue-600',
+    label: 'Nouvelle Checklist'
+  },
+  CHECKLIST_COMPLETED: {
+    icon: ClipboardCheck,
+    bg: 'bg-emerald-50 border-emerald-200',
+    text: 'text-[#0F9D58]',
+    label: 'Inspection Validée'
+  },
+  USER_CREATED: {
+    icon: UserPlus,
+    bg: 'bg-purple-50 border-purple-200',
+    text: 'text-purple-600',
+    label: 'Création Compte'
+  },
+  PROFILE_UPDATED: {
+    icon: PencilLine,
+    bg: 'bg-amber-50 border-amber-200',
+    text: 'text-amber-600',
+    label: 'Mise à jour Profil'
+  },
+  ROLE_UPDATED: {
+    icon: ShieldCheck,
+    bg: 'bg-rose-50 border-rose-200',
+    text: 'text-rose-600',
+    label: 'Changement de Rôle'
+  }
+}
+
+function getConfig(type: string) {
+  return (
+    TYPE_CONFIG[type] ?? {
+      icon: FileText,
+      bg: 'bg-slate-50 border-slate-200',
+      text: 'text-slate-600',
+      label: 'Activité'
     }
+  )
+}
 
-    const PAGE_SIZE = 3
+function timeAgo(dateString: string): string {
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return ''
 
-    // NOTE : icône affichée selon le type d'activité renvoyé par l'API.
-    // À adapter/compléter selon les vraies valeurs de "type" (ex: ceux
-    // utilisés côté backend pour journaliser les actions).
-    const TYPE_ICONS: Record<string, any> = {
-        CHECKLIST_CREATED: ClipboardList,
-        CHECKLIST_COMPLETED: ClipboardCheck,
-        USER_CREATED: UserPlus,
-        PROFILE_UPDATED: PencilLine,
-        ROLE_UPDATED: ShieldCheck,
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+
+  const ranges: [number, string][] = [
+    [60, 'seconde'],
+    [60, 'minute'],
+    [24, 'heure'],
+    [7, 'jour'],
+    [4.345, 'semaine'],
+    [12, 'mois'],
+    [Number.POSITIVE_INFINITY, 'an']
+  ]
+
+  let value = seconds
+  let unit = 'seconde'
+
+  for (const [limit, label] of ranges) {
+    if (value < limit) {
+      unit = label
+      break
     }
+    value = Math.floor(value / limit)
+    unit = label
+  }
 
-    function iconFor(type: string) {
-        return TYPE_ICONS[type] ?? ClipboardList
-    }
+  const rounded = Math.max(1, Math.floor(value))
+  const plural = rounded > 1 && unit !== 'mois' ? 's' : ''
 
-    function timeAgo(dateString: string): string {
+  return `il y a ${rounded} ${unit}${plural}`
+}
 
-        const date = new Date(dateString)
-        if (isNaN(date.getTime())) return ""
+const activities = ref<Activity[]>([])
+const page = ref(1)
+const isLoading = ref(false)
+const isLoadingMore = ref(false)
+const loadError = ref('')
+const hasMore = ref(false)
 
-        const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+function getActivities(isLoadMore = false) {
+  if (isLoadMore) {
+    isLoadingMore.value = true
+  } else {
+    isLoading.value = true
+    page.value = 1
+  }
+  loadError.value = ''
 
-        const ranges: [number, string][] = [
-            [60, 'seconde'],
-            [60, 'minute'],
-            [24, 'heure'],
-            [7, 'jour'],
-            [4.345, 'semaine'],
-            [12, 'mois'],
-            [Number.POSITIVE_INFINITY, 'an'],
-        ]
-
-        let value = seconds
-        let unit = 'seconde'
-
-        for (const [limit, label] of ranges) {
-            if (value < limit) {
-                unit = label
-                break
-            }
-            value = Math.floor(value / limit)
-            unit = label
-        }
-
-        const rounded = Math.max(1, Math.floor(value))
-        const plural = rounded > 1 && unit !== 'mois' ? 's' : ''
-
-        return `il y a ${rounded} ${unit}${plural}`
-
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | CHARGEMENT DES ACTIVITES
-    |--------------------------------------------------------------------------
-    */
-
-    const service = useUserService()
-
-    const activities = ref<Activity[]>([])
-    const page = ref(1)
-    const isLoading = ref(false)
-    const isLoadingMore = ref(false)
-    const loadError = ref("")
-    const hasMore = ref(true)
-
-    function getActivities(isLoadMore = false) {
-
-        if (isLoadMore) {
-            isLoadingMore.value = true
-        } else {
-            isLoading.value = true
-        }
-        loadError.value = ""
-
-        // NOTE : hypothèse sur le nom/la signature de la méthode du service
-        // (ex: getRecentActivities, getActivities...). À adapter selon l'API.
-        // service.getRecentActivities({ page: page.value, limit: PAGE_SIZE })
-        //     .then(res => {
-
-        //         const items: Activity[] = res.data.items ?? res.data ?? []
-
-        //         activities.value = isLoadMore
-        //             ? [...activities.value, ...items]
-        //             : items
-
-        //         hasMore.value = items.length === PAGE_SIZE
-
-        //     })
-        //     .catch(() => {
-        //         loadError.value = "Impossible de charger les activités récentes."
-        //     })
-        //     .finally(() => {
-        //         isLoading.value = false
-        //         isLoadingMore.value = false
-        //     })
-
-    }
-
-    function loadMore() {
-        page.value += 1
-        getActivities(true)
-    }
-
-    const isEmpty = computed(() =>
-        !isLoading.value && !loadError.value && activities.value.length === 0
-    )
-
-    onMounted(() => {
-        getActivities()
+  activityApi
+    .index({
+      user_id: props.userId,
+      page: page.value,
+      per_page: PAGE_SIZE
     })
+    .then((res) => {
+      const responseData = res.data
+      const items: Activity[] =
+        responseData?.data ?? (Array.isArray(responseData) ? responseData : [])
+
+      activities.value = isLoadMore ? [...activities.value, ...items] : items
+
+      const total =
+        responseData?.meta?.total ?? responseData?.total ?? items.length
+      hasMore.value = activities.value.length < total
+    })
+    .catch(() => {
+      loadError.value = 'Impossible de charger le journal des activités.'
+    })
+    .finally(() => {
+      isLoading.value = false
+      isLoadingMore.value = false
+    })
+}
+
+function loadMore() {
+  page.value += 1
+  getActivities(true)
+}
+
+const isEmpty = computed(
+  () => !isLoading.value && !loadError.value && activities.value.length === 0
+)
+
+watch(
+  () => props.userId,
+  (newId) => {
+    if (newId) getActivities()
+  }
+)
+
+onMounted(() => {
+  getActivities()
+})
 </script>
 
 <template>
-    <div class="bg-white flex flex-col gap-y-4 p-4 w-full rounded border border-gray-200">
-        <div class="w-full flex flex-col gap-y-3">
-
-            <h5>Activités récentes</h5>
-
-            <!-- CHARGEMENT INITIAL -->
-            <div v-if="isLoading" class="flex items-center justify-center py-10 text-text-muted">
-                <Loader2 class="h-5 w-5 animate-spin mr-2" />
-                Chargement...
-            </div>
-
-            <!-- ERREUR -->
-            <div v-else-if="loadError" class="rounded-lg border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
-                {{ loadError }}
-            </div>
-
-            <!-- VIDE -->
-            <div v-else-if="isEmpty" class="flex flex-col items-center gap-2 py-10 text-center text-text-muted">
-                <Inbox class="h-6 w-6" />
-                <p class="text-sm">Aucune activité récente pour le moment.</p>
-            </div>
-
-            <!-- LISTE -->
-            <div v-else class="flex flex-col gap-y-2">
-                <div v-for="activity in activities" :key="activity.id"
-                    class="flex items-start gap-3 border border-gray-200/80 rounded p-4">
-                    <div
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary">
-                        <component :is="iconFor(activity.type)" class="h-4 w-4" />
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between gap-2">
-                            <h6>{{ activity.title }}</h6>
-                            <span class="shrink-0 text-xs text-text-muted">{{ timeAgo(activity.created_at) }}</span>
-                        </div>
-                        <p class="text-sm text-text-muted line-clamp-2">{{ activity.description }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <Button v-if="!isLoading && !loadError && hasMore" variant="ghost" :disabled="isLoadingMore"
-                :left-icon="isLoadingMore ? Loader2 : undefined" @click="loadMore">
-                {{ isLoadingMore ? 'Chargement...' : 'Voir plus' }}
-            </Button>
-
+  <div class="flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+    <!-- EN-TETE DU BLOC ACTIVITE -->
+    <div class="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+      <div class="flex items-center gap-2">
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-[#0F9D58]">
+          <ActivityIcon class="h-4 w-4" />
         </div>
+        <div>
+          <h4 class="text-sm font-bold text-slate-800">Activités Récentes</h4>
+          <p class="text-[11px] text-slate-500">Historique des actions de l'utilisateur</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        @click="getActivities(false)"
+        title="Actualiser la liste"
+        :disabled="isLoading"
+        class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
+      >
+        <RotateCw class="h-3.5 w-3.5" :class="{ 'animate-spin': isLoading }" />
+      </button>
     </div>
+
+    <!-- CHARGEMENT INITIAL -->
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-12 text-slate-400">
+      <Loader2 class="h-6 w-6 animate-spin text-[#0F9D58]" />
+      <span class="mt-2 text-xs font-medium">Chargement des événements...</span>
+    </div>
+
+    <!-- ERREUR -->
+    <div v-else-if="loadError" class="rounded-lg border border-rose-200 bg-rose-50 p-4 text-xs text-rose-700">
+      {{ loadError }}
+    </div>
+
+    <!-- AUCUNE ACTIVITE -->
+    <div v-else-if="isEmpty" class="flex flex-col items-center justify-center py-10 text-center text-slate-400">
+      <div class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-2">
+        <Inbox class="h-6 w-6" />
+      </div>
+      <p class="text-xs font-semibold text-slate-700">Aucune activité récente</p>
+      <p class="text-[11px] text-slate-500 max-w-[200px] mt-0.5">
+        Les futures inspections, fiches VMC et modifications apparaîtront ici.
+      </p>
+    </div>
+
+    <!-- TIMELINE LIST -->
+    <div v-else class="relative pl-3 space-y-4 before:absolute before:left-5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+      <div
+        v-for="act in activities"
+        :key="act.id"
+        class="relative flex items-start gap-3 group"
+      >
+        <!-- Icone du type -->
+        <div
+          class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border shadow-2xs transition group-hover:scale-105"
+          :class="[getConfig(act.type).bg, getConfig(act.type).text]"
+        >
+          <component :is="getConfig(act.type).icon" class="h-3.5 w-3.5" />
+        </div>
+
+        <!-- Contenu -->
+        <div class="min-w-0 flex-1 rounded-lg border border-slate-100 bg-slate-50/70 p-3 transition group-hover:bg-slate-50 group-hover:border-slate-200">
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <span class="text-xs font-bold text-slate-800 line-clamp-1">
+              {{ act.title }}
+            </span>
+            <span class="shrink-0 text-[10px] text-slate-500 font-medium tabular-nums">
+              {{ timeAgo(act.created_at) }}
+            </span>
+          </div>
+
+          <p class="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+            {{ act.description }}
+          </p>
+
+          <div class="mt-2 flex items-center justify-between border-t border-slate-200/60 pt-1.5 text-[10px] text-slate-500">
+            <span class="font-medium text-slate-600">{{ getConfig(act.type).label }}</span>
+            <span class="flex items-center gap-1 text-emerald-600 font-medium">
+              <CheckCircle class="h-3 w-3" /> Enregistré
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOUTON CHARGER PLUS -->
+    <div v-if="!isLoading && !loadError && hasMore" class="mt-4 pt-2 border-t border-slate-100 text-center">
+      <Button
+        variant="ghost"
+        size="sm"
+        :disabled="isLoadingMore"
+        @click="loadMore"
+        class="w-full text-xs text-slate-600 hover:text-slate-900"
+      >
+        <Loader2 v-if="isLoadingMore" class="h-3.5 w-3.5 animate-spin mr-1.5" />
+        {{ isLoadingMore ? 'Chargement...' : 'Afficher plus d’activités' }}
+      </Button>
+    </div>
+  </div>
 </template>

@@ -11,6 +11,7 @@ export type ItemStatus = 'CONFORME' | 'NON_CONFORME' | 'NON_APPLICABLE'
 export type ActionPriority = 'HAUTE' | 'MOYENNE' | 'BASSE'
 
 export type ActionVM = {
+    id?: number | string
     title: string
     priority: ActionPriority
     responsible: string

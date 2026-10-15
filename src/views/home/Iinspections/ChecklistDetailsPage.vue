@@ -5,26 +5,25 @@
         ChevronDown,
         CircleSlash2,
         ClipboardCheck,
-        Copy,
+        Edit,
         Eye,
-        EyeIcon,
         FileDown,
-        FileTextIcon,
+        FileText as FileTextIcon,
         Flame,
         ImageIcon,
         Link2,
-        ListTodo,
+        Loader2,
         MessageSquare,
+        Plus,
         Printer,
         Search,
         ShieldCheck,
-        TimerReset,
         TriangleAlert,
         User,
-        UserCheck2,
         X,
     } from '@lucide/vue'
     import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+    import { useRoute } from 'vue-router'
     import Header from '../../../components/shared/Header.vue'
 
     import Card from '../../../components/features/dashboard/Card.vue'
@@ -50,7 +49,11 @@
         type ChecklistSectionVM,
         type ItemStatus,
     } from '../../../core/utils/checklist.utils.ts'
-import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
+    import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
+    import { useChecklistService } from '../../../core/services/checklist.service.ts'
+    import { useActionService } from '../../../core/services/action.service.ts'
+    import { useUserService } from '../../../core/services/user.service.ts'
+    import type { ActionStatusType } from '../../../@types/Action.type.ts'
 
     /* -------------------------------------------------------------------------- */
     /* Données                                                                    */
@@ -314,6 +317,168 @@ import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
         }
     }
 
+    const route = useRoute()
+    const checklistService = useChecklistService()
+    const actionService = useActionService()
+    const userService = useUserService()
+    const usersList = ref<any[]>([])
+    const loading = ref<boolean>(false)
+
+    function mapApiResponse(data: any) {
+        if (!data) return
+        checklist.value = {
+            title: data.title || checklist.value.title,
+            description: data.description || 'Fiche de contrôle et inspection sécurité du réseau.',
+            createdBy: data.added_by?.first_name ? `${data.added_by.first_name} ${data.added_by.last_name || ''}` : checklist.value.createdBy,
+            createdAt: data.date || checklist.value.createdAt,
+            updatedAt: data.completed_at || data.date || checklist.value.updatedAt,
+            inspector: data.inspector?.first_name ? `${data.inspector.first_name} ${data.inspector.last_name || ''}` : checklist.value.inspector,
+        }
+
+        if (data.sections && data.sections.length > 0) {
+            sections.value = data.sections.map((sec: any, sIdx: number) => {
+                return {
+                    id: sec.id || sIdx + 1,
+                    title: sec.title || `Section ${sIdx + 1}`,
+                    description: `Éléments de contrôle de la section ${sec.title || sIdx + 1}`,
+                    icon: sIdx % 2 === 0 ? Flame : ShieldCheck,
+                    items: (sec.items || []).map((it: any, iIdx: number) => {
+                        const ans = it.answer ? String(it.answer).trim() : ''
+                        let status: ItemStatus = 'CONFORME'
+                        if (ans.toUpperCase() === 'NON' || ans.toUpperCase() === 'NO') {
+                            status = 'NON_CONFORME'
+                        } else if (ans.toUpperCase().includes('APPLICABLE') || ans.toUpperCase() === 'N/A') {
+                            status = 'NON_APPLICABLE'
+                        } else if (ans.toUpperCase() === 'OUI' || ans.toUpperCase() === 'YES') {
+                            status = 'CONFORME'
+                        } else if (!ans) {
+                            status = 'NON_CONFORME'
+                        }
+
+                        let actionObj = undefined
+                        if (it.action) {
+                            actionObj = {
+                                id: it.action.id,
+                                title: it.action.description,
+                                priority: 'HAUTE' as const,
+                                responsible: it.action.assignedUser ? `${it.action.assignedUser.first_name} ${it.action.assignedUser.last_name || ''}` : 'Non assigné',
+                                assigned_to_id: it.action.assignedUser?.id,
+                                dueDate: '',
+                                status: it.action.status || 'PENDING',
+                                email_status: it.action.email_status || 'NOT_SENT',
+                                rawAction: it.action,
+                            }
+                        }
+
+                        return {
+                            id: it.id || iIdx + 1,
+                            question: it.question,
+                            answer: it.answer || 'Non évalué',
+                            status: status,
+                            commentCount: 0,
+                            photoCount: 0,
+                            action: actionObj,
+                            rawItem: it,
+                        }
+                    })
+                }
+            })
+        }
+    }
+
+    async function fetchChecklist() {
+        const id = route.params.id as string
+        if (!id) return
+        loading.value = true
+        try {
+            const res = await checklistService.show(id)
+            if (res.data?.data) {
+                mapApiResponse(res.data.data)
+            } else if (res.data) {
+                mapApiResponse(res.data)
+            }
+        } catch (err) {
+            console.error('Erreur chargement checklist:', err)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function fetchUsers() {
+        try {
+            const res = await userService.index()
+            usersList.value = res.data?.data || res.data || []
+        } catch (err) {
+            console.error('Erreur chargement utilisateurs:', err)
+        }
+    }
+
+    const checklistActionModal = ref({
+        isOpen: false,
+        isEdit: false,
+        itemId: null as any,
+        itemQuestion: '',
+        description: '',
+        assignedTo: null as any,
+        status: 'PENDING' as ActionStatusType,
+        saving: false,
+    })
+
+    function openAddChecklistAction(item: any) {
+        checklistActionModal.value = {
+            isOpen: true,
+            isEdit: false,
+            itemId: item.id,
+            itemQuestion: item.question,
+            description: '',
+            assignedTo: null,
+            status: 'PENDING',
+            saving: false,
+        }
+    }
+
+    function openEditChecklistAction(item: any) {
+        checklistActionModal.value = {
+            isOpen: true,
+            isEdit: true,
+            itemId: item.id,
+            itemQuestion: item.question,
+            description: item.action?.title || '',
+            assignedTo: item.action?.assigned_to_id || item.action?.rawAction?.assigned_to || null,
+            status: (item.action?.status as ActionStatusType) || 'PENDING',
+            saving: false,
+        }
+    }
+
+    async function saveChecklistAction() {
+        if (!checklistActionModal.value.itemId || !checklistActionModal.value.description) return
+        checklistActionModal.value.saving = true
+        try {
+            await actionService.storeChecklistAction({
+                checklist_item_id: checklistActionModal.value.itemId,
+                description: checklistActionModal.value.description,
+                assigned_to: checklistActionModal.value.assignedTo || undefined,
+                status: checklistActionModal.value.status,
+            })
+            checklistActionModal.value.isOpen = false
+            fetchChecklist()
+        } catch (err) {
+            console.error('Erreur enregistrement action checklist:', err)
+        } finally {
+            checklistActionModal.value.saving = false
+        }
+    }
+
+    async function updateChecklistActionStatus(actionId: any, newStatus: ActionStatusType) {
+        if (!actionId) return
+        try {
+            await actionService.updateStatus('CHECKLIST', actionId, newStatus)
+            fetchChecklist()
+        } catch (err) {
+            console.error('Erreur mise à jour statut checklist action:', err)
+        }
+    }
+
     onMounted(() => {
         window.addEventListener('keydown', onKeydown)
 
@@ -322,6 +487,9 @@ import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
             section.items.some((item:any) => anchorId(section.id, item.id) === hash),
         )
         if (match) goToAnchor(hash, match.id)
+
+        fetchChecklist()
+        fetchUsers()
     })
 
     onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
@@ -689,56 +857,160 @@ import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
                                         </span>
                                     </div>
 
-                                    <!-- ACTION CORRECTIVE -->
+                                    <!-- ACTION CORRECTIVE EXISTANTE -->
                                     <div v-if="item.action" class="mt-4 rounded-xl border border-gray-200 bg-white p-4">
-                                        <div class="mb-3 flex items-center gap-2 text-xs text-gray-500">
-                                            <ClipboardCheck :size="14" />
-                                            Action corrective
+                                        <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
+                                            <div class="flex items-center gap-1.5 font-bold text-gray-700">
+                                                <ClipboardCheck :size="15" class="text-primary" />
+                                                Action corrective
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    @click="openEditChecklistAction(item)"
+                                                    class="p-1 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
+                                                    title="Modifier l'action">
+                                                    <Edit :size="13" />
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <h5 v-html="highlight(
+                                        <h5 class="text-xs font-semibold text-gray-800" v-html="highlight(
                                             item.action.title,
                                             filters.search,
-                                        )
-                                            " />
+                                        )" />
 
-                                        <div class="mt-3 flex flex-wrap items-center gap-3 text-xs">
-                                            <span class="rounded-full px-2 py-1" :class="PRIORITY_CONFIG[item.action.priority]
-                                                    .badge
-                                                ">
-                                                {{
-                                                    PRIORITY_CONFIG[
-                                                        item.action.priority
-                                                    ].label
-                                                }}
-                                            </span>
+                                        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                                            <div class="flex items-center gap-3">
+                                                <span class="flex items-center gap-1.5 text-gray-600 font-medium">
+                                                    <User :size="14" />
+                                                    {{ item.action.responsible }}
+                                                </span>
+                                                <span
+                                                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                                    :class="item.action.status === 'FINISHED' ? 'bg-emerald-100 text-emerald-700' : (item.action.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700')">
+                                                    {{ item.action.status === 'FINISHED' ? 'Terminée' : (item.action.status === 'IN_PROGRESS' ? 'En cours' : 'En attente') }}
+                                                </span>
+                                            </div>
 
-                                            <span class="flex items-center gap-1.5 text-gray-600">
-                                                <User :size="14" />
-                                                {{ item.action.responsible }}
-                                            </span>
-
-                                            <span class="flex items-center gap-1.5" :class="DUE_TONE_CLASS[
-                                                dueDateLabel(item.action.dueDate)
-                                                    .tone
-                                                ]
-                                                ">
-                                                <Calendar :size="14" />
-                                                {{
-                                                    dueDateLabel(item.action.dueDate)
-                                                        .text
-                                                }}
-                                            </span>
-
-                                            <span class="ml-auto rounded-full bg-blue-100 px-2 py-1 text-blue-700">
-                                                {{ item.action.status }}
-                                            </span>
+                                            <!-- BOUTONS WORKFLOW RAPIDE -->
+                                            <div class="flex items-center gap-1.5">
+                                                <button
+                                                    v-if="item.action.status === 'PENDING'"
+                                                    type="button"
+                                                    @click="updateChecklistActionStatus(item.action.id, 'IN_PROGRESS')"
+                                                    class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md cursor-pointer">
+                                                    Prendre en charge
+                                                </button>
+                                                <button
+                                                    v-if="item.action.status === 'IN_PROGRESS'"
+                                                    type="button"
+                                                    @click="updateChecklistActionStatus(item.action.id, 'FINISHED')"
+                                                    class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md cursor-pointer">
+                                                    Clôturer
+                                                </button>
+                                                <button
+                                                    v-if="item.action.status === 'FINISHED'"
+                                                    type="button"
+                                                    @click="updateChecklistActionStatus(item.action.id, 'PENDING')"
+                                                    class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-md cursor-pointer">
+                                                    Réouvrir
+                                                </button>
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    <!-- SI NON CONFORME MAIS SANS ACTION : PROPOSER D'EN CRÉER UNE -->
+                                    <div v-else-if="item.status === 'NON_CONFORME'" class="mt-3 pt-2 border-t border-red-100 flex items-center justify-between text-xs">
+                                        <span class="text-red-600 text-[11px] italic">Écart constaté : aucune action corrective n'a encore été définie.</span>
+                                        <button
+                                            type="button"
+                                            @click="openAddChecklistAction(item)"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg cursor-pointer">
+                                            <Plus :size="12" />
+                                            Définir une action
+                                        </button>
                                     </div>
                                 </article>
                             </div>
                         </div>
                     </transition>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL ACTION CORRECTIVE CHECKLIST -->
+        <div v-if="checklistActionModal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                    <h4 class="text-sm font-bold text-gray-900">
+                        {{ checklistActionModal.isEdit ? 'Modifier l\'action corrective' : 'Nouvelle action corrective' }}
+                    </h4>
+                    <button @click="checklistActionModal.isOpen = false" class="text-gray-400 hover:text-gray-600 p-1">
+                        <X :size="18" />
+                    </button>
+                </div>
+
+                <div class="mt-4 space-y-4 text-xs">
+                    <!-- Point de contrôle -->
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Point de contrôle / Question</label>
+                        <p class="p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium">
+                            {{ checklistActionModal.itemQuestion }}
+                        </p>
+                    </div>
+
+                    <!-- Description de l'action corrective -->
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Description de l'action corrective *</label>
+                        <textarea
+                            v-model="checklistActionModal.description"
+                            rows="3"
+                            placeholder="Décrivez précisément l'action corrective à mener..."
+                            class="w-full p-2.5 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary resize-none"></textarea>
+                    </div>
+
+                    <!-- Responsable assigné -->
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Responsable assigné (Utilisateur)</label>
+                        <select
+                            v-model="checklistActionModal.assignedTo"
+                            class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
+                            <option :value="null">-- Aucun utilisateur assigné --</option>
+                            <option v-for="u in usersList" :key="u.id" :value="u.id">
+                                {{ u.first_name }} {{ u.last_name || '' }} — {{ u.job || u.department || u.email }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Statut -->
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Statut initial</label>
+                        <select
+                            v-model="checklistActionModal.status"
+                            class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
+                            <option value="PENDING">En attente</option>
+                            <option value="IN_PROGRESS">En cours</option>
+                            <option value="FINISHED">Terminée</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-3 border-t border-gray-200 flex items-center justify-end gap-2 text-xs">
+                    <button
+                        type="button"
+                        @click="checklistActionModal.isOpen = false"
+                        class="px-4 py-2 font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                        Annuler
+                    </button>
+                    <button
+                        type="button"
+                        @click="saveChecklistAction"
+                        :disabled="!checklistActionModal.description || !checklistActionModal.itemId || checklistActionModal.saving"
+                        class="px-4 py-2 font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5">
+                        <Loader2 v-if="checklistActionModal.saving" :size="14" class="animate-spin" />
+                        <span>Enregistrer l'action</span>
+                    </button>
                 </div>
             </div>
         </div>

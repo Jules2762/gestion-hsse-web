@@ -7,5 +7,11 @@ export default {
     },
     logout(){
         return api.post("/auth/logout");
+    },
+    forgotPassword(email: string){
+        return api.post("/auth/forgot-password", { email });
+    },
+    resetPassword(data: { email: string; password: string; password_confirmation: string }){
+        return api.post("/auth/reset-password", data);
     }
 }

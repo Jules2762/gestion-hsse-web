@@ -6,7 +6,7 @@
             " @keydown="onKeydown">
         <button v-for="(label, index) in tabData" :key="index"
             :ref="(el) => (tabs[index] = el as HTMLButtonElement | null)" type="button" role="tab"
-            :aria-selected="index === data" :tabindex="index === data ? 0 : -1" class="flex shrink-0 items-center gap-x-2 whitespace-nowrap text-sm transition-colors
+            :aria-selected="index === data" :tabindex="index === data ? 0 : -1" class="flex shrink-0 items-center gap-x-2 whitespace-nowrap text-xs transition-colors
              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" :class="[
                 isHorizontal
                     ? 'rounded-t px-3 py-2.5 -mb-px border-b-2'

@@ -3,7 +3,7 @@
         <div class="flex flex-row items-center justify-between gap-x-4 px-6 py-3">
             <!-- Titre + fil d'Ariane -->
             <div class="flex min-w-0 flex-col gap-y-1">
-                <h5 v-if="title" class="truncate">{{ t(title) }}</h5>
+                <h5 v-if="title" class="truncate font-bold text-sm text-slate-800">{{ t(title) }}</h5>
 
                 <nav v-if="thumbnails?.length" :aria-label="t('header.breadcrumb')">
                     <ol class="flex flex-row items-center gap-x-2 text-xs font-semibold text-slate-600">
@@ -54,52 +54,72 @@
                 <div class="flex h-full flex-col" @keydown.esc="closeNotifications">
                     <div class="flex items-start justify-between gap-x-3 border-b border-slate-200 p-4">
                         <div>
-                            <h3>{{ t('header.notifications.title') }}</h3>
-                            <p class="mt-1 text-sm text-slate-500">{{ t('header.notifications.subtitle') }}</p>
+                            <h3 class="font-bold text-slate-800 text-sm">{{ t('header.notifications.title') }}</h3>
+                            <p class="mt-0.5 text-xs text-slate-500">{{ t('header.notifications.subtitle') }}</p>
                         </div>
-                        <button v-if="unreadCount > 0" type="button"
-                            class="shrink-0 text-xs font-semibold text-primary hover:underline"
-                            @click="notifications.viewed()">
-                            {{ t('header.notifications.markAllRead') }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button v-if="unreadCount > 0" type="button"
+                                class="shrink-0 text-xs font-semibold text-primary hover:underline"
+                                @click="notifications.markAllRead()">
+                                {{ t('header.notifications.markAllRead') }}
+                            </button>
+                            <button v-if="items.length > 0" type="button"
+                                class="shrink-0 text-xs text-slate-400 hover:text-red-600 transition-colors"
+                                :title="t('header.notifications.delete')"
+                                @click="notifications.clearAll()">
+                                <Trash2Icon :size="14" />
+                            </button>
+                        </div>
                     </div>
 
-                    <ul v-if="items.length" class="flex-1 overflow-y-auto">
-                        <li v-for="(value, index) in items" :key="index"
-                            class="group relative border-b border-slate-100 p-4 transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
-                            :class="value.viewed ? '' : 'bg-primary/5'">
+                    <ul v-if="items.length" class="flex-1 overflow-y-auto divide-y divide-slate-100">
+                        <li v-for="(value, index) in items" :key="value.id || index"
+                            class="group relative p-4 transition-colors hover:bg-slate-50 cursor-pointer"
+                            :class="value.viewed ? 'bg-white' : 'bg-primary/5'"
+                            @click="handleNotificationClick(value)">
                             <div class="flex items-start justify-between gap-x-3">
-                                <div class="min-w-0">
-                                    <h5 class="text-sm font-semibold text-slate-800">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span v-if="value.type"
+                                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide"
+                                            :class="getTypeBadgeClass(value.type)">
+                                            {{ value.type }}
+                                        </span>
                                         <span v-if="!value.viewed"
-                                            class="mr-2 inline-block h-2 w-2 rounded-full bg-red-600 align-middle"
+                                            class="inline-block h-2 w-2 rounded-full bg-red-600"
                                             role="img" :aria-label="t('header.notifications.unread')"></span>
+                                    </div>
+                                    <h5 class="text-xs font-semibold text-slate-800 leading-snug">
                                         {{ value.title }}
                                     </h5>
-                                    <p v-if="value.description" class="mt-1 text-sm text-slate-500">
+                                    <p v-if="value.description" class="mt-1 text-xs text-slate-600 line-clamp-2">
                                         {{ value.description }}
                                     </p>
-                                    <span v-if="value.ago" class="mt-2 block text-xs text-slate-400">
-                                        {{ value.ago }}
-                                    </span>
+                                    <div class="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                                        <span>{{ value.ago }}</span>
+                                        <span v-if="value.link" class="text-primary font-medium group-hover:underline">
+                                            Consulter &rarr;
+                                        </span>
+                                    </div>
                                 </div>
 
-                                <!-- Visible au hover, au focus clavier et sur écran tactile -->
                                 <button type="button"
                                     class="shrink-0 rounded p-1 text-slate-400 transition-opacity hover:text-red-600 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary md:opacity-0 md:group-hover:opacity-100"
                                     :aria-label="t('header.notifications.delete')"
-                                    @click="notifications.deleteOne(index)">
-                                    <Trash2Icon :size="15" />
+                                    @click.stop="notifications.deleteOne(value.id || index)">
+                                    <Trash2Icon :size="14" />
                                 </button>
                             </div>
                         </li>
                     </ul>
 
                     <div v-else class="flex flex-1 flex-col items-center justify-center gap-3 p-6">
-                        <BellIcon :size="40" class="text-slate-300" aria-hidden="true" />
+                        <div class="p-3 bg-slate-50 rounded-full text-slate-400">
+                            <BellIcon :size="36" aria-hidden="true" />
+                        </div>
                         <div class="text-center">
-                            <h4>{{ t('header.notifications.emptyTitle') }}</h4>
-                            <p class="mt-1 text-sm text-slate-500">{{ t('header.notifications.emptyText') }}</p>
+                            <h4 class="text-sm font-semibold text-slate-700">{{ t('header.notifications.emptyTitle') }}</h4>
+                            <p class="mt-1 text-xs text-slate-500">{{ t('header.notifications.emptyText') }}</p>
                         </div>
                     </div>
                 </div>
@@ -110,7 +130,7 @@
 
 <script setup lang="ts">
     import { BellIcon, ChevronRight, SearchIcon, Trash2Icon, User2Icon } from '@lucide/vue';
-    import { computed, ref } from 'vue';
+    import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import { useI18n } from 'vue-i18n';
     import Input from '../ui/Input.vue';
@@ -140,12 +160,50 @@
     });
 
     const items = computed(() => notifications.getData);
-    const unreadCount = computed(() => items.value.filter((n) => !n.viewed).length);
+    const unreadCount = computed(() => notifications.getUnreadCount);
 
     const isActive = (name: string) => route.name === name;
 
     const closeNotifications = () => {
         modalRight.value = false;
-        notifications.viewed();
     };
+
+    const handleNotificationClick = async (notif: any) => {
+        if (!notif.viewed && notif.id) {
+            await notifications.markOneRead(notif.id);
+        }
+        modalRight.value = false;
+        if (notif.link) {
+            try {
+                router.push({ name: notif.link });
+            } catch (err) {
+                // Ignore navigation error
+            }
+        }
+    };
+
+    const getTypeBadgeClass = (type: string) => {
+        switch (type) {
+            case 'ACTION':
+                return 'bg-amber-100 text-amber-800 border border-amber-200';
+            case 'CHECKLIST':
+                return 'bg-blue-100 text-blue-800 border border-blue-200';
+            case 'VMC':
+                return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+            case 'EQUIPMENT':
+                return 'bg-purple-100 text-purple-800 border border-purple-200';
+            case 'FORMATION':
+                return 'bg-teal-100 text-teal-800 border border-teal-200';
+            default:
+                return 'bg-slate-100 text-slate-700 border border-slate-200';
+        }
+    };
+
+    onMounted(() => {
+        notifications.startRealtime();
+    });
+
+    onBeforeUnmount(() => {
+        notifications.stopRealtime();
+    });
 </script>

@@ -28,8 +28,10 @@ import SettingPage from "../views/home/settings/SettingPage.vue";
 import FormationUpdate from "../views/home/Formation/FormationUpdate.vue";
 import EquipmentMonitoringUpdatePage from "../views/home/Iinspections/EquipmentMonitoringUpdatePage.vue";
 import PersonnelAddPage from "../views/home/administration/PersonnelAddPage.vue";
+import PersonnelUpdatePage from "../views/home/administration/PersonnelUpdatePage.vue";
 import VmcPage from "../views/home/Iinspections/VmcPage.vue";
 import VMCAddPage from "../views/home/Iinspections/VMCAddPage.vue";
+import VMCDetailsPage from "../views/home/Iinspections/VMCDetailsPage.vue";
 
 
 const routes = [
@@ -102,6 +104,11 @@ const routes = [
                         path: "personnels/add",
                         name: "PERSONNEL_ADD",
                         component: PersonnelAddPage
+                    },
+                    {
+                        path: "personnels/update/:id",
+                        name: "PERSONNEL_UPDATE",
+                        component: PersonnelUpdatePage
                     },
                     {
                         path: "/activity",
@@ -177,6 +184,11 @@ const routes = [
                         path: "/vmc/add",
                         name: "VMC_NEW",
                         component: VMCAddPage
+                    },
+                    {
+                        path: "/vmc/details/:id",
+                        name: "VMC_DETAILS",
+                        component: VMCDetailsPage
                     },
                     {
                         path: "/action",

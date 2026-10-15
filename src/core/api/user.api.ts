@@ -15,10 +15,16 @@ export default {
         return api.get("/home/users/users/" + id)
     },
     getProfile(id?: string | number) {
+        if (!id || id === 'undefined' || id === 'null') {
+            return api.get("/home/profile")
+        }
         return api.get("/home/profile/" + id)
     },
     updateProfile(id: string | number,data:UserProfileUpdateFormType) {
         return api.put("/home/profile/"+id,data)
+    },
+    updatePassword(data: { current_password: string; password: string; password_confirmation: string }) {
+        return api.put("/home/profile/password", data)
     },
     me() {
         return api.get("/home/me")

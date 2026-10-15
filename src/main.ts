@@ -13,6 +13,10 @@ import "vue-awesome-paginate/dist/style.css";
 import i18n from './@lang/index.ts';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
+import { initFontSize } from './core/utils/fontSize.ts';
+
+// Initialisation de la taille de police personnalisée (compact, standard, grande)
+initFontSize();
 
 const pinia=createPinia();
 const app=createApp(App)

@@ -1,6 +1,6 @@
 <template>
-    <div class="flex flex-row">
-        <div class="flex flex-col w-full">
+    <div class="flex flex-row w-full">
+        <div class="flex flex-col w-full transition-all" :class="selected_user ? 'w-[calc(100%-400px)]' : 'w-full'">
             <Header title="users" :thumbnails="[
                 {
                     label: 'home',
@@ -15,78 +15,86 @@
                     name: 'USERS'
                 },
             ]" />
-            <div class="bg-white flex flex-col  border-b border-gray-200 p-4 gap-3">
-
-                <div class="flex flex-row items-center justify-between ">
-                    <div class="flex flex-row gap-1 items-center">
-                        <ButtonFilter text="Add" :icon="Plus" is-primary @click="router.push({
+            <!-- ======================= RIBBON TOOLBAR ======================= -->
+            <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+                <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
+                    <div class="flex flex-row items-center gap-1.5">
+                        <ButtonFilter text="Ajouter" :icon="Plus" is-primary @click="router.push({
                             name: 'ADD_USER'
                         })" />
-                        <ButtonFilter text="Export" :icon="Download" :loading="loading_export"
+                        <ButtonFilter text="Exporter" :icon="Download" :loading="loading_export"
                             :badge="pagination.total.toString()" @click="exportData()" />
-
                     </div>
-                    <InputFilter :icon="Search" v-model="filters.search[0]" />
+                    <div class="flex flex-row items-center gap-2">
+                        <InputFilter :icon="Search" placeholder="Rechercher un utilisateur..." v-model="filters.search[0]" />
+                    </div>
                 </div>
                 <ChipFilter :filterableKeys="filterableKeys" :column-labels="columnLabels" :filters="filters"
                     :column-options="columnOptions as Record<string, string[]>" :show-date-filter="false"
                     @clear-all="clearFilters()"></ChipFilter>
-
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>REF</th>
-                        <th>Nom</th>
-                        <th>E-mail</th>
-                        <th>Téléphone</th>
-                        <th>Département</th>
-                        <th>Fonction</th>
-                        <th>Rôle</th>
-                        <th>Status</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr @contextmenu.prevent="($event) => { contextMenu = $event; isOpenContextMenu = true; context_menu_user = item }"
-                        v-for="(item, index) in data" :key="index"
-                        :class="selected_user?.id == item.id ? 'bg-primary/10' : ''" @click="selectUser(item)">
-                        <td>{{ item.id }}</td>
-                        <td>{{ item.first_name + " " + item.last_name }}</td>
-                        <td>{{ item.email }}</td>
-                        <td>{{ item.phone_number }}</td>
-                        <td>{{ item?.department }}</td>
-                        <td>{{ item?.job }}</td>
+            <div class="flex flex-col flex-1 min-w-0">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-16 text-center">REF</th>
+                            <th>NOM ET PRÉNOM</th>
+                            <th>E-MAIL</th>
+                            <th>TÉLÉPHONE</th>
+                            <th>DÉPARTEMENT</th>
+                            <th>FONCTION</th>
+                            <th>RÔLE</th>
+                            <th>STATUT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr @contextmenu.prevent="($event) => { contextMenu = $event; isOpenContextMenu = true; context_menu_user = item }"
+                            v-for="(item, index) in data" :key="index"
+                            :class="selected_user?.id == item.id ? 'bg-primary/10 font-medium' : ''" @click="selectUser(item)"
+                            class="cursor-pointer">
+                            <td class="font-mono text-xs text-gray-400 text-center">#{{ item.id }}</td>
+                            <td class="font-medium text-gray-900">{{ item.first_name + " " + item.last_name }}</td>
+                            <td class="text-gray-600 font-mono text-xs">{{ item.email }}</td>
+                            <td class="text-gray-500 font-mono text-xs">{{ item.phone_number }}</td>
+                            <td class="text-gray-700">{{ item?.department }}</td>
+                            <td class="text-gray-700">{{ item?.job }}</td>
 
-                        <td>
-                            <template v-if="!loading_status">
-                                {{UserRoleDataJson.find(i => i.value == item.role)?.label}}
-                            </template>
-                            <template v-else-if="loading_status && context_menu_user?.id == item.id">
-                                <Loader :size="20" class="animate-spin" />
-                            </template>
-                        </td>
-                        <td>
-                            <UserStatus :name="item.status" />
-                        </td>
-                    </tr>
+                            <td>
+                                <template v-if="!loading_status">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">
+                                        {{UserRoleDataJson.find(i => i.value == item.role)?.label || item.role}}
+                                    </span>
+                                </template>
+                                <template v-else-if="loading_status && context_menu_user?.id == item.id">
+                                    <Loader :size="20" class="animate-spin text-primary" />
+                                </template>
+                            </td>
+                            <td>
+                                <UserStatus :name="item.status" />
+                            </td>
+                        </tr>
 
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="8" class="w-full p-4">
-                            <div class="flex flex-row items-center text-sm justify-end ">
-                                <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total"
-                                    :items-per-page="15" :max-pages-shown="4" v-model="pagination.current_page"
-                                    @click="(page: number) => { pagination.current_page = page }" />
-                            </div>
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="8" class="w-full p-4 border-t border-gray-200">
+                                <div class="flex flex-row items-center justify-between text-sm">
+                                    <span class="text-xs text-gray-500 font-medium">
+                                        Affichage de {{ pagination.to }} sur {{ pagination.total }} utilisateurs
+                                    </span>
+                                    <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total"
+                                        :items-per-page="15" :max-pages-shown="4" v-model="pagination.current_page"
+                                        @click="(page: number) => { pagination.current_page = page }" />
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
             <CenterModal :is-open="ban_modal" title="Désactiver le compte utilisateur ?" @close="ban_modal = false"
-                @confirm="() => { }">
-                <p class="max-w-100 p-4   rounded">
+                @confirm="confirmDisableUser">
+                <p class="max-w-100 p-4 rounded text-sm text-gray-600">
                     Cet utilisateur ne pourra plus se connecter à la plateforme GALANA HSSE ni accéder aux inspections,
                     rapports et
                     fonctionnalités qui lui sont attribués.
@@ -118,11 +126,11 @@
                 },
                 {
                     label: 'Activités',
-                    icon: User,
+                    icon: Activity,
                     onClick: () => router.push({
-                        name: 'PROFILE',
-                        params: {
-                            id: context_menu_user?.id
+                        name: 'ACTIVITY',
+                        query: {
+                            user: `${context_menu_user?.first_name || ''} ${context_menu_user?.last_name || ''}`.trim()
                         }
                     })
                 },
@@ -152,26 +160,29 @@
                             ? 'DANGER'
                             : 'SUCCESS',
                         onClick: context_menu_user?.status === 'ENABLED'
-                            ? disableUser
+                            ? () => { ban_modal = true }
                             : enableUser
                     } satisfies ContextMenuActionType]
                     : [])
             ]">
             </ContextMenuUI>
         </div>
-        <div v-if="selected_user" class="
-        col-span-3
-        bg-white
-        border-l
-        border-gray-200
-        p-5
-        
-        overflow-y-auto
-        sticky top-0 bottom-0
-    " :class="selected_user ? 'w-120' : 'w-0'">
-            <div class="absolute top-5 right-5">
-                <button @click="selected_user = undefined">
-                    <XIcon />
+        <!-- ======================= DRAWER LATÉRAL ======================= -->
+        <aside v-if="selected_user" aria-label="Aperçu de l'utilisateur"
+            class="w-[400px] min-w-[400px] max-w-[400px] bg-white border-l border-gray-200 p-5 overflow-y-auto shrink-0 shadow-xl z-20 sticky top-0 h-screen scrollbar-hide">
+            <!-- HEADER DU VOLET -->
+            <div class="flex items-start justify-between pb-4 border-b border-gray-200 mb-5">
+                <div class="min-w-0 flex-1">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Utilisateur n° {{ selected_user.id }}</p>
+                    <h4 class="mt-1 font-bold text-gray-900 truncate">{{ selected_user.first_name }} {{ selected_user.last_name }}</h4>
+                </div>
+                <button
+                    @click="selected_user = undefined"
+                    type="button"
+                    aria-label="Fermer l'aperçu"
+                    class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                    <XIcon :size="18" />
                 </button>
             </div>
             <!-- HEADER -->
@@ -391,7 +402,7 @@
 
 
 
-        </div>
+        </aside>
     </div>
 </template>
 <script setup lang="ts">
@@ -399,7 +410,8 @@
     import Header from '../../../components/shared/Header.vue';
 
     import Button from '../../../components/ui/Button.vue';
-    import { Ban, CircleCheck, Download, Edit, Plus, Search, User, UserCog2, XIcon } from '@lucide/vue';
+    import { Activity, Ban, CircleCheck, Download, Edit, Plus, Search, User, UserCog2, XIcon } from '@lucide/vue';
+    import { toast } from 'vue3-toastify';
 
     import { UserExportFields, UserRoleData, UserRoleDataJson, UserStatusData } from '../../../@data/User.data';
 
@@ -550,9 +562,11 @@
                             item.status = 'ENABLED' :
                             null
                 )
+                toast.success('Compte utilisateur activé avec succès')
             })
             .catch(err => {
                 console.error(err)
+                toast.error("Erreur lors de l'activation")
             })
             .finally(() => {
                 loading_status.value = false
@@ -568,13 +582,19 @@
                             item.status = 'DISABLED' :
                             null
                 )
+                toast.success('Compte utilisateur désactivé avec succès')
             })
             .catch(err => {
                 console.error(err)
+                toast.error("Erreur lors de la désactivation")
             })
             .finally(() => {
                 loading_status.value = false
             })
+    }
+    function confirmDisableUser() {
+        ban_modal.value = false
+        disableUser()
     }
     function fetchMyInfo() {
         user.me()

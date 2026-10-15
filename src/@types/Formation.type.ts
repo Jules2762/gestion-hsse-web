@@ -54,7 +54,8 @@ type FormationDataType={
 }
 type ParticipantStoreFormType = {
     formation_id: string | number,
-    personnel_id: string | number
+    personnel_id?: string | number,
+    personnel_ids?: (string | number)[]
 }
 export type {
     VoletType,

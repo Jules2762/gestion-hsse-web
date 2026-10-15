@@ -20,6 +20,23 @@ export const useAuthService=defineStore("auth-service",{
             this.$state.user=response.data.user
             sessionStorage.setItem("gestion-hsse-token",response.data.token)
             return response
+        },
+        async logout(){
+            try {
+                await authApi.logout()
+            } catch (err) {
+                console.error("Erreur déconnexion:", err)
+            } finally {
+                this.$state.user = {} as UserDataType
+                this.$state.token = null
+                sessionStorage.removeItem("gestion-hsse-token")
+            }
+        },
+        async forgotPassword(email: string){
+            return await authApi.forgotPassword(email)
+        },
+        async resetPassword(data: { email: string; password: string; password_confirmation: string }){
+            return await authApi.resetPassword(data)
         }
     }
 })

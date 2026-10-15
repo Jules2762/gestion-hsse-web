@@ -62,6 +62,21 @@ export const en: LangType = {
     //============================
     //Header
     //============================
+    "header": {
+        "search": "Search...",
+        "profile": "User profile",
+        "breadcrumb": "Breadcrumb",
+        "notifications": {
+            "title": "Notifications & Alerts",
+            "subtitle": "Recent events and HSSE compliance alerts",
+            "open": "Open notifications ({count} unread)",
+            "markAllRead": "Mark all as read",
+            "unread": "Unread",
+            "delete": "Delete notification",
+            "emptyTitle": "No notifications",
+            "emptyText": "All your alerts and actions are up to date!"
+        }
+    },
     "thumbnails": {
         "home": "Home",
         "administration": 'Administration',
@@ -298,6 +313,10 @@ export const en: LangType = {
                 "notifications": {
                     "success": "The equipment monitoring was added successfully.",
                     "errors": {
+                        "bac_de_retention": {
+                            "min": "The retention basin value must be greater than or equal to 0.",
+                            "integer": "The retention basin value must be an integer."
+                        },
                         "bas_met": {
                             "min": "The BAS MET value must be greater than or equal to 0.",
                             "integer": "The BAS MET value must be an integer."

@@ -16,6 +16,8 @@
     import GeneralSection from '../../components/features/dashboard/général/GeneralSection.vue'
     import PlanFormationSection from '../../components/features/dashboard/plan-de-formation/PlanFormationSection.vue'
     import InspectionSection from '../../components/features/dashboard/inspection/InspectionSection.vue'
+    import EquipmentSection from '../../components/features/dashboard/equipment/EquipmentSection.vue'
+    import VmcSection from '../../components/features/dashboard/vmc/VmcSection.vue'
 
     const search = ref('')
     const tab_index = ref(0)
@@ -24,9 +26,9 @@
     const tabs = [
         { label: 'dashboard.tabs.general', component: GeneralSection },
         { label: 'dashboard.tabs.training plan', component: PlanFormationSection },
-        { label: 'Suivi matériels', component: InspectionSection },
+        { label: 'Suivi matériels', component: EquipmentSection },
         { label: 'Checklist', component: InspectionSection },
-        { label: 'VMC', component: InspectionSection },
+        { label: 'VMC', component: VmcSection },
     ]
 
     const tab_data = tabs.map((tab) => tab.label)

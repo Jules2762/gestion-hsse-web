@@ -2,16 +2,16 @@
     <transition name="center_modal">
         <div class="fixed z-50 top-0 left-0 bg-black/10 w-screen min-h-screen min-w-screen h-screen flex flex-row items-center justify-center"  v-if="isOpen" @click.self="onClose">
             <div class=" center_modal_content bg-white shadow shadow-gray-300  flex flex-col rounded min-w-100 min-h-60 -translate-y-30" :class="`w-${width}`">
-                <div class="bg-gray-50 h-16 p-4 flex flex-row justify-between items-center border-b border-gray-300">
-                    <h4 :class="themeTitle">{{ title }}</h4>
-                    <button @click="onClose">
-                        <XIcon :size="18"/>
+                <div class="bg-gray-50 h-14 p-4 flex flex-row justify-between items-center border-b border-gray-200">
+                    <h4 class="text-sm font-bold" :class="themeTitle">{{ title }}</h4>
+                    <button @click="onClose" class="text-gray-400 hover:text-gray-700">
+                        <XIcon :size="16"/>
                     </button>
                 </div>
-                <div class="bg-white flex-1 p-4 w-full">
+                <div class="bg-white flex-1 p-4 w-full text-xs">
                     <slot></slot>
                 </div>
-                <div class="bg-gray-50 h-16 p-4 flex  flex-row justify-between gap-3 items-center border-t border-gray-300">
+                <div class="bg-gray-50 h-14 p-4 flex flex-row justify-between gap-3 items-center border-t border-gray-200">
                     <Button variant="outline" @click="onClose" full-width>{{ cancelTitle }}</Button>
                     <Button @click="onConfirm" :variant="confirmVariant" :loading="confirmLoading" full-width>{{ confirmTitle }}</Button>
                     

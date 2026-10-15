@@ -41,19 +41,19 @@ defineEmits<{ click: [] }>()
 /* Classes en chaînes littérales : Tailwind scanne le source,
  * une classe construite dynamiquement ne serait jamais générée. */
 const THEMES: Record<ColorType | 'default', ThemeStyle> = {
-  default: { card: 'border-gray-200 bg-white', iconWrap: 'bg-gray-100', icon: 'text-gray-600', ring: 'ring-gray-400' },
-  red: { card: 'border-red-300 bg-red-300/10', iconWrap: 'bg-red-300/25', icon: 'text-red-600', ring: 'ring-red-500' },
-  green: { card: 'border-green-300 bg-green-300/10', iconWrap: 'bg-green-300/25', icon: 'text-green-600', ring: 'ring-green-500' },
-  orange: { card: 'border-orange-300 bg-orange-300/10', iconWrap: 'bg-orange-300/25', icon: 'text-orange-600', ring: 'ring-orange-500' },
-  blue: { card: 'border-blue-300 bg-blue-300/10', iconWrap: 'bg-blue-300/25', icon: 'text-blue-600', ring: 'ring-blue-500' },
-  purple: { card: 'border-purple-300 bg-purple-300/10', iconWrap: 'bg-purple-300/25', icon: 'text-purple-600', ring: 'ring-purple-500' },
-  pink: { card: 'border-pink-300 bg-pink-300/10', iconWrap: 'bg-pink-300/25', icon: 'text-pink-600', ring: 'ring-pink-500' },
-  yellow: { card: 'border-yellow-300 bg-yellow-300/10', iconWrap: 'bg-yellow-300/25', icon: 'text-yellow-600', ring: 'ring-yellow-500' },
-  indigo: { card: 'border-indigo-300 bg-indigo-300/10', iconWrap: 'bg-indigo-300/25', icon: 'text-indigo-600', ring: 'ring-indigo-500' },
-  teal: { card: 'border-teal-300 bg-teal-300/10', iconWrap: 'bg-teal-300/25', icon: 'text-teal-600', ring: 'ring-teal-500' },
-  cyan: { card: 'border-cyan-300 bg-cyan-300/10', iconWrap: 'bg-cyan-300/25', icon: 'text-cyan-600', ring: 'ring-cyan-500' },
-  gray: { card: 'border-gray-300 bg-gray-300/10', iconWrap: 'bg-gray-300/25', icon: 'text-gray-600', ring: 'ring-gray-500' },
-  slate: { card: 'border-slate-300 bg-slate-300/10', iconWrap: 'bg-slate-300/25', icon: 'text-slate-600', ring: 'ring-slate-500' },
+  default: { card: 'border-slate-300 bg-white border-l-4 border-l-slate-700 shadow-xs', iconWrap: 'bg-slate-700 text-white shadow-xs', icon: 'text-white', ring: 'ring-slate-500' },
+  red: { card: 'border-red-300 bg-red-100/60 border-l-4 border-l-red-600 shadow-xs', iconWrap: 'bg-red-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-red-600' },
+  green: { card: 'border-emerald-300 bg-emerald-100/60 border-l-4 border-l-[#0F9D58] shadow-xs', iconWrap: 'bg-[#0F9D58] text-white shadow-xs', icon: 'text-white', ring: 'ring-[#0F9D58]' },
+  orange: { card: 'border-orange-300 bg-orange-100/60 border-l-4 border-l-orange-600 shadow-xs', iconWrap: 'bg-orange-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-orange-600' },
+  blue: { card: 'border-blue-300 bg-blue-100/60 border-l-4 border-l-blue-600 shadow-xs', iconWrap: 'bg-blue-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-blue-600' },
+  purple: { card: 'border-purple-300 bg-purple-100/60 border-l-4 border-l-purple-600 shadow-xs', iconWrap: 'bg-purple-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-purple-600' },
+  pink: { card: 'border-pink-300 bg-pink-100/60 border-l-4 border-l-pink-600 shadow-xs', iconWrap: 'bg-pink-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-pink-600' },
+  yellow: { card: 'border-amber-300 bg-amber-100/60 border-l-4 border-l-amber-600 shadow-xs', iconWrap: 'bg-amber-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-amber-600' },
+  indigo: { card: 'border-indigo-300 bg-indigo-100/60 border-l-4 border-l-indigo-600 shadow-xs', iconWrap: 'bg-indigo-600 text-white shadow-xs', icon: 'text-white', ring: 'ring-indigo-600' },
+  teal: { card: 'border-teal-300 bg-teal-100/60 border-l-4 border-l-teal-700 shadow-xs', iconWrap: 'bg-teal-700 text-white shadow-xs', icon: 'text-white', ring: 'ring-teal-700' },
+  cyan: { card: 'border-cyan-300 bg-cyan-100/60 border-l-4 border-l-cyan-700 shadow-xs', iconWrap: 'bg-cyan-700 text-white shadow-xs', icon: 'text-white', ring: 'ring-cyan-700' },
+  gray: { card: 'border-gray-300 bg-gray-100/60 border-l-4 border-l-gray-700 shadow-xs', iconWrap: 'bg-gray-700 text-white shadow-xs', icon: 'text-white', ring: 'ring-gray-700' },
+  slate: { card: 'border-slate-300 bg-slate-100/60 border-l-4 border-l-slate-700 shadow-xs', iconWrap: 'bg-slate-700 text-white shadow-xs', icon: 'text-white', ring: 'ring-slate-700' },
 }
 
 const style = computed(() => THEMES[props.theme ?? 'default'])
@@ -100,10 +100,10 @@ const tag = computed(() => (props.clickable ? 'button' : 'div'))
   >
     <!-- En-tête : titre sur 2 lignes max, icône toujours visible -->
     <div class="flex w-full items-start justify-between gap-x-3">
-      <h5 class="line-clamp-2 min-w-0 text-sm font-medium leading-snug text-gray-600">{{ title }}</h5>
+      <h5 class="line-clamp-2 min-w-0 text-sm font-semibold leading-snug text-slate-800">{{ title }}</h5>
 
-      <div class="shrink-0 rounded-full p-2" :class="style.iconWrap">
-        <component :is="icon" :size="18" :class="style.icon" aria-hidden="true" />
+      <div class="shrink-0 rounded-xl p-2.5 shadow-xs" :class="style.iconWrap">
+        <component :is="icon" :size="20" :class="style.icon" aria-hidden="true" />
       </div>
     </div>
 
@@ -116,18 +116,18 @@ const tag = computed(() => (props.clickable ? 'button' : 'div'))
     <!-- Valeur toujours collée en bas : alignée d'une carte à l'autre -->
     <div v-else class="flex flex-col gap-1.5">
       <p class="flex items-baseline gap-1">
-        <span class="text-3xl font-semibold leading-none tabular-nums text-gray-900">{{ displayValue }}</span>
-        <span v-if="unit" class="text-lg font-medium leading-none text-gray-500">{{ unit }}</span>
+        <span class="text-3xl font-bold leading-none tabular-nums text-slate-900">{{ displayValue }}</span>
+        <span v-if="unit" class="text-lg font-medium leading-none text-slate-600">{{ unit }}</span>
       </p>
 
-      <p v-if="subtitle" class="text-sm text-gray-500">{{ subtitle }}</p>
+      <p v-if="subtitle" class="text-xs font-medium text-slate-600">{{ subtitle }}</p>
 
       <p v-if="delta !== undefined" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
         <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium" :class="trend.tone">
           <component :is="trend.icon" :size="12" aria-hidden="true" />
           {{ deltaText }}
         </span>
-        <span class="text-gray-500">{{ deltaLabel }}</span>
+        <span class="text-slate-600">{{ deltaLabel }}</span>
       </p>
     </div>
   </component>
