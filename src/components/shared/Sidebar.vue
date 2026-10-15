@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref } from 'vue';
+    import { onMounted, onBeforeUnmount, ref } from 'vue';
     import { useI18n } from 'vue-i18n';
     import { ChevronDown, HelpCircleIcon, LogOutIcon } from '@lucide/vue';
 
@@ -146,4 +146,12 @@
             .filter((item, index) => item.children.length > 0 && index != sidebar.getLastIndex)
             .forEach((item) => item.isOpen = false)
     }
+
+    onMounted(() => {
+        sidebar_notification.startRealtime()
+    })
+
+    onBeforeUnmount(() => {
+        sidebar_notification.stopRealtime()
+    })
 </script>

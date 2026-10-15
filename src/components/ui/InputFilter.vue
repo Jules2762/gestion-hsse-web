@@ -8,7 +8,7 @@
             <input v-model="inputValue" type="text" autocomplete="off" :placeholder="placeholder || 'Rechercher ...'"
                 @focus="openDropdown" class="h-9 w-full rounded-lg border
                        border-gray-300 bg-white pl-8 pr-16
-                       text-sm text-gray-700
+                       text-xs text-gray-700
                        placeholder:text-gray-400
                        focus:border-primary focus:outline-none
                        focus:ring-2 focus:ring-primary/20" />
@@ -38,15 +38,15 @@
                                 ? 'bg-gray-50'
                                 : ''
                             ">
-                    <div class="text-sm font-medium text-gray-800">
+                    <div class="text-xs font-medium text-gray-800">
                         {{ item.label }}
                     </div>
-                    <p class="text-sm text-gray-400">
+                    <p class="text-[11px] text-gray-400">
                         {{ item.description }}
                     </p>
                 </button>
 
-                <div v-if="filteredLists.length === 0" class="px-3 py-3 text-sm text-gray-400">
+                <div v-if="filteredLists.length === 0" class="px-3 py-3 text-xs text-gray-400">
                     Aucun résultat
                 </div>
             </div>

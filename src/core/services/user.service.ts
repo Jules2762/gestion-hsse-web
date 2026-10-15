@@ -25,6 +25,9 @@ export const useUserService=defineStore('user-service',{
         async updateProfile(id:string|number,data:UserProfileUpdateFormType){
             return await userApi.updateProfile(id,data)
         },
+        async updatePassword(data: { current_password: string; password: string; password_confirmation: string }) {
+            return await userApi.updatePassword(data)
+        },
         async store(data?:UserFormType){
             return await userApi.store(data)
         },

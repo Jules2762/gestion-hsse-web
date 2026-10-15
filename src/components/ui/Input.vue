@@ -16,7 +16,7 @@
     </label>
 
     <div :class="[
-      'flex h-14 items-center rounded-2xl border bg-white px-4 transition-all duration-200',
+      'flex h-10 items-center rounded-lg border bg-white px-3 transition-all duration-200',
 
       error
         ? 'border-red-500'
@@ -27,22 +27,22 @@
         : '',
 
       'focus-within:border-primary',
-      'focus-within:ring-4',
-      'focus-within:ring-[#E8F5EE]',
+      'focus-within:ring-2',
+      'focus-within:ring-primary/20',
     ]">
       <component :is="icon" v-if="icon" class="
-          mr-3
-          h-5
-          w-5
+          mr-2.5
+          h-4
+          w-4
           shrink-0
           text-text-muted
         " />
 
-      <input :placeholder="placeholder" :min="min" :type="type" :disabled="disabled" :inputmode="inputMode" class="
+      <input :placeholder="placeholder" :min="min" :max="max" :type="type" :disabled="disabled" :inputMode="inputMode" class="
           h-full
           w-full
           bg-transparent
-          text-sm
+          text-xs
           text-text-primary
           outline-none
           placeholder:text-text-muted
@@ -85,7 +85,8 @@
     required?: boolean,
     lists?: string[],
     list_id?: string,
-    min?:number
+    min?: number | string
+    max?: number | string
   }
 
   const props = withDefaults(
@@ -98,7 +99,8 @@
       disabled: false,
       required: false,
       inputMode: undefined,
-      min:0
+      min: 0,
+      max: undefined,
     },
   )
 

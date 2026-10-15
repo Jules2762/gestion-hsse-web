@@ -23,8 +23,8 @@
                     <h4>Informations de l'inspection</h4>
                     <p>Sélectionnez le type d'inspection puis renseignez les informations de planification.</p>
                 </div>
-                <Select required :options="ChecklistTypeData" v-model="data.type" label="Type d'inspection" class="col-span-2" />
-                <Select required :options="SiteTypeDataJson" label="Site" v-model="data.site" class="col-span-2" />
+                <Select required :options="dynamicTypes" v-model="data.type" label="Type d'inspection" class="col-span-2" />
+                <Select required :options="dynamicSites" label="Site" v-model="data.site" class="col-span-2" />
                 <Input label="Date prévue" type="date" v-model="data.date" />
                 <Input label="Heure prévue" type="time" v-model="data.time" />
                 <div class="flex flex-row items-center col-span-2 justify-end gap-x-3">
@@ -248,6 +248,9 @@
     import { useChecklistService } from '../../../core/services/checklist.service.ts';
     import type { CheckllistFormType } from '../../../@types/Checklist.type.ts';
     const templates = ref<ChecklistTemplateType[]>()
+    const dynamicTypes = ref<{ label: string; value: string; site?: string }[]>([...ChecklistTypeData])
+    const dynamicSites = ref<{ label: string; value: string }[]>([...SiteTypeDataJson])
+
     const data = ref<CheckllistFormType>({
         type: undefined,
         site: undefined,
@@ -258,19 +261,44 @@
     const checklistService = useChecklistService()
     const loading_submit = ref<boolean>(false)
     const disabled_submit = ref<boolean>(true)
+
     function fetchDataTemplate() {
         templateService.index()
             .then(res => {
-                console.log(res.data.data)
                 templates.value = res.data.data
+                if (templates.value && templates.value.length > 0) {
+                    const loadedTypes = templates.value.map(tpl => ({
+                        label: tpl.title,
+                        value: tpl.title,
+                        site: tpl.site
+                    }))
+                    dynamicTypes.value = loadedTypes
+                }
             })
             .catch(err => {
                 console.error(err)
             })
+
+        checklistService.getFilters()
+            .then(res => {
+                if (res.data?.type && res.data.type.length > 0) {
+                    const filterTypes = res.data.type.map((t: string) => ({
+                        label: t,
+                        value: t
+                    }))
+                    // Merge unique
+                    for (const ft of filterTypes) {
+                        if (!dynamicTypes.value.some(dt => dt.value === ft.value)) {
+                            dynamicTypes.value.push(ft)
+                        }
+                    }
+                }
+            })
+            .catch(err => console.error(err))
     }
+
     function onSubmit() {
         loading_submit.value = true
-        // checklistService.store(data.value)
         checklistService.store(data.value)
         .then(res=>{
             console.log(res.data)
@@ -285,14 +313,19 @@
             loading_submit.value=false
         })
     }
+
     onMounted(() => {
         fetchDataTemplate()
     })
+
     watch(data.value, () => {
         disabled_submit.value=Object.values(data.value).some(value=>value==undefined||value=='')
     })
+
     watch(()=>data.value.type,()=>{
-        const site=ChecklistTypeData.find(item=>data.value.type==item.value)?.site
-        data.value.site=site
+        const site = dynamicTypes.value.find(item=>data.value.type==item.value)?.site
+        if (site) {
+            data.value.site = site as any
+        }
     })
 </script>

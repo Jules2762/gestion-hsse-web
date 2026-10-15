@@ -1,40 +1,81 @@
 import { defineStore } from "pinia";
+import api from "../core/api";
+
 type SidebarCountsType = {
-    DASHBOARD: number
-   
-    USERS: number
-    ACTIVITY: number
-    
-    TEMPLATE: number
-    CHECKLIST: number
-    ACTION: number,
-    EQUIPMENT_MONITORING:number
-}
+    DASHBOARD?: number;
+    USERS?: number;
+    ACTIVITY?: number;
+    TEMPLATE?: number;
+    CHECKLIST?: number;
+    ACTION?: number;
+    EQUIPMENT_MONITORING?: number;
+    FORMATION?: number;
+    VMC?: number;
+};
+
+let pollTimer: number | null = null;
+let hasFocusListener = false;
+
 const useSidebarNotification = defineStore("sidebar-notification", {
     state: () => ({
         counts: {
             DASHBOARD: 0,
-        
-            USERS: 5,
+            USERS: 0,
             ACTIVITY: 0,
-           
             TEMPLATE: 0,
             CHECKLIST: 0,
-            ACTION: 7,
-            EQUIPMENT_MONITORING:0
+            ACTION: 0,
+            EQUIPMENT_MONITORING: 0,
+            FORMATION: 0,
+            VMC: 0,
+        } as Record<string, number>,
+        isLoading: false,
+    }),
+    getters: {
+        getCount: (state) => {
+            return (name: string): number => state.counts[name] ?? 0;
+        },
+    },
+    actions: {
+        setCount(name: string, value: number) {
+            this.counts[name] = Math.max(0, value);
+        },
+        async fetchCounts() {
+            try {
+                const res = await api.get("/home/sidebar-counts");
+                if (res?.data) {
+                    this.counts = {
+                        ...this.counts,
+                        ...res.data,
+                    };
+                }
+            } catch (err) {
+                // Ignore silent fetch errors
+            }
+        },
+        startRealtime(intervalMs = 30000) {
+            this.fetchCounts();
 
-        }
-    }), getters: {
-        getCount: (state)=>{
-            return (name: keyof SidebarCountsType)=>state.counts[name]
-        }
-    }, actions: {
-        setCount(name: keyof SidebarCountsType, value: number) {
-            this.$state.counts[name] = value
-        }
-    }
-})
-export {
-    useSidebarNotification,
-    type SidebarCountsType
-}
+            if (!pollTimer && typeof window !== "undefined") {
+                pollTimer = window.setInterval(() => {
+                    this.fetchCounts();
+                }, intervalMs);
+            }
+
+            if (!hasFocusListener && typeof window !== "undefined") {
+                window.addEventListener("focus", () => {
+                    this.fetchCounts();
+                });
+                hasFocusListener = true;
+            }
+        },
+        stopRealtime() {
+            if (pollTimer && typeof window !== "undefined") {
+                window.clearInterval(pollTimer);
+                pollTimer = null;
+            }
+        },
+    },
+});
+
+export { useSidebarNotification, type SidebarCountsType };

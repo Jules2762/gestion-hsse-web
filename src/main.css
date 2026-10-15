@@ -44,7 +44,7 @@
   }
 
   body {
-    @apply min-h-screen bg-background text-text-primary antialiased;
+    @apply min-h-screen bg-background text-text-primary text-xs antialiased;
     font-family:
       Inter,
       system-ui,
@@ -52,43 +52,43 @@
   }
 
   #app {
-    @apply min-h-screen;
+    @apply min-h-screen text-xs;
   }
 
   h1 {
-    @apply text-4xl font-bold text-text-primary;
+    @apply text-xl sm:text-2xl font-bold text-text-primary tracking-tight;
   }
 
   h2 {
-    @apply text-3xl font-bold text-text-primary;
+    @apply text-lg sm:text-xl font-bold text-text-primary tracking-tight;
   }
 
   h3 {
-    @apply text-2xl font-semibold text-text-primary;
-  }
-
-  h4 {
-    @apply text-xl font-semibold text-text-primary;
-  }
-
-  h5 {
-    @apply text-lg font-semibold text-text-primary;
-  }
-
-  h6 {
     @apply text-base font-semibold text-text-primary;
   }
 
+  h4 {
+    @apply text-sm font-semibold text-text-primary;
+  }
+
+  h5 {
+    @apply text-xs font-bold text-text-primary;
+  }
+
+  h6 {
+    @apply text-xs font-semibold text-text-primary;
+  }
+
   p {
-    @apply text-base text-text-primary;
+    @apply text-xs text-text-primary leading-relaxed;
   }
 
   label {
-    @apply mb-3 block text-sm font-bold uppercase tracking-wide text-text-secondary;
+    @apply mb-1.5 block text-xs font-semibold text-text-secondary;
   }
 
   a {
-    @apply text-primary transition-colors;
+    @apply text-primary transition-colors text-xs;
   }
 
   a:hover {
@@ -98,41 +98,40 @@
   input,
   textarea,
   select {
+    @apply text-xs text-text-primary;
     font-family: inherit;
   }
 
+  button {
+    @apply text-xs;
+  }
+
   table {
-    @apply w-full overflow-hidden bg-white h-fit;
+    @apply w-full overflow-hidden bg-white text-xs border-collapse;
   }
 
   thead {
-    @apply bg-slate-50 z-0;
+    @apply bg-slate-50 border-b border-gray-200 z-0;
   }
 
   thead th {
-    @apply px-6 py-4 text-left text-xs w-fit z-0  font-bold uppercase tracking-wider text-text-secondary;
+    @apply px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap;
   }
 
   tbody {
-    @apply bg-white h-fit;
+    @apply bg-white divide-y divide-gray-100;
   }
 
   tbody td {
-    @apply px-6  py-4 h-fit text-sm text-text-primary;
-  }
-  tbody tr {
-    @apply border-b border-border ;
+    @apply px-4 py-3 text-xs text-slate-700 align-middle;
   }
 
   tbody tr {
-    @apply h-fit transition-colors bg-white;
-  }
-  tbody tr td:first-child {
-    @apply border-r border-gray-200 w-fit;
+    @apply transition-colors bg-white;
   }
 
   tbody tr:hover {
-    @apply bg-primary-light/40;
+    @apply bg-slate-50/80;
   }
 }
 
@@ -142,28 +141,36 @@
 }
 
 .paginate-buttons {
-  height: 30px;
-  width: 30px;
-  font-size: small;
-  border-radius: 20px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 8px;
   cursor: pointer;
-  background-color: rgb(242, 242, 242);
-  border: 1px solid rgb(217, 217, 217);
-  color: black;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  transition: all 0.15s ease;
 }
 
 .paginate-buttons:hover {
-  background-color: #d8d8d8;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
 }
 
 .active-page {
-  background-color: var(--color-primary);
-  border: 1px solid var(--color-primary-dark);
+  background-color: var(--color-primary, #0f9d58);
+  border: 1px solid var(--color-primary-dark, #0d874c);
   color: white;
+  font-weight: 600;
 }
 
 .active-page:hover {
-  background-color: #2988c8;
+  background-color: var(--color-primary-dark, #0d874c);
+  border-color: var(--color-primary-dark, #0d874c);
+  color: white;
 }
 
 .scrollbar-hide {
@@ -192,7 +199,8 @@
 }
 
 .ribbon-btn-primary {
-  color: theme('colors.primary', #4f46e5);
+  color: var(--color-primary, #0f9d58);
+  font-weight: 600;
 }
 
 .ribbon-btn-disabled {
@@ -238,9 +246,10 @@
 }
 
 .filter-pill-active {
-  border-color: theme('colors.primary', #4f46e5);
-  background-color: rgba(79, 70, 229, 0.06);
-  color: theme('colors.primary', #4f46e5);
+  border-color: var(--color-primary, #0f9d58);
+  background-color: rgba(15, 157, 88, 0.08);
+  color: var(--color-primary, #0f9d58);
+  font-weight: 600;
 }
 
 .filter-pill-count {
@@ -251,7 +260,7 @@
   height: 1rem;
   padding: 0 0.25rem;
   border-radius: 9999px;
-  background-color: theme('colors.primary', #4f46e5);
+  background-color: var(--color-primary, #0f9d58);
   color: #fff;
   font-size: 0.65rem;
   font-weight: 600;
@@ -312,8 +321,8 @@
 }
 
 .popover-input:focus {
-  border-color: theme('colors.primary', #4f46e5);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+  border-color: var(--color-primary, #0f9d58);
+  box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.15);
 }
 
 .popover-footer {
@@ -337,5 +346,5 @@
 .popover-ok {
   font-size: 0.72rem;
   font-weight: 600;
-  color: theme('colors.primary', #4f46e5);
+  color: var(--color-primary, #0f9d58);
 }

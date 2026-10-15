@@ -64,6 +64,21 @@ type LangType = {
         "help center": string,
         "logout": string,
     },
+    "header"?: {
+        "search": string,
+        "profile": string,
+        "breadcrumb": string,
+        "notifications": {
+            "title": string,
+            "subtitle": string,
+            "open": string,
+            "markAllRead": string,
+            "unread": string,
+            "delete": string,
+            "emptyTitle": string,
+            "emptyText": string
+        }
+    },
     "thumbnails": {
         "home": string,
         "administration": string,

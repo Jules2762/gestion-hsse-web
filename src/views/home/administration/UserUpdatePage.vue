@@ -266,6 +266,7 @@
     } from '../../../@data/User.data.ts'
 
     import { router } from '../../../router/index.ts'
+    import { toast } from 'vue3-toastify'
 
     import type {
         UserFormType,
@@ -511,23 +512,24 @@
 
         // NOTE : si l'API attend un upload multipart plutôt qu'un simple nom
         // de fichier, remplacer par l'envoi de `avatarFile.value` via FormData.
-        if (avatarFile.value) {
-            payload.image_path = avatarFile.value.name
+        if (avatarFile.value && avatarPreview.value) {
+            payload.image_path = avatarPreview.value
         } else if (avatarRemoved.value) {
             payload.image_path = null
         }
 
-        // NOTE : hypothèse sur le nom de la méthode du service pour la mise
-        // à jour (ex: updateUser, update...). À adapter si nécessaire.
         user.update(userId, payload as Partial<UserFormType>)
             .then(res => {
+                toast.success('Utilisateur mis à jour avec succès')
                 redirectTimeout = setTimeout(() => {
                     router.push({ name: "USERS" })
-                }, 1200)
+                }, 1000)
             })
             .catch(err => {
                 if (err.status == '422') {
                     errors.value = err?.response?.data.errors
+                } else {
+                    toast.error(err?.response?.data?.message || 'Erreur lors de la mise à jour')
                 }
             })
             .finally(() => {

@@ -57,13 +57,13 @@ withDefaults(
         : '',
 
       size === 'sm' &&
-        ' p-2 text-sm',
+        'p-1.5 px-2.5 text-xs font-medium',
 
       size === 'md' &&
-        'h-12 px-5 text-sm',
+        'h-9.5 px-4 text-xs font-semibold',
 
       size === 'lg' &&
-        'h-14 px-6 text-base',
+        'h-11 px-5 text-xs sm:text-sm font-semibold',
 
       variant === 'primary' &&
         'bg-primary text-white shadow-lg shadow-green-100 hover:bg-primary-dark',

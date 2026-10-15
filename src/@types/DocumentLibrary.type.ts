@@ -7,7 +7,7 @@ type FolderType={
     description?:string,
     created_by:string|number,
     created_at:string,
-    creator:UserDataType,
+    creator?:UserDataType,
     children?:FolderType[],
     documents?: DocumentType[]
     

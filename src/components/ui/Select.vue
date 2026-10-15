@@ -23,7 +23,7 @@
 
     <div
       :class="[
-        'flex h-14 items-center rounded-2xl border bg-white px-4 transition-all duration-200',
+        'flex h-10 items-center rounded-lg border bg-white px-3 transition-all duration-200',
 
         error
           ? 'border-red-500'
@@ -34,17 +34,17 @@
           : '',
 
         'focus-within:border-[#0F9D58]',
-        'focus-within:ring-4',
-        'focus-within:ring-[#E8F5EE]',
+        'focus-within:ring-2',
+        'focus-within:ring-[#0F9D58]/20',
       ]"
     >
       <component
         :is="icon"
         v-if="icon"
         class="
-          mr-3
-          h-5
-          w-5
+          mr-2.5
+          h-4
+          w-4
           shrink-0
           text-[#94A3B8]
         "
@@ -59,7 +59,7 @@
           cursor-pointer
           appearance-none
           bg-transparent
-          text-sm
+          text-xs
           text-[#334155]
           outline-none
         "

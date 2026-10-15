@@ -61,6 +61,21 @@ export const fr: LangType = {
     //============================
     //Header
     //============================
+    "header": {
+        "search": "Rechercher...",
+        "profile": "Profil utilisateur",
+        "breadcrumb": "Fil d'Ariane",
+        "notifications": {
+            "title": "Notifications & Alertes",
+            "subtitle": "Événements récents et alertes de conformité HSSE",
+            "open": "Ouvrir les notifications ({count} non lues)",
+            "markAllRead": "Tout marquer comme lu",
+            "unread": "Non lue",
+            "delete": "Supprimer la notification",
+            "emptyTitle": "Aucune notification",
+            "emptyText": "Toutes vos alertes et actions sont à jour !"
+        }
+    },
     "thumbnails": {
         "home": "Accueil",
         "administration": 'Administration',
@@ -299,6 +314,10 @@ export const fr: LangType = {
                 "notifications": {
                     "success": "Le suivi des équipements a été ajouté avec succès.",
                     "errors": {
+                        "bac_de_retention": {
+                            "min": "La valeur du bac de rétention doit être supérieure ou égale à 0.",
+                            "integer": "La valeur du bac de rétention doit être un nombre entier."
+                        },
                         "bas_met": {
                             "min": "La valeur de BAS MET doit être supérieure ou égale à 0.",
                             "integer": "La valeur de BAS MET doit être un nombre entier."
