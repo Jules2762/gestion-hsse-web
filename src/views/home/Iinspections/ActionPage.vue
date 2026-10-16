@@ -145,8 +145,8 @@
                 </div>
 
                 <!-- TABLEAU (PLEINE LARGEUR, CONFORME AUX AUTRES PAGES) -->
-                <div v-else class="transition-all w-full">
-                    <table>
+                <div v-else class="transition-all w-full overflow-x-auto scrollbar-hide">
+                    <table class="w-full">
                         <thead>
                             <tr>
                                 <th class="w-16 text-center">REF</th>

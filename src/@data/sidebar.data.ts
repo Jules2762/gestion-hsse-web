@@ -18,10 +18,6 @@ const sidebar_routes = [
         name: "ADMINISTRATION",
         children: [
             {
-                label: "dashboard",
-                name: "ADMIN_DASHBOARD",
-            },
-            {
                 label: "users",
                 name: "USERS",
             },

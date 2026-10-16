@@ -20,6 +20,56 @@
                             :badge="pagination.total.toString()" @click="exportData()" />
                     </div>
 
+                    <!-- BADGES DE SYNTHÈSE DE CONFORMITÉ -->
+                    <div class="hidden md:flex items-center gap-2">
+                        <!-- TOUS -->
+                        <button
+                            type="button"
+                            @click="quickFilterStatus('ALL')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
+                            :class="!filters.status || filters.status.length === 0 ? 'bg-slate-100 text-slate-800 border-slate-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
+                            title="Afficher tous les suivis de matériel"
+                        >
+                            <span>Total</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">
+                                {{ metaStats.total || pagination.total }}
+                            </span>
+                        </button>
+
+                        <!-- CONFORMES -->
+                        <button
+                            type="button"
+                            @click="quickFilterStatus('CONFORME')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
+                            :class="filters.status?.includes('Conforme') && !filters.status?.includes('Non conforme') ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50/50'"
+                            title="Filtrer uniquement les suivis conformes"
+                        >
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                            <span>Conformes</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                {{ metaStats.conforme }}
+                            </span>
+                        </button>
+
+                        <!-- NON CONFORMES AVEC BADGE -->
+                        <button
+                            type="button"
+                            @click="quickFilterStatus('NON_CONFORME')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
+                            :class="filters.status?.includes('Non conforme') || filters.status?.includes('Contrôle requis') ? 'bg-red-50 text-red-800 border-red-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-red-50/50'"
+                            title="Filtrer les suivis non conformes ou requérant contrôle"
+                        >
+                            <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                            <span>Non conformes</span>
+                            <span
+                                class="px-2 py-0.5 rounded-full text-[10px] font-bold leading-none"
+                                :class="metaStats.non_conforme > 0 ? 'bg-red-600 text-white animate-pulse' : 'bg-gray-100 text-gray-600'"
+                            >
+                                {{ metaStats.non_conforme }}
+                            </span>
+                        </button>
+                    </div>
+
                     <div class="flex flex-row items-center gap-2">
                         <InputFilter :icon="SearchIcon" placeholder="Rechercher un équipement..." v-model="searchQuery" />
                     </div>
@@ -716,8 +766,10 @@
     import { exportUtils } from '../../../core/utils/export.utils.ts';
     import CenterModal from '../../../components/ui/centerModal.vue';
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
+    import { useSidebarNotification } from '../../../services/useSidebarNotification';
 
     const route = useRoute()
+    const sidebar_notification = useSidebarNotification()
     const equipments = useEquipmentMonitoringService()
     const searchQuery = ref<string>("")
     const activeTab = ref<'items' | 'summary'>('items')
@@ -981,6 +1033,24 @@
         }
     }
 
+    const metaStats = ref({
+        total: 0,
+        conforme: 0,
+        non_conforme: 0,
+    })
+
+    function quickFilterStatus(type: 'ALL' | 'CONFORME' | 'NON_CONFORME') {
+        if (type === 'ALL') {
+            filters.value.status = []
+        } else if (type === 'CONFORME') {
+            filters.value.status = ['Conforme']
+        } else if (type === 'NON_CONFORME') {
+            filters.value.status = ['Contrôle requis', 'Non conforme']
+        }
+        pagination.value.current_page = 1
+        fetchData(getFilterParams(1))
+    }
+
     function fetchData(params?: EquipmentMonitoringFilterType) {
         loading_data.value = true
         const queryParams = params ?? getFilterParams()
@@ -988,8 +1058,14 @@
             .then(async res => {
                 console.log(res.data)
                 data.value = res.data.data as EquipmentMonitoringType[]
-                pagination.value.to = res.data.meta.to
-                pagination.value.total = res.data.meta.total
+                if (res.data?.meta) {
+                    pagination.value.to = res.data.meta.to
+                    pagination.value.total = res.data.meta.total
+                }
+                if (res.data?.meta_stats) {
+                    metaStats.value = res.data.meta_stats
+                }
+                sidebar_notification.fetchCounts()
                 await handleRouteAutoSelect()
             })
             .catch(err => {

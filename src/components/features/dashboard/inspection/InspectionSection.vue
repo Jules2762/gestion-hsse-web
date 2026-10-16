@@ -42,24 +42,18 @@
             />
         </div>
 
-        <!-- CONFORMITÉ PAR CATÉGORIE & CARTE -->
-        <div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
-            <div class="lg:col-span-4 bg-white rounded-xl border border-gray-200 p-5 shadow-xs h-fit">
-                <div class="mb-2">
-                    <h3 class="font-bold text-gray-800 text-sm">Conformité par catégorie</h3>
-                    <p class="text-xs text-gray-500">Pourcentage de critères conformes relevés lors des contrôles</p>
-                </div>
-                <DashboardSkeleton v-if="loading" type="chart" :height="280" />
-                <apexchart v-else type="bar" height="280" :options="optionsConf" :series="seriesConf"></apexchart>
+        <!-- CONFORMITÉ PAR CATÉGORIE -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-xs">
+            <div class="mb-2">
+                <h3 class="font-bold text-gray-800 text-sm">Conformité par catégorie</h3>
+                <p class="text-xs text-gray-500">Pourcentage de critères conformes relevés lors des contrôles</p>
             </div>
-            <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5 shadow-xs flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-gray-800 text-sm mb-1">Localisation des inspections</h3>
-                    <p class="text-xs text-gray-500 mb-3">Couverture géographique des sites audités</p>
-                    <Map />
-                </div>
-            </div>
+            <DashboardSkeleton v-if="loading" type="chart" :height="280" />
+            <apexchart v-else type="bar" height="280" :options="optionsConf" :series="seriesConf"></apexchart>
         </div>
+
+        <!-- CARTOGRAPHIE DES INSPECTIONS & CHECKLISTS -->
+        <Map />
     </div>
 </template>
 

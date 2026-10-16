@@ -1,121 +1,133 @@
 <template>
-    <div v-if="modelValue" ref="div_ref" class="
-        fixed
-        z-9999
-        w-56
-       rounded
-        border
-        border-gray-200
-        bg-white
-        shadow-[0_20px_50px_rgba(0,0,0,.18)]
-         p-4
-        flex flex-col
-       
-    " :style="contextMenuStyle" @click.stop>
-        <button v-for="(item, index) in actions" :key="index" @click="item.onClick"
-            class="flex flex-row gap-x-3 items-center justify-between  w-full p-2 " :class="themeVariant(item.variant)">
-            <div class="flex flex-row gap-x-2 items-center">
-                <component :is="item.icon" :size="21" v-if="!item.loading" />
-                <Loader2Icon v-else class="animate-spin" />
-                <span class="text-[14px]">{{ item.label }}</span>
+    <div
+        v-if="modelValue"
+        ref="div_ref"
+        class="fixed z-[9999] min-w-[210px] w-auto max-w-[280px] rounded-xl border border-gray-100 bg-white shadow-2xl p-1.5 flex flex-col gap-y-0.5 select-none transition-all"
+        :style="contextMenuStyle"
+        @click.stop
+    >
+        <!-- ACTIONS PRINCIPALES -->
+        <button
+            v-for="(item, index) in actions"
+            :key="index"
+            type="button"
+            @click="handleActionClick(item)"
+            class="flex items-center justify-between gap-x-3 w-full px-2.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left whitespace-nowrap"
+            :class="themeVariant(item.variant)"
+        >
+            <div class="flex items-center gap-x-2.5 min-w-0">
+                <component :is="item.icon" :size="16" class="shrink-0" v-if="!item.loading" />
+                <Loader2Icon v-else :size="16" class="animate-spin shrink-0 text-primary" />
+                <span class="truncate whitespace-nowrap font-medium">{{ item.label }}</span>
             </div>
-            <p v-if="item.badge" class="text-end text-xs">{{ item.badge }}</p>
+            <span
+                v-if="item.badge"
+                class="ml-2 text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-gray-100 text-gray-700"
+            >
+                {{ item.badge }}
+            </span>
         </button>
-       <button v-for="(item, index) in bottom_actions"  :key="index" @click="item.onClick"
-            class="flex flex-row gap-x-3 items-center justify-between  border-t border-gray-300 w-full p-2 " :class="themeVariant(item.variant)">
-            <div class="flex flex-row gap-x-2 items-center">
-                <component :is="item.icon" :size="21" v-if="!item.loading" />
-                <Loader2Icon v-else class="animate-spin" />
-                <span class="text-[14px]">{{ item.label }}</span>
+
+        <!-- SÉPARATEUR ÉLÉGANT -->
+        <hr
+            v-if="bottom_actions && bottom_actions.length > 0 && actions && actions.length > 0"
+            class="my-1 border-t border-gray-100"
+        />
+
+        <!-- ACTIONS DU BAS (EX: SUPPRIMER) -->
+        <button
+            v-for="(item, index) in bottom_actions"
+            :key="'bottom-' + index"
+            type="button"
+            @click="handleActionClick(item)"
+            class="flex items-center justify-between gap-x-3 w-full px-2.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left whitespace-nowrap"
+            :class="themeVariant(item.variant)"
+        >
+            <div class="flex items-center gap-x-2.5 min-w-0">
+                <component :is="item.icon" :size="16" class="shrink-0" v-if="!item.loading" />
+                <Loader2Icon v-else :size="16" class="animate-spin shrink-0 text-primary" />
+                <span class="truncate whitespace-nowrap font-medium">{{ item.label }}</span>
             </div>
-            <p v-if="item.badge" class="text-end text-xs">{{ item.badge }}</p>
+            <span
+                v-if="item.badge"
+                class="ml-2 text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-gray-100 text-gray-700"
+            >
+                {{ item.badge }}
+            </span>
         </button>
     </div>
 </template>
+
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import type { ContextMenuPropsType, ContextMenuVariantType } from '../../@types/ContextMenu.type';
+import type { ContextMenuActionType, ContextMenuPropsType, ContextMenuVariantType } from '../../@types/ContextMenu.type';
 import { Loader2Icon } from '@lucide/vue';
 
-const props = defineProps<ContextMenuPropsType>()
-const div_ref = ref<HTMLDivElement | null>(null)
+const props = defineProps<ContextMenuPropsType>();
+const emit = defineEmits(["update:modelValue"]);
+
+const div_ref = ref<HTMLDivElement | null>(null);
+
 const contextMenuStyle = computed(() => {
+    if (!props.contextMenu) return {};
 
-    if (!props.contextMenu)
-        return {}
-    const menuWidth =
-        div_ref.value?.offsetWidth ?? 250
-        const menuHeight=div_ref.value?.offsetHeight??250
+    const menuWidth = div_ref.value?.offsetWidth ?? 220;
+    const menuHeight = div_ref.value?.offsetHeight ?? 180;
 
-    let left =
-        props.contextMenu.clientX
+    let left = props.contextMenu.clientX ?? 0;
+    let top = props.contextMenu.clientY ?? 0;
 
-    let top =
-        props.contextMenu.clientY
-
-    if (
-        left as number + menuWidth >
-        window.innerWidth
-    ) {
-        left =
-            window.innerWidth -
-            menuWidth -
-            20
+    // Éviter de déborder à droite
+    if (left + menuWidth > window.innerWidth - 10) {
+        left = window.innerWidth - menuWidth - 15;
     }
-    if(top as number +menuHeight>window.innerHeight){
-        top=window.innerHeight-menuHeight-10
+
+    // Éviter de déborder en bas
+    if (top + menuHeight > window.innerHeight - 10) {
+        top = window.innerHeight - menuHeight - 15;
+    } else {
+        top = top + 8;
     }
 
     return {
-        left: `${left}px`,
-        top: `${top as number + 15}px`,
+        left: `${Math.max(10, left)}px`,
+        top: `${Math.max(10, top)}px`,
+    };
+});
+
+function handleActionClick(item: ContextMenuActionType) {
+    if (item.onClick) {
+        item.onClick();
     }
-})
-const emit = defineEmits(["update:modelValue"])
-function handleClickOutside(
-    event: MouseEvent,
-) {
-    if (
-        !div_ref.value
-            ?.contains(
-                event.target as Node,
-            )
-    ) {
-        emit('update:modelValue', false)
+    emit('update:modelValue', false);
+}
+
+function handleClickOutside(event: MouseEvent) {
+    if (!div_ref.value?.contains(event.target as Node)) {
+        emit('update:modelValue', false);
     }
 }
 
-function themeVariant(variant:ContextMenuVariantType|undefined){
+function themeVariant(variant: ContextMenuVariantType | undefined) {
     switch (variant) {
         case "DANGER":
-            
-            return "text-red-600 hover:bg-red-100"
+            return "text-red-600 hover:bg-red-50 hover:text-red-700 active:bg-red-100";
         case "WARNING":
-            
-            return "text-yellow-600 hover:bg-yellow-100"
-    
+            return "text-amber-600 hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100";
         case "INFO":
-            
-            return "text-blue-600 hover:bg-blue-100"
+            return "text-blue-600 hover:bg-blue-50 hover:text-blue-700 active:bg-blue-100";
         case "SUCCESS":
-            
-            return "text-green-600 hover:bg-green-100"
-    
+            return "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:bg-emerald-100";
         default:
-            return " hover:bg-slate-100"
+            return "text-gray-700 hover:bg-slate-50 hover:text-gray-900 active:bg-slate-100";
     }
 }
+
 onMounted(() => {
-    document.addEventListener(
-        'mousedown',
-        handleClickOutside,
-    )
-})
+    document.addEventListener('mousedown', handleClickOutside);
+});
 
 onUnmounted(() => {
-    document.removeEventListener(
-        'mousedown',
-        handleClickOutside,
-    )
-})
+    document.removeEventListener('mousedown', handleClickOutside);
+});
 </script>

@@ -196,6 +196,9 @@
         </ChartCard>
 
       </div>
+
+      <!-- CARTOGRAPHIE DES VISITES VMC -->
+      <VmcMap />
     </div>
 
   </div>
@@ -211,6 +214,7 @@
   } from '../../../../@types/Dashboard.type.ts';
   import dashboardService from '../../../../core/services/dashboard.service.ts';
   import VmcKPICards from './VmcKPICards.vue';
+  import VmcMap from './VmcMap.vue';
   import DashboardSkeleton from '../DashboardSkeleton.vue';
 
   /* Composant conteneur de carte */

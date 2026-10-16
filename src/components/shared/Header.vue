@@ -52,22 +52,30 @@
         <Teleport to="body">
             <RightModal :is-open="modalRight" @on-close="closeNotifications">
                 <div class="flex h-full flex-col" @keydown.esc="closeNotifications">
-                    <div class="flex items-start justify-between gap-x-3 border-b border-slate-200 p-4">
-                        <div>
+                    <div class="flex items-start justify-between gap-x-3 border-b border-slate-200 p-4 shrink-0 bg-white">
+                        <div class="min-w-0 flex-1">
                             <h3 class="font-bold text-slate-800 text-sm">{{ t('header.notifications.title') }}</h3>
-                            <p class="mt-0.5 text-xs text-slate-500">{{ t('header.notifications.subtitle') }}</p>
+                            <p class="mt-0.5 text-xs text-slate-500 truncate">{{ t('header.notifications.subtitle') }}</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5 shrink-0">
                             <button v-if="unreadCount > 0" type="button"
-                                class="shrink-0 text-xs font-semibold text-primary hover:underline"
+                                class="shrink-0 text-xs font-semibold text-primary hover:underline cursor-pointer"
                                 @click="notifications.markAllRead()">
                                 {{ t('header.notifications.markAllRead') }}
                             </button>
                             <button v-if="items.length > 0" type="button"
-                                class="shrink-0 text-xs text-slate-400 hover:text-red-600 transition-colors"
+                                class="shrink-0 text-slate-400 hover:text-red-600 transition-colors p-1.5 rounded-md hover:bg-slate-100 cursor-pointer"
                                 :title="t('header.notifications.delete')"
                                 @click="notifications.clearAll()">
-                                <Trash2Icon :size="14" />
+                                <Trash2Icon :size="15" />
+                            </button>
+                            <button
+                                type="button"
+                                @click="closeNotifications"
+                                class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors p-1.5 rounded-md hover:bg-slate-100 cursor-pointer"
+                                title="Fermer (Échap)"
+                            >
+                                <XIcon :size="18" />
                             </button>
                         </div>
                     </div>
@@ -129,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-    import { BellIcon, ChevronRight, SearchIcon, Trash2Icon, User2Icon } from '@lucide/vue';
+    import { BellIcon, ChevronRight, SearchIcon, Trash2Icon, User2Icon, XIcon } from '@lucide/vue';
     import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import { useI18n } from 'vue-i18n';
