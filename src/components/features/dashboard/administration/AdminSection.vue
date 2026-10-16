@@ -79,7 +79,7 @@
           </div>
         </template>
 
-        <div v-if="activityChartData.categories.length" class="flex-1">
+        <div v-if="!loading && activityChartData.categories.length" class="flex-1">
           <apexchart
             type="area"
             height="320"
@@ -88,14 +88,12 @@
             :key="`activity-${selectedDays}`"
           />
         </div>
-        <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
-          Chargement de l'activité...
-        </div>
+        <DashboardSkeleton v-else type="chart" :height="320" />
       </ChartCard>
 
       <!-- RÉPARTITION DU PERSONNEL PAR DIRECTION (DONUT) -->
       <ChartCard title="Répartition du personnel par direction" class="xl:col-span-5 flex flex-col">
-        <div v-if="directionSeries.length" class="flex-1 flex flex-col justify-center">
+        <div v-if="!loading && directionSeries.length" class="flex-1 flex flex-col justify-center">
           <apexchart
             type="donut"
             height="320"
@@ -104,9 +102,7 @@
             :key="directionDonutKey"
           />
         </div>
-        <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
-          Chargement de la répartition...
-        </div>
+        <DashboardSkeleton v-else type="donut" :height="320" />
       </ChartCard>
 
     </div>
@@ -128,7 +124,8 @@
         </template>
 
         <div class="overflow-x-auto flex-1">
-          <div v-if="recentLogs.length" class="divide-y divide-gray-100">
+          <DashboardSkeleton v-if="loading" type="list" :rows="5" />
+          <div v-else-if="recentLogs.length" class="divide-y divide-gray-100">
             <div
               v-for="log in recentLogs"
               :key="log.id"
@@ -176,7 +173,8 @@
         </template>
 
         <div class="overflow-x-auto flex-1">
-          <table class="min-w-full text-xs">
+          <DashboardSkeleton v-if="loading" type="table" :rows="4" />
+          <table v-else class="min-w-full text-xs">
             <thead>
               <tr class="text-left text-gray-500 border-b border-gray-200">
                 <th class="py-2 pr-3 font-medium">Utilisateur</th>
@@ -237,6 +235,7 @@ import {
   ArrowRight,
 } from '@lucide/vue';
 import Card from '../Card.vue';
+import DashboardSkeleton from '../DashboardSkeleton.vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
 const router = useRouter();
