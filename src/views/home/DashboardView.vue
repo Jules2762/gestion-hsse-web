@@ -28,11 +28,11 @@
     /* Un seul tableau pour les libellés et les composants : même ordre, une seule source de vérité */
     const tabs = [
         { key: 'general', label: 'dashboard.tabs.general', component: GeneralSection },
+        { key: 'admin', label: 'dashboard.tabs.administration', component: AdminSection },
         { key: 'training-plan', label: 'dashboard.tabs.training plan', component: PlanFormationSection },
         { key: 'equipment', label: 'Suivi matériels', component: EquipmentSection },
         { key: 'checklist', label: 'Checklist', component: InspectionSection },
         { key: 'vmc', label: 'VMC', component: VmcSection },
-        { key: 'admin', label: 'dashboard.tabs.administration', component: AdminSection },
     ]
 
     const tab_data = tabs.map((tab) => tab.label)
