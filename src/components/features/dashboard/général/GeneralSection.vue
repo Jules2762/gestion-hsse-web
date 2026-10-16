@@ -14,6 +14,7 @@ import {
     Check
 } from '@lucide/vue';
 import Card from '../Card.vue';
+import DashboardSkeleton from '../DashboardSkeleton.vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import dashboardService from '../../../../core/services/dashboard.service';
