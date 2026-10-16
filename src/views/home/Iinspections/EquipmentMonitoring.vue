@@ -25,9 +25,9 @@
                         <!-- TOUS -->
                         <button
                             type="button"
-                            @click="quickFilterStatus('ALL')"
+                            @click="quickFilterConformity('ALL')"
                             class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
-                            :class="!filters.status || filters.status.length === 0 ? 'bg-slate-100 text-slate-800 border-slate-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
+                            :class="conformityFilter === 'ALL' ? 'bg-slate-100 text-slate-800 border-slate-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
                             title="Afficher tous les suivis de matériel"
                         >
                             <span>Total</span>
@@ -39,9 +39,9 @@
                         <!-- CONFORMES -->
                         <button
                             type="button"
-                            @click="quickFilterStatus('CONFORME')"
+                            @click="quickFilterConformity('CONFORME')"
                             class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
-                            :class="filters.status?.includes('Conforme') && !filters.status?.includes('Non conforme') ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50/50'"
+                            :class="conformityFilter === 'CONFORME' ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50/50'"
                             title="Filtrer uniquement les suivis conformes"
                         >
                             <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
@@ -54,9 +54,9 @@
                         <!-- NON CONFORMES AVEC BADGE -->
                         <button
                             type="button"
-                            @click="quickFilterStatus('NON_CONFORME')"
+                            @click="quickFilterConformity('NON_CONFORME')"
                             class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
-                            :class="filters.status?.includes('Non conforme') || filters.status?.includes('Contrôle requis') ? 'bg-red-50 text-red-800 border-red-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-red-50/50'"
+                            :class="conformityFilter === 'NON_CONFORME' ? 'bg-red-50 text-red-800 border-red-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-red-50/50'"
                             title="Filtrer les suivis non conformes ou requérant contrôle"
                         >
                             <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
@@ -795,6 +795,7 @@
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
+    import { ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
     import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
@@ -1022,7 +1023,12 @@
         status: [],
         inspector: [],
     })
-    const columnOptions = ref<Record<filtersKeyType, string[]>>()
+    const conformityFilter = ref<'ALL' | 'CONFORME' | 'NON_CONFORME'>('ALL')
+    const columnOptions = ref<Record<filtersKeyType, string[]>>({
+        site: [],
+        status: ChecklistStatusJsonData.map(item => item.label),
+        inspector: [],
+    })
     const dateRange = ref<{
         from: string,
         to: string
@@ -1045,7 +1051,10 @@
         return {
             page,
             site: filters.value.site.length ? filters.value.site : undefined,
-            status: filters.value.status.length ? filters.value.status : undefined,
+            status: filters.value.status.length
+                ? filters.value.status.map(item => ChecklistStatusJsonData.find(i => i.label === item)?.value || item)
+                : undefined,
+            conformity: conformityFilter.value !== 'ALL' ? conformityFilter.value : undefined,
             inspector: filters.value.inspector.length ? filters.value.inspector : undefined,
             date: dateRange.value.from || dateRange.value.to ? dateRange.value : undefined,
             search: searchQuery.value || undefined,
@@ -1088,14 +1097,8 @@
         non_conforme: 0,
     })
 
-    function quickFilterStatus(type: 'ALL' | 'CONFORME' | 'NON_CONFORME') {
-        if (type === 'ALL') {
-            filters.value.status = []
-        } else if (type === 'CONFORME') {
-            filters.value.status = ['Conforme']
-        } else if (type === 'NON_CONFORME') {
-            filters.value.status = ['Contrôle requis', 'Non conforme']
-        }
+    function quickFilterConformity(type: 'ALL' | 'CONFORME' | 'NON_CONFORME') {
+        conformityFilter.value = type
         pagination.value.current_page = 1
         fetchData(getFilterParams(1))
     }
@@ -1128,7 +1131,12 @@
         equipments.getFilters()
             .then(res => {
                 console.log(res)
-                columnOptions.value = res.data as Record<filtersKeyType, string[]>
+                const fetched = res.data as Record<filtersKeyType, string[]>
+                columnOptions.value = {
+                    site: fetched.site || [],
+                    status: ChecklistStatusJsonData.map(item => item.label),
+                    inspector: fetched.inspector || [],
+                }
             })
             .catch(err => {
                 console.error(err)
@@ -1139,6 +1147,7 @@
         filters.value.site = []
         filters.value.status = []
         filters.value.inspector = []
+        conformityFilter.value = 'ALL'
         dateRange.value.from = ''
         dateRange.value.to = ''
         searchQuery.value = ""
@@ -1196,7 +1205,7 @@
             })
     }
 
-    watch([() => filters.value.site, () => filters.value.status, () => filters.value.inspector, dateRange.value, () => searchQuery.value], () => {
+    watch([() => filters.value.site, () => filters.value.status, () => filters.value.inspector, dateRange.value, () => searchQuery.value, () => conformityFilter.value], () => {
         pagination.value.current_page = 1
         fetchData(getFilterParams(1))
     }, {

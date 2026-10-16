@@ -140,7 +140,17 @@
                                 <div class="flex items-center gap-2">
                                     <button
                                         type="button"
-                                        @click="addNewItem"
+                                        @click="loadStandardGalanaTemplates"
+                                        class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer flex items-center gap-1.5"
+                                        title="Insérer automatiquement la liste des matériels types Galana"
+                                    >
+                                        <Sparkles :size="13" class="text-amber-500" />
+                                        <span>Modèle standard Galana</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        @click="openAddModal"
                                         class="px-3.5 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition cursor-pointer flex items-center gap-1.5"
                                     >
                                         <Plus :size="14" />
@@ -154,8 +164,24 @@
                                 <Package :size="32" class="mx-auto text-gray-300 mb-2" />
                                 <h4 class="text-xs font-bold text-gray-700">Aucun équipement renseigné</h4>
                                 <p class="text-[11px] text-gray-400 max-w-sm mx-auto mt-1">
-                                    Cliquez sur « Ajouter un matériel » pour enregistrer un équipement sur cette fiche.
+                                    Cliquez sur « Modèle standard Galana » pour charger les équipements types ou « Ajouter un matériel » pour une saisie personnalisée.
                                 </p>
+                                <div class="mt-4 flex items-center justify-center gap-2">
+                                    <button
+                                        type="button"
+                                        @click="loadStandardGalanaTemplates"
+                                        class="px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary hover:text-white rounded-lg transition cursor-pointer"
+                                    >
+                                        Charger le standard Galana
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="openAddModal"
+                                        class="px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition cursor-pointer"
+                                    >
+                                        + Ajouter un matériel
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- LISTE DES ÉQUIPEMENTS -->
@@ -163,7 +189,8 @@
                                 <div
                                     v-for="(item, index) in items"
                                     :key="index"
-                                    class="p-3.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all shadow-2xs space-y-3"
+                                    class="equipment-item-card p-3.5 rounded-xl border bg-white hover:border-gray-300 transition-all shadow-2xs space-y-3"
+                                    :class="item.isNew ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-gray-200'"
                                 >
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="flex items-center gap-2 flex-1">
@@ -333,6 +360,26 @@
                                         </p>
                                     </div>
                                 </div>
+
+                                <!-- BARRE D'ACTIONS BAS DE LISTE -->
+                                <div class="flex flex-wrap items-center justify-center gap-2.5 pt-4 border-t border-dashed border-gray-200">
+                                    <button
+                                        type="button"
+                                        @click="openAddModal"
+                                        class="px-4 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+                                    >
+                                        <Plus :size="14" />
+                                        <span>Ajouter un matériel</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="addNewItemQuick"
+                                        class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+                                    >
+                                        <Plus :size="13" class="text-gray-400" />
+                                        <span>+ Ligne vide en bas</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -452,6 +499,187 @@
             </div>
         </div>
 
+        <!-- ==================================================== -->
+        <!-- MODAL D'AJOUT D'UN MATÉRIEL (USER-FRIENDLY) -->
+        <!-- ==================================================== -->
+        <div
+            v-if="isAddModalOpen"
+            class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+            @click.self="closeAddModal"
+        >
+            <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+                <!-- MODAL HEADER -->
+                <div class="px-6 py-4 bg-slate-50 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                            <Plus :size="18" />
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-sm">Ajouter un matériel / équipement</h3>
+                            <p class="text-[11px] text-gray-500">Renseignez les détails du matériel à contrôler</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        @click="closeAddModal"
+                        class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+                    >
+                        <XIcon :size="18" />
+                    </button>
+                </div>
+
+                <!-- MODAL BODY -->
+                <form @submit.prevent="confirmAddModalItem" class="p-6 space-y-4">
+                    <!-- NOM DU MATÉRIEL -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                            Nom du matériel <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            ref="modalNameInputRef"
+                            v-model="modalItem.name"
+                            type="text"
+                            required
+                            placeholder="Ex: Extincteur CO₂, Caisse Anti-Feu, Bac Métal, Panneau..."
+                            class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                        />
+                    </div>
+
+                    <!-- CATÉGORIE & QUANTITÉ -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Catégorie</label>
+                            <select
+                                v-model="modalItem.type"
+                                class="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-primary transition"
+                            >
+                                <option value="extincteur">Extincteur</option>
+                                <option value="bac">Bac & Rétention</option>
+                                <option value="materiel">Matériel & Outils</option>
+                                <option value="poubelle">Déchets & Poubelles</option>
+                                <option value="signalisation">Signalétique & Pictogrammes</option>
+                                <option value="securite">Sécurité Incendie</option>
+                                <option value="conformite">Document & Affichage</option>
+                                <option value="divers">Autre / Divers</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Relevé / Quantité</label>
+                            <input
+                                v-model="modalItem.value"
+                                type="text"
+                                placeholder="Ex: 1, 2, Présent, Conforme..."
+                                class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- EMPLACEMENT & CONFORMITÉ -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Emplacement</label>
+                            <input
+                                v-model="modalItem.location"
+                                type="text"
+                                placeholder="Ex: Piste, Boutique, TGBT..."
+                                class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">État de conformité</label>
+                            <button
+                                type="button"
+                                @click="modalItem.conformity = !modalItem.conformity"
+                                class="w-full py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer border shadow-2xs"
+                                :class="modalItem.conformity ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-red-50 text-red-700 border-red-300'"
+                            >
+                                <span class="w-2 h-2 rounded-full" :class="modalItem.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                                <span>{{ modalItem.conformity ? 'Conforme' : 'Non conforme' }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- COMMENTAIRE -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Commentaire / Observation</label>
+                        <textarea
+                            v-model="modalItem.comment"
+                            rows="2"
+                            placeholder="Remarques éventuelles sur l'état du matériel..."
+                            class="w-full px-3 py-1.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition resize-y"
+                        ></textarea>
+                    </div>
+
+                    <!-- PHOTOS -->
+                    <div class="border-t border-gray-100 pt-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                                <Camera :size="14" class="text-gray-500" />
+                                <span>Photos & Preuves</span>
+                                <span v-if="modalItem.pendingPhotos.length" class="text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.2 rounded-full">
+                                    {{ modalItem.pendingPhotos.length }}
+                                </span>
+                            </label>
+
+                            <label class="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center gap-1">
+                                <Plus :size="13" />
+                                <span>Parcourir</span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    class="hidden"
+                                    @change="onModalAddPhotos"
+                                />
+                            </label>
+                        </div>
+
+                        <div v-if="modalItem.pendingPhotos.length" class="flex flex-wrap gap-2 pt-1">
+                            <div
+                                v-for="(photo, pIdx) in modalItem.pendingPhotos"
+                                :key="pIdx"
+                                class="relative group w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-2xs"
+                            >
+                                <img :src="photo.preview" class="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    @click="removeModalPhoto(pIdx)"
+                                    class="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                                    title="Supprimer la photo"
+                                >
+                                    <XIcon :size="11" />
+                                </button>
+                            </div>
+                        </div>
+                        <p v-else class="text-[11px] text-gray-400 italic">
+                            Aucune photo sélectionnée pour ce matériel.
+                        </p>
+                    </div>
+
+                    <!-- MODAL ACTIONS -->
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                        <button
+                            type="button"
+                            @click="closeAddModal"
+                            class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition cursor-pointer"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="!modalItem.name.trim()"
+                            class="px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition shadow cursor-pointer flex items-center gap-1.5"
+                        >
+                            <Plus :size="14" />
+                            <span>Ajouter l'équipement</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- LIGHTBOX MODAL IMAGE FULLSCREEN -->
         <div
             v-if="lightboxUrl"
@@ -482,6 +710,7 @@ import {
     Trash2,
     Save,
     Edit,
+    Sparkles,
     Package,
     Loader,
     UserCheck,
@@ -519,6 +748,7 @@ interface DynamicItem {
     initial_conformity?: boolean
     location?: string
     comment?: string
+    isNew?: boolean
     attachments?: Array<{
         id: number
         file_path: string
@@ -553,7 +783,133 @@ const selectedInspectorName = computed(() => {
 
 const items = ref<DynamicItem[]>([])
 
+const standardGalanaTemplates = [
+    { name: "Extincteur P50", type: "extincteur", value: 1, conformity: true, location: "Piste" },
+    { name: "Extincteur P9", type: "extincteur", value: 2, conformity: true, location: "Piste" },
+    { name: "Extincteur P6", type: "extincteur", value: 2, conformity: true, location: "Boutique / Bureau" },
+    { name: "Extincteur CO₂", type: "extincteur", value: 1, conformity: true, location: "TGBT" },
+    { name: "Bac Métallique", type: "bac", value: 1, conformity: true, location: "Piste" },
+    { name: "Bac Plastique", type: "bac", value: 1, conformity: true, location: "Piste" },
+    { name: "Bac de Rétention", type: "bac", value: 1, conformity: true, location: "Stockage" },
+    { name: "Pelles", type: "materiel", value: 2, conformity: true, location: "Zone sable" },
+    { name: "Poubelles 120L", type: "poubelle", value: 2, conformity: true, location: "Piste" },
+    { name: "Poubelle 240L", type: "poubelle", value: 1, conformity: true, location: "Extérieur" },
+    { name: "Boîte CAF (Anti-Feu)", type: "materiel", value: 1, conformity: true, location: "Piste" },
+    { name: "Plots de sécurité", type: "securite", value: 4, conformity: true, location: "Piste" },
+    { name: "Chaînettes", type: "securite", value: 2, conformity: true, location: "Piste" },
+    { name: "Détecteurs de fumée", type: "securite", value: 2, conformity: true, location: "Boutique / TGBT" },
+    { name: "Picto Danger TGBT", type: "signalisation", value: "Présent", conformity: true, location: "TGBT" },
+    { name: "Panneau Dépotage en cours", type: "signalisation", value: "Présent", conformity: true, location: "Aire dépotage" },
+    { name: "Panneau Évent", type: "signalisation", value: "Présent", conformity: true, location: "Évents" },
+    { name: "Point de rassemblement", type: "signalisation", value: "Présent", conformity: true, location: "Parking" },
+    { name: "Contact d'urgence", type: "signalisation", value: "Présent", conformity: true, location: "Bureau gérance" },
+    { name: "Livret / Fiche réflexe", type: "conformite", value: "Présent", conformity: true, location: "Bureau" },
+    { name: "Politique HSSE affichée", type: "conformite", value: "Présent", conformity: true, location: "Bureau" },
+]
+
+function loadStandardGalanaTemplates() {
+    if (items.value.length > 0) {
+        if (!confirm("Voulez-vous remplacer les matériels actuels par les 21 équipements du modèle standard Galana ?")) {
+            return
+        }
+    }
+    items.value = standardGalanaTemplates.map(it => ({
+        ...it,
+        attachments: [],
+        pendingPhotos: [],
+    }))
+    toast.success("Modèle standard Galana appliqué (21 équipements).")
+}
+
+// ==========================================
+// MODAL D'AJOUT D'UN MATÉRIEL
+// ==========================================
+const isAddModalOpen = ref(false)
+const modalNameInputRef = ref<HTMLInputElement | null>(null)
+
+const modalItem = reactive({
+    name: "",
+    type: "materiel",
+    value: "1",
+    location: "",
+    conformity: true,
+    comment: "",
+    pendingPhotos: [] as Array<{ file: File; preview: string }>,
+})
+
+function openAddModal() {
+    modalItem.name = ""
+    modalItem.type = "materiel"
+    modalItem.value = "1"
+    modalItem.location = ""
+    modalItem.conformity = true
+    modalItem.comment = ""
+    modalItem.pendingPhotos = []
+    isAddModalOpen.value = true
+    setTimeout(() => {
+        modalNameInputRef.value?.focus()
+    }, 100)
+}
+
+function closeAddModal() {
+    isAddModalOpen.value = false
+}
+
+function onModalAddPhotos(event: Event) {
+    const input = event.target as HTMLInputElement
+    if (!input.files || input.files.length === 0) return
+    for (const f of Array.from(input.files)) {
+        modalItem.pendingPhotos.push({
+            file: f,
+            preview: URL.createObjectURL(f),
+        })
+    }
+    input.value = ""
+}
+
+function removeModalPhoto(index: number) {
+    const removed = modalItem.pendingPhotos.splice(index, 1)
+    if (removed[0]?.preview) {
+        URL.revokeObjectURL(removed[0].preview)
+    }
+}
+
+function confirmAddModalItem() {
+    if (!modalItem.name.trim()) {
+        toast.warning("Veuillez saisir le nom du matériel.")
+        return
+    }
+
+    const newItem: DynamicItem = {
+        name: modalItem.name.trim(),
+        type: modalItem.type,
+        value: modalItem.value,
+        conformity: modalItem.conformity,
+        location: modalItem.location.trim() || undefined,
+        comment: modalItem.comment.trim() || undefined,
+        attachments: [],
+        pendingPhotos: [...modalItem.pendingPhotos],
+        isNew: true,
+    }
+
+    // Ajout en TÊTE de liste pour être immédiatement visible à l'écran
+    items.value.unshift(newItem)
+    isAddModalOpen.value = false
+    toast.success(`Matériel « ${newItem.name} » ajouté en tête de contrôle !`)
+
+    setTimeout(() => {
+        const firstCard = document.querySelector('.equipment-item-card')
+        if (firstCard) {
+            firstCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+    }, 150)
+}
+
 function addNewItem() {
+    openAddModal()
+}
+
+function addNewItemQuick() {
     items.value.push({
         name: "",
         type: "materiel",
@@ -563,7 +919,18 @@ function addNewItem() {
         comment: "",
         attachments: [],
         pendingPhotos: [],
+        isNew: true,
     })
+    toast.info("Nouvelle ligne ajoutée en fin de liste.")
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.equipment-item-card')
+        const lastCard = cards[cards.length - 1]
+        if (lastCard) {
+            lastCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            const input = lastCard.querySelector('input')
+            input?.focus()
+        }
+    }, 100)
 }
 
 function removeItem(index: number) {

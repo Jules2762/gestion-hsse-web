@@ -98,7 +98,7 @@
                                         class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer font-medium"
                                     >
                                         <option v-for="st in ChecklistStatusJsonData" :key="st.value" :value="st.value">
-                                            {{ st.label }} ({{ st.value }})
+                                            {{ st.label }}
                                         </option>
                                     </select>
                                 </div>
@@ -127,7 +127,7 @@
                                             <span>Matériels et équipements contrôlés</span>
                                             <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">{{ items.length }}</span>
                                         </h3>
-                                        <p class="text-[11px] text-gray-500">Ajoutez les équipements relevés lors du contrôle.</p>
+                                        <p class="text-[11px] text-gray-500">Ajoutez la liste des matériels et équipements à contrôler lors de l'inspection.</p>
                                     </div>
                                 </div>
 
@@ -183,49 +183,45 @@
                                 <div
                                     v-for="(item, index) in items"
                                     :key="index"
-                                    class="p-3.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all shadow-2xs space-y-3"
+                                    class="equipment-item-card p-3.5 rounded-xl border bg-white hover:border-gray-300 transition-all shadow-2xs space-y-2.5"
+                                    :class="item.isNew ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-gray-200'"
                                 >
-                                    <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center justify-between gap-2">
                                         <div class="flex items-center gap-2 flex-1">
-                                            <span class="w-5 h-5 rounded-md bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] font-bold">
+                                            <span class="w-5 h-5 rounded-md bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] font-bold shrink-0">
                                                 {{ index + 1 }}
+                                            </span>
+                                            <span v-if="item.isNew" class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-primary text-white shrink-0">
+                                                NOUVEAU
                                             </span>
                                             <input
                                                 v-model="item.name"
                                                 type="text"
-                                                placeholder="Nom du matériel (ex: Extincteur P50, Bac Métal...)"
-                                                class="font-bold text-xs text-gray-900 border-b border-gray-200 hover:border-primary focus:border-primary focus:outline-none flex-1 py-0.5"
+                                                placeholder="Nom du matériel à contrôler (ex: Extincteur P50, Bac Métal...)"
+                                                class="font-bold text-xs text-gray-900 border-b border-gray-200 hover:border-primary focus:border-primary focus:outline-none flex-1 py-1"
                                             />
                                         </div>
 
                                         <div class="flex items-center gap-2">
-                                            <!-- Bouton bascule conformité -->
-                                            <button
-                                                type="button"
-                                                @click="item.conformity = !item.conformity"
-                                                class="px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition select-none flex items-center gap-1 shadow-2xs"
-                                                :class="item.conformity ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'"
-                                                :title="'Cliquer pour modifier l\'état de conformité'"
-                                            >
-                                                <span class="w-1.5 h-1.5 rounded-full inline-block" :class="item.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
-                                                <span>{{ item.conformity ? 'Conforme' : 'Non conforme' }}</span>
-                                            </button>
+                                            <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md">
+                                                À contrôler sur site
+                                            </span>
 
                                             <!-- Bouton supprimer -->
                                             <button
                                                 type="button"
                                                 @click="removeItem(index)"
                                                 class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition cursor-pointer"
-                                                title="Supprimer cet équipement"
+                                                title="Supprimer cet équipement de la planification"
                                             >
                                                 <Trash2 :size="14" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                                         <div>
-                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Catégorie</label>
+                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Catégorie d'équipement</label>
                                             <select
                                                 v-model="item.type"
                                                 class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
@@ -242,21 +238,11 @@
                                         </div>
 
                                         <div>
-                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Relevé / Quantité</label>
-                                            <input
-                                                v-model="item.value"
-                                                type="text"
-                                                placeholder="Quantité ou Présent/Absent"
-                                                class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Emplacement</label>
+                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Emplacement prévu</label>
                                             <input
                                                 v-model="item.location"
                                                 type="text"
-                                                placeholder="Piste, TGBT, Boutique..."
+                                                placeholder="Piste, TGBT, Boutique, Stockage..."
                                                 class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
                                             />
                                         </div>
@@ -266,10 +252,30 @@
                                         <input
                                             v-model="item.comment"
                                             type="text"
-                                            placeholder="Commentaire ou observation spécifique (optionnel)..."
-                                            class="w-full px-2.5 py-1 text-[11px] rounded-lg border border-dashed border-gray-200 text-gray-600 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-primary"
+                                            placeholder="Consignes particulières ou remarque pour l'inspecteur (optionnel)..."
+                                            class="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-dashed border-gray-200 text-gray-600 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-primary"
                                         />
                                     </div>
+                                </div>
+
+                                <!-- BARRE D'ACTIONS BAS DE LISTE -->
+                                <div class="flex flex-wrap items-center justify-center gap-2.5 pt-4 border-t border-dashed border-gray-200">
+                                    <button
+                                        type="button"
+                                        @click="openAddModal"
+                                        class="px-4 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+                                    >
+                                        <Plus :size="14" />
+                                        <span>Ajouter un matériel</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="addNewItemQuick"
+                                        class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+                                    >
+                                        <Plus :size="13" class="text-gray-400" />
+                                        <span>+ Ligne vide en bas</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -320,41 +326,46 @@
                             </div>
                         </div>
 
-                        <!-- INDICATEURS DE CONFORMITÉ -->
-                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold text-gray-600">Taux de conformité</span>
-                                <span class="text-base font-black" :class="conformityRate >= 90 ? 'text-emerald-700' : 'text-red-700'">
-                                    {{ conformityRate }}%
+                        <!-- LISTE RÉSUMÉE DES ÉQUIPEMENTS À CONTRÔLER -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
+                            <div class="px-3.5 py-2.5 bg-slate-100/70 border-b border-slate-200 flex items-center justify-between">
+                                <span class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <Package :size="13" class="text-primary" />
+                                    <span>Matériels à contrôler</span>
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black">
+                                    {{ items.length }}
                                 </span>
                             </div>
 
-                            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div v-if="items.length > 0" class="max-h-72 overflow-y-auto divide-y divide-gray-100 p-2 space-y-1">
                                 <div
-                                    class="h-full rounded-full transition-all duration-300"
-                                    :class="conformityRate >= 90 ? 'bg-emerald-500' : (conformityRate >= 70 ? 'bg-amber-500' : 'bg-red-500')"
-                                    :style="{ width: `${conformityRate}%` }"
-                                ></div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 text-center text-xs pt-1">
-                                <div class="bg-white p-2 rounded-lg border border-gray-100">
-                                    <span class="text-[10px] text-gray-400 block">Conformes</span>
-                                    <span class="font-bold text-emerald-600">{{ compliantCount }}</span>
+                                    v-for="(it, i) in items"
+                                    :key="i"
+                                    class="p-2 rounded-lg bg-white border border-gray-100 hover:border-gray-200 transition text-xs flex items-center justify-between gap-2 shadow-2xs"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <span class="w-5 h-5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                            {{ i + 1 }}
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="font-semibold text-gray-800 text-[11px] truncate">
+                                                {{ it.name || 'Sans nom' }}
+                                            </p>
+                                            <div class="flex items-center gap-1.5 text-[10px] text-gray-400">
+                                                <span class="capitalize text-primary font-medium">{{ it.type }}</span>
+                                                <span v-if="it.location" class="truncate">• {{ it.location }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded shrink-0">
+                                        À vérifier
+                                    </span>
                                 </div>
-                                <div class="bg-white p-2 rounded-lg border border-gray-100">
-                                    <span class="text-[10px] text-gray-400 block">Anomalies</span>
-                                    <span class="font-bold text-red-600">{{ nonCompliantCount }}</span>
-                                </div>
                             </div>
-                        </div>
-
-                        <!-- ÉVALUATION CONFORMITÉ -->
-                        <div class="flex items-center justify-between text-xs py-1">
-                            <span class="text-gray-500">Qualité du parc :</span>
-                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold" :class="statusBadgeClass">
-                                {{ statusText }}
-                            </span>
+                            <div v-else class="p-6 text-center text-gray-400 text-xs">
+                                Aucun matériel sélectionné pour l'instant.
+                            </div>
                         </div>
 
                         <!-- ACTIONS -->
@@ -383,6 +394,116 @@
 
             </div>
         </div>
+
+        <!-- ==================================================== -->
+        <!-- MODAL D'AJOUT D'UN MATÉRIEL (USER-FRIENDLY) -->
+        <!-- ==================================================== -->
+        <div
+            v-if="isAddModalOpen"
+            class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+            @click.self="closeAddModal"
+        >
+            <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+                <!-- MODAL HEADER -->
+                <div class="px-6 py-4 bg-slate-50 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                            <Plus :size="18" />
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-sm">Ajouter un matériel / équipement</h3>
+                            <p class="text-[11px] text-gray-500">Renseignez les détails du matériel à contrôler</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        @click="closeAddModal"
+                        class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+                    >
+                        <XIcon :size="18" />
+                    </button>
+                </div>
+
+                <!-- MODAL BODY -->
+                <form @submit.prevent="confirmAddModalItem" class="p-6 space-y-4">
+                    <!-- NOM DU MATÉRIEL -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                            Nom du matériel <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            ref="modalNameInputRef"
+                            v-model="modalItem.name"
+                            type="text"
+                            required
+                            placeholder="Ex: Extincteur CO₂, Caisse Anti-Feu, Bac Métal, Panneau..."
+                            class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                        />
+                    </div>
+
+                    <!-- CATÉGORIE & EMPLACEMENT -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Catégorie</label>
+                            <select
+                                v-model="modalItem.type"
+                                class="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-primary transition"
+                            >
+                                <option value="extincteur">Extincteur</option>
+                                <option value="bac">Bac & Rétention</option>
+                                <option value="materiel">Matériel & Outils</option>
+                                <option value="poubelle">Déchets & Poubelles</option>
+                                <option value="signalisation">Signalétique & Pictogrammes</option>
+                                <option value="securite">Sécurité Incendie</option>
+                                <option value="conformite">Document & Affichage</option>
+                                <option value="divers">Autre / Divers</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Emplacement prévu</label>
+                            <input
+                                v-model="modalItem.location"
+                                type="text"
+                                placeholder="Piste, Boutique, TGBT, Stockage..."
+                                class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- COMMENTAIRE / CONSIGNES -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Consignes particulières (optionnel)</label>
+                        <textarea
+                            v-model="modalItem.comment"
+                            rows="2"
+                            placeholder="Points d'attention, vérification spécifique..."
+                            class="w-full px-3 py-1.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition resize-y"
+                        ></textarea>
+                    </div>
+
+                    <!-- MODAL ACTIONS -->
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                        <button
+                            type="button"
+                            @click="closeAddModal"
+                            class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition cursor-pointer"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="!modalItem.name.trim()"
+                            class="px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition shadow cursor-pointer flex items-center gap-1.5"
+                        >
+                            <Plus :size="14" />
+                            <span>Ajouter l'équipement</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -397,7 +518,7 @@ import {
     Sparkles,
     Package,
     Loader,
-    UserCheck,
+    X as XIcon,
 } from "@lucide/vue"
 import Header from "../../../components/shared/Header.vue"
 import ChecklistStatus from "../../../components/features/checklist/ChecklistStatus.vue"
@@ -418,10 +539,11 @@ const errors = ref<{ site_name?: string[]; date?: string[] } | null>(null)
 interface DynamicItem {
     name: string
     type: string
-    value: string | number
-    conformity: boolean
     location?: string
     comment?: string
+    isNew?: boolean
+    value?: string | number
+    conformity?: boolean
 }
 
 const form = reactive({
@@ -443,75 +565,130 @@ const selectedInspectorName = computed(() => {
 const items = ref<DynamicItem[]>([])
 
 const standardGalanaTemplates: DynamicItem[] = [
-    { name: "Extincteur P50", type: "extincteur", value: 1, conformity: true, location: "Piste" },
-    { name: "Extincteur P9", type: "extincteur", value: 2, conformity: true, location: "Piste" },
-    { name: "Extincteur P6", type: "extincteur", value: 2, conformity: true, location: "Boutique / Bureau" },
-    { name: "Extincteur CO₂", type: "extincteur", value: 1, conformity: true, location: "TGBT" },
-    { name: "Bac Métallique", type: "bac", value: 1, conformity: true, location: "Piste" },
-    { name: "Bac Plastique", type: "bac", value: 1, conformity: true, location: "Piste" },
-    { name: "Bac de Rétention", type: "bac", value: 1, conformity: true, location: "Stockage" },
-    { name: "Pelles", type: "materiel", value: 2, conformity: true, location: "Zone sable" },
-    { name: "Poubelles 120L", type: "poubelle", value: 2, conformity: true, location: "Piste" },
-    { name: "Poubelle 240L", type: "poubelle", value: 1, conformity: true, location: "Extérieur" },
-    { name: "Boîte CAF (Anti-Feu)", type: "materiel", value: 1, conformity: true, location: "Piste" },
-    { name: "Plots de sécurité", type: "securite", value: 4, conformity: true, location: "Piste" },
-    { name: "Chaînettes", type: "securite", value: 2, conformity: true, location: "Piste" },
-    { name: "Détecteurs de fumée", type: "securite", value: 2, conformity: true, location: "Boutique / TGBT" },
-    { name: "Picto Danger TGBT", type: "signalisation", value: "Présent", conformity: true, location: "TGBT" },
-    { name: "Panneau Dépotage en cours", type: "signalisation", value: "Présent", conformity: true, location: "Aire dépotage" },
-    { name: "Panneau Évent", type: "signalisation", value: "Présent", conformity: true, location: "Évents" },
-    { name: "Point de rassemblement", type: "signalisation", value: "Présent", conformity: true, location: "Parking" },
-    { name: "Contact d'urgence", type: "signalisation", value: "Présent", conformity: true, location: "Bureau gérance" },
-    { name: "Livret / Fiche réflexe", type: "conformite", value: "Présent", conformity: true, location: "Bureau" },
-    { name: "Politique HSSE affichée", type: "conformite", value: "Présent", conformity: true, location: "Bureau" },
+    { name: "Extincteur P50", type: "extincteur", location: "Piste" },
+    { name: "Extincteur P9", type: "extincteur", location: "Piste" },
+    { name: "Extincteur P6", type: "extincteur", location: "Boutique / Bureau" },
+    { name: "Extincteur CO₂", type: "extincteur", location: "TGBT" },
+    { name: "Bac Métallique", type: "bac", location: "Piste" },
+    { name: "Bac Plastique", type: "bac", location: "Piste" },
+    { name: "Bac de Rétention", type: "bac", location: "Stockage" },
+    { name: "Pelles", type: "materiel", location: "Zone sable" },
+    { name: "Poubelles 120L", type: "poubelle", location: "Piste" },
+    { name: "Poubelle 240L", type: "poubelle", location: "Extérieur" },
+    { name: "Boîte CAF (Anti-Feu)", type: "materiel", location: "Piste" },
+    { name: "Plots de sécurité", type: "securite", location: "Piste" },
+    { name: "Chaînettes", type: "securite", location: "Piste" },
+    { name: "Détecteurs de fumée", type: "securite", location: "Boutique / TGBT" },
+    { name: "Picto Danger TGBT", type: "signalisation", location: "TGBT" },
+    { name: "Panneau Dépotage en cours", type: "signalisation", location: "Aire dépotage" },
+    { name: "Panneau Évent", type: "signalisation", location: "Évents" },
+    { name: "Point de rassemblement", type: "signalisation", location: "Parking" },
+    { name: "Contact d'urgence", type: "signalisation", location: "Bureau gérance" },
+    { name: "Livret / Fiche réflexe", type: "conformite", location: "Bureau" },
+    { name: "Politique HSSE affichée", type: "conformite", location: "Bureau" },
 ]
 
 function loadStandardGalanaTemplates() {
-    items.value = standardGalanaTemplates.map(it => ({ ...it }))
-    toast.info("Modèle standard Galana appliqué.")
+    if (items.value.length > 0) {
+        if (!confirm("Voulez-vous remplacer les matériels actuels par les 21 équipements du modèle standard Galana ?")) {
+            return
+        }
+    }
+    items.value = standardGalanaTemplates.map(it => ({
+        ...it,
+        value: "0",
+        conformity: true,
+    }))
+    toast.success("Modèle standard Galana appliqué (21 équipements).")
+}
+
+// ==========================================
+// MODAL D'AJOUT D'UN MATÉRIEL (PLANIFICATION)
+// ==========================================
+const isAddModalOpen = ref(false)
+const modalNameInputRef = ref<HTMLInputElement | null>(null)
+
+const modalItem = reactive({
+    name: "",
+    type: "materiel",
+    location: "",
+    comment: "",
+})
+
+function openAddModal() {
+    modalItem.name = ""
+    modalItem.type = "materiel"
+    modalItem.location = ""
+    modalItem.comment = ""
+    isAddModalOpen.value = true
+    setTimeout(() => {
+        modalNameInputRef.value?.focus()
+    }, 100)
+}
+
+function closeAddModal() {
+    isAddModalOpen.value = false
+}
+
+function confirmAddModalItem() {
+    if (!modalItem.name.trim()) {
+        toast.warning("Veuillez saisir le nom du matériel.")
+        return
+    }
+
+    const newItem: DynamicItem = {
+        name: modalItem.name.trim(),
+        type: modalItem.type,
+        location: modalItem.location.trim() || undefined,
+        comment: modalItem.comment.trim() || undefined,
+        value: "0",
+        conformity: true,
+        isNew: true,
+    }
+
+    // Ajout en TÊTE de liste pour être immédiatement visible à l'écran
+    items.value.unshift(newItem)
+    isAddModalOpen.value = false
+    toast.success(`Matériel « ${newItem.name} » ajouté à la liste !`)
+
+    // Défilement doux vers la section des équipements
+    setTimeout(() => {
+        const firstCard = document.querySelector('.equipment-item-card')
+        if (firstCard) {
+            firstCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+    }, 150)
 }
 
 function addNewItem() {
+    openAddModal()
+}
+
+function addNewItemQuick() {
     items.value.push({
         name: "",
         type: "materiel",
-        value: 1,
-        conformity: true,
         location: "",
         comment: "",
+        value: "0",
+        conformity: true,
+        isNew: true,
     })
+    toast.info("Nouvelle ligne ajoutée en fin de liste.")
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.equipment-item-card')
+        const lastCard = cards[cards.length - 1]
+        if (lastCard) {
+            lastCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            const input = lastCard.querySelector('input')
+            input?.focus()
+        }
+    }, 100)
 }
 
 function removeItem(index: number) {
     items.value.splice(index, 1)
 }
-
-const compliantCount = computed(() => items.value.filter(it => it.conformity).length)
-const nonCompliantCount = computed(() => items.value.filter(it => !it.conformity).length)
-
-const conformityRate = computed(() => {
-    if (items.value.length === 0) return 100
-    const rate = (compliantCount.value / items.value.length) * 100
-    return Math.round(rate * 10) / 10
-})
-
-const estimatedStatus = computed(() => {
-    if (conformityRate.value >= 90) return "COMPLETED"
-    if (conformityRate.value >= 70) return "WARNING"
-    return "NON_CONFORME"
-})
-
-const statusText = computed(() => {
-    if (conformityRate.value >= 90) return "🟢 Conforme"
-    if (conformityRate.value >= 70) return "🟡 Contrôle requis"
-    return "🔴 Anomalie"
-})
-
-const statusBadgeClass = computed(() => {
-    if (conformityRate.value >= 90) return "bg-emerald-50 text-emerald-800 border border-emerald-200"
-    if (conformityRate.value >= 70) return "bg-amber-50 text-amber-800 border border-amber-200"
-    return "bg-red-50 text-red-800 border border-red-200"
-})
 
 async function submit() {
     errors.value = null
@@ -529,22 +706,23 @@ async function submit() {
             user_id: form.user_id || undefined,
             status: form.status,
             observations: form.observations || null,
-            conformity_rate: conformityRate.value,
-            initial_conformity_rate: conformityRate.value,
+            conformity_rate: 100,
+            initial_conformity_rate: 100,
             items: items.value.map(it => ({
                 name: it.name || "Matériel non spécifié",
                 type: it.type || "divers",
-                conformity: it.conformity,
-                initial_conformity: it.conformity,
-                value_type: typeof it.value === "number" ? "number" : "text",
-                value: String(it.value ?? ""),
+                conformity: true,
+                initial_conformity: true,
+                value_type: "number",
+                value: "0",
                 location: it.location || null,
                 comment: it.comment || null,
             })),
         }
 
         const res = await equipments.store(payload)
-        toast.success("Contrôle de matériel enregistré avec succès !")
+
+        toast.success("Contrôle de matériel planifié avec succès !")
         const newId = res?.data?.id
         if (newId) {
             router.push({ name: "EQUIPMENT_MONITORING_DETAILS", params: { id: newId } })

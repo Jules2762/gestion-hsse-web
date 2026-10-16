@@ -45,11 +45,33 @@
                 <div>
                     <h3 class="font-bold text-gray-800 text-base">Performance & Suivi du parc matériel</h3>
                     <p class="text-xs text-gray-500">
-                        {{ chartMode === 'monthly' ? "Évolution mensuelle des contrôles et taux de conformité sur l'année" : "Inventaire détaillé par calibre et type de protection incendie" }}
+                        {{ chartMode === 'monthly' ? "Évolution mensuelle des contrôles et taux de conformité sur l'année" : "Inventaire consolidé du parc matériel sous surveillance (toutes familles confondues)" }}
                     </p>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <!-- Sélecteur de sous-vue (Famille vs Équipement) quand en mode inventaire -->
+                    <div v-if="chartMode === 'inventory'" class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-xs">
+                        <button
+                            type="button"
+                            @click="inventoryView = 'family'"
+                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition cursor-pointer select-none"
+                            :class="inventoryView === 'family' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
+                        >
+                            <Layers :size="13" />
+                            <span>Par famille (6)</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="inventoryView = 'equipment'"
+                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition cursor-pointer select-none"
+                            :class="inventoryView === 'equipment' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
+                        >
+                            <Package :size="13" />
+                            <span>Par matériel (21)</span>
+                        </button>
+                    </div>
+
                     <!-- Sélecteur de vue (Évolution mensuelle / Inventaire) -->
                     <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-xs">
                         <button
@@ -67,8 +89,8 @@
                             class="flex items-center gap-1 px-2.5 py-1 rounded-md font-medium transition cursor-pointer select-none"
                             :class="chartMode === 'inventory' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
                         >
-                            <BarChart3 :size="13" />
-                            <span>Calibres</span>
+                            <Package :size="13" />
+                            <span>Inventaire du parc</span>
                         </button>
                     </div>
 
@@ -365,23 +387,32 @@
                             </div>
                         </div>
 
-                        <!-- CALIBRES RAPIDES -->
-                        <div class="grid grid-cols-2 gap-2 pt-1">
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                <span class="text-gray-600 font-medium text-[11px]">P50 (50kg)</span>
-                                <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.p50 || 0 }}</span>
+                        <!-- CALIBRES EXTINCTEURS INCENDIE -->
+                        <div class="pt-2 border-t border-slate-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-bold text-gray-700 flex items-center gap-1.5">
+                                    <Flame :size="12" class="text-red-500" />
+                                    <span>Calibres extincteurs incendie</span>
+                                </span>
+                                <span class="text-[10px] text-gray-400 font-semibold">Parc stations</span>
                             </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                <span class="text-gray-600 font-medium text-[11px]">P9 (9kg)</span>
-                                <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.p9 || 0 }}</span>
-                            </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                <span class="text-gray-600 font-medium text-[11px]">P6 (6kg)</span>
-                                <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.p6 || 0 }}</span>
-                            </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                <span class="text-gray-600 font-medium text-[11px]">CO2 (Carbone)</span>
-                                <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.co2 || 0 }}</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
+                                    <span class="text-gray-600 font-medium text-[11px]">P50 (50kg)</span>
+                                    <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.p50 || 0 }}</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
+                                    <span class="text-gray-600 font-medium text-[11px]">P9 (9kg)</span>
+                                    <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.p9 || 0 }}</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
+                                    <span class="text-gray-600 font-medium text-[11px]">P6 (6kg)</span>
+                                    <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.p6 || 0 }}</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
+                                    <span class="text-gray-600 font-medium text-[11px]">CO2 (Carbone)</span>
+                                    <span class="font-bold text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-800">{{ details.co2 || 0 }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -414,6 +445,8 @@ import {
     AlertTriangle,
     CheckCircle2,
     Wrench,
+    Layers,
+    Package,
 } from '@lucide/vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
@@ -497,11 +530,14 @@ const monthlyOptions = ref({
     }
 });
 
+const inventoryView = ref<'family' | 'equipment'>('family');
+const inventoryData = ref<any>(null);
+
 const barSeries = ref<any[]>([
     { name: 'Unités sous surveillance', data: [0, 0, 0, 0] }
 ]);
 
-const barOptions = ref({
+const barOptions = ref<any>({
     chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
     plotOptions: {
         bar: { borderRadius: 6, columnWidth: '45%', distributed: true }
@@ -510,6 +546,167 @@ const barOptions = ref({
     legend: { show: false },
     xaxis: { categories: ['P50 (50kg)', 'P9 (9kg)', 'P6 (6kg)', 'CO2 (Carbone)'] },
     grid: { borderColor: '#f1f5f9' },
+});
+
+function updateBarChart() {
+    if (!inventoryData.value) {
+        if (details.value) {
+            barSeries.value = [
+                {
+                    name: 'Unités sous surveillance',
+                    data: [
+                        details.value.p50 || 0,
+                        details.value.p9 || 0,
+                        details.value.p6 || 0,
+                        details.value.co2 || 0,
+                    ]
+                }
+            ];
+            barOptions.value = {
+                chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+                plotOptions: { bar: { borderRadius: 6, columnWidth: '45%', distributed: true } },
+                colors: ['#EF4444', '#F97316', '#F59E0B', '#3B82F6'],
+                legend: { show: false },
+                xaxis: { categories: ['P50 (50kg)', 'P9 (9kg)', 'P6 (6kg)', 'CO2 (Carbone)'] },
+                grid: { borderColor: '#f1f5f9' },
+            };
+        }
+        return;
+    }
+
+    if (inventoryView.value === 'family') {
+        const families = inventoryData.value.families || {};
+        const categories = families.categories || [];
+        const seriesData = families.series?.[0]?.data || [];
+        const colors = families.colors || ['#EF4444', '#F97316', '#F59E0B', '#10B981', '#06B6D4', '#6366F1'];
+        const rates = families.rates || [];
+
+        barSeries.value = [
+            {
+                name: 'Unités sous surveillance',
+                data: seriesData
+            }
+        ];
+
+        barOptions.value = {
+            chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+            plotOptions: {
+                bar: {
+                    borderRadius: 6,
+                    columnWidth: '42%',
+                    distributed: true,
+                    dataLabels: { position: 'top' }
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                offsetY: -18,
+                style: { fontSize: '11px', fontWeight: 'bold', colors: ['#475569'] },
+                formatter: (val: number) => `${val}`
+            },
+            colors,
+            legend: { show: false },
+            xaxis: {
+                categories,
+                labels: {
+                    style: { fontSize: '11px', fontWeight: 600 }
+                }
+            },
+            yaxis: {
+                labels: {
+                    formatter: (val: number) => `${Math.round(val)}`
+                }
+            },
+            grid: { borderColor: '#f1f5f9' },
+            tooltip: {
+                custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
+                    const val = series[seriesIndex][dataPointIndex];
+                    const cat = w.globals.labels[dataPointIndex];
+                    const rate = rates[dataPointIndex];
+                    return `
+                        <div class="px-3 py-2 text-xs font-sans bg-white border border-gray-100 shadow-md rounded-lg">
+                            <p class="font-bold text-gray-800">${cat}</p>
+                            <p class="text-gray-600 mt-1">Volume en parc : <span class="font-bold text-gray-900">${val} unités</span></p>
+                            ${rate !== undefined ? `<p class="text-emerald-600 font-bold mt-0.5">Taux de conformité : ${rate}%</p>` : ''}
+                        </div>
+                    `;
+                }
+            }
+        };
+    } else {
+        const equipment = inventoryData.value.equipment || {};
+        const categories = equipment.categories || [];
+        const seriesData = equipment.series?.[0]?.data || [];
+        const rates = equipment.rates || [];
+
+        barSeries.value = [
+            {
+                name: 'Unités sous surveillance',
+                data: seriesData
+            }
+        ];
+
+        const palette = [
+            '#EF4444', '#F97316', '#F59E0B', '#10B981', '#06B6D4',
+            '#6366F1', '#8B5CF6', '#EC4899', '#14B8A6', '#84CC16',
+            '#EAB308', '#3B82F6', '#64748B', '#D97706', '#059669',
+            '#0284C7', '#4F46E5', '#7C3AED', '#DB2777', '#E11D48', '#475569'
+        ];
+
+        barOptions.value = {
+            chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    columnWidth: '65%',
+                    distributed: true,
+                    dataLabels: { position: 'top' }
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                offsetY: -16,
+                style: { fontSize: '10px', fontWeight: 'bold', colors: ['#475569'] },
+                formatter: (val: number) => val > 0 ? `${val}` : ''
+            },
+            colors: palette,
+            legend: { show: false },
+            xaxis: {
+                categories,
+                labels: {
+                    rotate: -45,
+                    rotateAlways: true,
+                    trim: true,
+                    maxHeight: 110,
+                    style: { fontSize: '10px', fontWeight: 500 }
+                }
+            },
+            yaxis: {
+                labels: {
+                    formatter: (val: number) => `${Math.round(val)}`
+                }
+            },
+            grid: { borderColor: '#f1f5f9' },
+            tooltip: {
+                custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
+                    const val = series[seriesIndex][dataPointIndex];
+                    const item = w.globals.labels[dataPointIndex];
+                    const rate = rates[dataPointIndex];
+                    return `
+                        <div class="px-3 py-2 text-xs font-sans bg-white border border-gray-100 shadow-md rounded-lg">
+                            <p class="font-bold text-gray-800">${item}</p>
+                            <p class="text-gray-600 mt-1">Quantité sous contrôle : <span class="font-bold text-gray-900">${val} unités</span></p>
+                            ${rate !== undefined ? `<p class="text-emerald-600 font-bold mt-0.5">Taux de conformité : ${rate}%</p>` : ''}
+                        </div>
+                    `;
+                }
+            }
+        };
+    }
+}
+
+watch(inventoryView, () => {
+    updateBarChart();
 });
 
 // Donut Chart Santé du parc
@@ -583,18 +780,13 @@ async function loadData(year: number) {
             }
             if (res.data.kpis.details) {
                 details.value = res.data.kpis.details;
-                barSeries.value = [
-                    {
-                        name: 'Unités sous surveillance',
-                        data: [
-                            details.value.p50 || 0,
-                            details.value.p9 || 0,
-                            details.value.p6 || 0,
-                            details.value.co2 || 0,
-                        ]
-                    }
-                ];
             }
+        }
+        if (res?.data?.inventory) {
+            inventoryData.value = res.data.inventory;
+            updateBarChart();
+        } else if (res?.data?.kpis?.details) {
+            updateBarChart();
         }
         if (res?.data?.monthly) {
             monthlySeries.value = res.data.monthly.series;
