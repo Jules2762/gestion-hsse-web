@@ -163,10 +163,16 @@
               <!-- Synthèse des équipements -->
               <div class="space-y-1.5 bg-slate-50 p-2 rounded-lg border border-slate-100">
                 <p class="font-semibold text-gray-700 text-[11px] flex items-center justify-between">
-                  <span>Parc matériel sous surveillance :</span>
-                  <span class="text-primary font-bold">{{ site.total_extincteurs + site.total_bacs }} unités</span>
+                  <span>Parc matériel inspecté :</span>
+                  <span class="text-primary font-bold">{{ site.total_items || (site.total_extincteurs + site.total_bacs) }} unités</span>
                 </p>
-                <div class="grid grid-cols-2 gap-1 text-[11px]">
+                <div class="flex items-center justify-between text-[10px] pb-1 border-b border-slate-200/60">
+                  <span class="text-emerald-700 font-semibold">✓ {{ site.ok_items ?? site.total_items ?? 0 }} conformes</span>
+                  <span :class="(site.anomaly_items || 0) > 0 ? 'text-red-600 font-bold' : 'text-gray-400'">
+                    {{ (site.anomaly_items || 0) > 0 ? `⚠ ${site.anomaly_items} anomalie(s)` : '0 anomalie' }}
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-1 text-[11px] pt-0.5">
                   <div>• Extincteurs : <b>{{ site.total_extincteurs }}</b></div>
                   <div>• Bacs : <b>{{ site.total_bacs }}</b></div>
                   <div class="text-gray-500 text-[10px]">P50: {{ site.counts?.p50 || 0 }} | P9: {{ site.counts?.p9 || 0 }}</div>
@@ -266,6 +272,9 @@ type SiteMapItem = {
   last_monitoring_raw_id?: number;
   total_extincteurs: number;
   total_bacs: number;
+  total_items?: number;
+  ok_items?: number;
+  anomaly_items?: number;
   counts?: {
     p50: number;
     p9: number;

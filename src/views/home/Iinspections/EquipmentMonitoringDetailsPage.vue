@@ -174,8 +174,7 @@
                                     </span>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-0.5">
-                                    <span v-if="item.location">📍 Emplacement : <b>{{ item.location }}</b> • </span>
-                                    <span>Relevé / Quantité : <b>{{ item.value ?? '1' }}</b></span>
+                                    <span v-if="item.location">📍 Emplacement : <b>{{ item.location }}</b></span>
                                     <span v-if="item.comment" class="italic text-gray-600 ml-2">« {{ item.comment }} »</span>
                                 </p>
                             </div>

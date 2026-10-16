@@ -230,7 +230,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs">
                                         <div>
                                             <label class="block text-[10px] text-gray-500 font-semibold mb-1">Catégorie</label>
                                             <select
@@ -249,17 +249,7 @@
                                         </div>
 
                                         <div>
-                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Relevé / Quantité</label>
-                                            <input
-                                                v-model="item.value"
-                                                type="text"
-                                                placeholder="Quantité ou Présent/Absent"
-                                                class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Emplacement</label>
+                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Emplacement sur site</label>
                                             <input
                                                 v-model="item.location"
                                                 type="text"
@@ -464,6 +454,29 @@
                             </div>
                         </div>
 
+                        <!-- DÉCOMPTE UNITAIRE PAR CATÉGORIE (COUNT) -->
+                        <div v-if="items.length > 0" class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-gray-700 text-[11px] uppercase tracking-wider">Quantités constatées</span>
+                                <span class="font-black text-primary text-xs">{{ items.length }} total</span>
+                            </div>
+                            <div class="space-y-1 max-h-44 overflow-y-auto pr-1">
+                                <div
+                                    v-for="cat in categoryCounts"
+                                    :key="cat.type"
+                                    class="flex items-center justify-between py-1 px-1.5 rounded bg-white border border-gray-100 text-[11px]"
+                                >
+                                    <span class="font-medium text-gray-700">{{ cat.label }}</span>
+                                    <div class="flex items-center gap-1.5 font-bold">
+                                        <span class="text-gray-900">{{ cat.count }}</span>
+                                        <span class="text-[10px] text-emerald-600 font-semibold" :title="`${cat.ok} conformes sur ${cat.count}`">
+                                            ({{ cat.ok }} ✓)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ÉVALUATION CONFORMITÉ -->
                         <div class="flex items-center justify-between text-xs py-1">
                             <span class="text-gray-500">Qualité du parc :</span>
@@ -545,7 +558,7 @@
                         />
                     </div>
 
-                    <!-- CATÉGORIE & QUANTITÉ -->
+                    <!-- CATÉGORIE & EMPLACEMENT -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Catégorie</label>
@@ -565,20 +578,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Relevé / Quantité</label>
-                            <input
-                                v-model="modalItem.value"
-                                type="text"
-                                placeholder="Ex: 1, 2, Présent, Conforme..."
-                                class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- EMPLACEMENT & CONFORMITÉ -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Emplacement</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Emplacement sur site</label>
                             <input
                                 v-model="modalItem.location"
                                 type="text"
@@ -586,19 +586,20 @@
                                 class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition"
                             />
                         </div>
+                    </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">État de conformité</label>
-                            <button
-                                type="button"
-                                @click="modalItem.conformity = !modalItem.conformity"
-                                class="w-full py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer border shadow-2xs"
-                                :class="modalItem.conformity ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-red-50 text-red-700 border-red-300'"
-                            >
-                                <span class="w-2 h-2 rounded-full" :class="modalItem.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
-                                <span>{{ modalItem.conformity ? 'Conforme' : 'Non conforme' }}</span>
-                            </button>
-                        </div>
+                    <!-- ÉTAT DE CONFORMITÉ DE L'ÉQUIPEMENT (UNITAIRE) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">État de conformité de cet équipement</label>
+                        <button
+                            type="button"
+                            @click="modalItem.conformity = !modalItem.conformity"
+                            class="w-full py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer border shadow-2xs"
+                            :class="modalItem.conformity ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-red-50 text-red-700 border-red-300'"
+                        >
+                            <span class="w-2 h-2 rounded-full" :class="modalItem.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                            <span>{{ modalItem.conformity ? 'Conforme' : 'Non conforme' }}</span>
+                        </button>
                     </div>
 
                     <!-- COMMENTAIRE -->
@@ -1004,6 +1005,32 @@ function removePendingPhoto(item: DynamicItem, index: number) {
 
 const compliantCount = computed(() => items.value.filter(it => it.conformity).length)
 const nonCompliantCount = computed(() => items.value.filter(it => !it.conformity).length)
+
+const categoryCounts = computed(() => {
+    const map: Record<string, { type: string; label: string; count: number; ok: number }> = {}
+    const labels: Record<string, string> = {
+        extincteur: 'Extincteurs',
+        bac: 'Bacs & Rétention',
+        materiel: 'Matériel & Outils',
+        poubelle: 'Poubelles & Déchets',
+        signalisation: 'Signalétique & Balisage',
+        securite: 'Sécurité Incendie',
+        conformite: 'Documents & Affichage',
+        divers: 'Autres matériels',
+    }
+
+    for (const it of items.value) {
+        const t = it.type || 'divers'
+        if (!map[t]) {
+            map[t] = { type: t, label: labels[t] || t, count: 0, ok: 0 }
+        }
+        map[t].count++
+        if (it.conformity) {
+            map[t].ok++
+        }
+    }
+    return Object.values(map)
+})
 
 const conformityRate = computed(() => {
     if (items.value.length === 0) return 100
