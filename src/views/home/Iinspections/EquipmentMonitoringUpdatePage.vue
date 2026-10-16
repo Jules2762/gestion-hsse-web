@@ -45,7 +45,7 @@
                         <div class="p-6 border-b border-gray-100 space-y-4">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
-                                <h3 class="font-bold text-gray-800 text-sm">Informations générales de la visite</h3>
+                                <h3 class="font-bold text-gray-800 text-sm">Informations générales & Planification</h3>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -69,13 +69,44 @@
 
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                                        Date de relevé <span class="text-red-500">*</span>
+                                        Date prévue / du relevé <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model="form.date"
                                         type="date"
                                         class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                     />
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+                                        <span>Inspecteur assigné</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">Choisi parmi les utilisateurs</span>
+                                    </label>
+                                    <select
+                                        v-model="form.user_id"
+                                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer"
+                                    >
+                                        <option value="">Sélectionner un inspecteur...</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">
+                                            {{ user.first_name || '' }} {{ user.last_name || '' }} {{ user.email ? `(${user.email})` : '' }} {{ user.job ? `— ${user.job}` : '' }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+                                        <span>Statut de l'inspection</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">Cycle d'inspection</span>
+                                    </label>
+                                    <select
+                                        v-model="form.status"
+                                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer font-medium"
+                                    >
+                                        <option v-for="st in ChecklistStatusJsonData" :key="st.value" :value="st.value">
+                                            {{ st.label }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -219,6 +250,88 @@
                                             class="w-full px-2.5 py-1 text-[11px] rounded-lg border border-dashed border-gray-200 text-gray-600 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-primary"
                                         />
                                     </div>
+
+                                    <!-- SECTION PHOTOS & PREUVES DU MATÉRIEL -->
+                                    <div class="border-t border-gray-100 pt-2.5 flex flex-col gap-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[11px] font-semibold text-gray-700 flex items-center gap-1.5">
+                                                <Camera :size="13" class="text-gray-500" />
+                                                <span>Photos & Preuves</span>
+                                                <span v-if="(item.attachments && item.attachments.length) || (item.pendingPhotos && item.pendingPhotos.length)" class="text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.2 rounded-full">
+                                                    {{ (item.attachments?.length || 0) + (item.pendingPhotos?.length || 0) }}
+                                                </span>
+                                                <span v-if="item.uploadingPhoto" class="flex items-center gap-1 text-[10px] text-primary font-medium">
+                                                    <Loader :size="11" class="animate-spin" />
+                                                    <span>Envoi en cours...</span>
+                                                </span>
+                                            </span>
+
+                                            <label class="text-[11px] font-bold text-primary hover:text-primary/80 hover:underline cursor-pointer flex items-center gap-1">
+                                                <Plus :size="13" />
+                                                <span>Ajouter une photo</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    class="hidden"
+                                                    @change="onAddPhoto($event, item)"
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <!-- Galerie de photos pour cet équipement -->
+                                        <div v-if="(item.attachments && item.attachments.length) || (item.pendingPhotos && item.pendingPhotos.length)" class="flex flex-wrap gap-2 pt-1">
+                                            <!-- Photos existantes enregistrées -->
+                                            <div
+                                                v-for="att in item.attachments"
+                                                :key="att.id"
+                                                class="relative group w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-slate-100 shadow-2xs"
+                                            >
+                                                <img
+                                                    :src="resolvePhotoUrl(att.file_path)"
+                                                    class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                                    @click="previewImage(resolvePhotoUrl(att.file_path))"
+                                                    title="Cliquer pour agrandir la photo"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    @click="removeExistingPhoto(item, att.id)"
+                                                    class="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow cursor-pointer"
+                                                    title="Supprimer cette photo"
+                                                >
+                                                    <XIcon :size="11" />
+                                                </button>
+                                            </div>
+
+                                            <!-- Photos nouvellement ajoutées en attente d'enregistrement -->
+                                            <div
+                                                v-for="(photo, pIndex) in item.pendingPhotos"
+                                                :key="pIndex"
+                                                class="relative group w-16 h-16 rounded-lg overflow-hidden border border-dashed border-primary/50 bg-primary/5 shadow-2xs"
+                                            >
+                                                <img
+                                                    :src="photo.preview"
+                                                    class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                                    @click="previewImage(photo.preview)"
+                                                    title="Photo en attente d'enregistrement"
+                                                />
+                                                <span class="absolute bottom-0 inset-x-0 bg-primary/85 text-[8px] font-bold text-white text-center py-0.2">
+                                                    Nouveau
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    @click="removePendingPhoto(item, pIndex)"
+                                                    class="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow cursor-pointer"
+                                                    title="Supprimer"
+                                                >
+                                                    <XIcon :size="11" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p v-else class="text-[11px] text-gray-400 italic">
+                                            Aucune photo jointe pour ce matériel.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -244,14 +357,24 @@
                         <!-- INFOS CLEFS -->
                         <div class="space-y-2 text-xs">
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Site sélectionné :</span>
+                                <span class="text-gray-500">Site :</span>
                                 <span class="font-bold text-gray-900 text-right truncate max-w-[170px]">
                                     {{ form.site_name || 'Aucun site' }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Date du relevé :</span>
+                                <span class="text-gray-500">Date prévue :</span>
                                 <span class="font-mono text-gray-800">{{ form.date || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Inspecteur :</span>
+                                <span class="font-semibold text-gray-800 text-right truncate max-w-[170px]" :title="selectedInspectorName">
+                                    {{ selectedInspectorName }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Statut d'inspection :</span>
+                                <ChecklistStatus :name="(form.status as any)" />
                             </div>
                             <div class="flex justify-between items-center py-1">
                                 <span class="text-gray-500">Total équipements :</span>
@@ -262,10 +385,16 @@
                         <!-- INDICATEURS DE CONFORMITÉ -->
                         <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold text-gray-600">Taux de conformité</span>
+                                <span class="text-xs font-semibold text-gray-600">Taux actuel</span>
                                 <span class="text-base font-black" :class="conformityRate >= 90 ? 'text-emerald-700' : 'text-red-700'">
                                     {{ conformityRate }}%
                                 </span>
+                            </div>
+
+                            <!-- TRACE DU TAUX INITIAL CONSTATÉ -->
+                            <div v-if="initialConformityRate !== null && initialConformityRate !== conformityRate" class="flex items-center justify-between text-xs px-2.5 py-1.5 bg-amber-50 rounded-lg border border-amber-200/60 text-amber-900">
+                                <span class="text-[11px] font-medium">Taux initial (trace historique) :</span>
+                                <span class="font-bold text-[11px] font-mono">{{ initialConformityRate }}%</span>
                             </div>
 
                             <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -288,9 +417,9 @@
                             </div>
                         </div>
 
-                        <!-- STATUT ESTIMÉ -->
+                        <!-- ÉVALUATION CONFORMITÉ -->
                         <div class="flex items-center justify-between text-xs py-1">
-                            <span class="text-gray-500">Statut estimé :</span>
+                            <span class="text-gray-500">Qualité du parc :</span>
                             <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold" :class="statusBadgeClass">
                                 {{ statusText }}
                             </span>
@@ -322,6 +451,25 @@
 
             </div>
         </div>
+
+        <!-- LIGHTBOX MODAL IMAGE FULLSCREEN -->
+        <div
+            v-if="lightboxUrl"
+            class="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+            @click="lightboxUrl = null"
+        >
+            <div class="relative max-w-4xl max-h-[90vh]" @click.stop>
+                <button
+                    type="button"
+                    @click="lightboxUrl = null"
+                    class="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg cursor-pointer"
+                    title="Fermer"
+                >
+                    <XIcon :size="20" />
+                </button>
+                <img :src="lightboxUrl" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl" />
+            </div>
+        </div>
     </div>
 </template>
 
@@ -336,21 +484,31 @@ import {
     Edit,
     Package,
     Loader,
+    UserCheck,
+    Camera,
+    X as XIcon,
+    Image as ImageIcon,
 } from "@lucide/vue"
 import Header from "../../../components/shared/Header.vue"
+import ChecklistStatus from "../../../components/features/checklist/ChecklistStatus.vue"
+import { ChecklistStatusJsonData } from "../../../@data/Checklist.data.ts"
 import type { SiteNameType } from "../../../@types/SiteName..type.ts"
 import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service.ts"
+import { useUserService } from "../../../core/services/user.service.ts"
 import { toast } from "vue3-toastify"
 
 const route = useRoute()
 const router = useRouter()
 const equipments = useEquipmentMonitoringService()
+const userService = useUserService()
 const monitoringId = computed(() => route.params.id as string)
 
 const loadingInitial = ref(true)
 const loading = ref(false)
 const sites = ref<SiteNameType[]>([])
+const users = ref<any[]>([])
 const errors = ref<{ site_name?: string[]; date?: string[] } | null>(null)
+const lightboxUrl = ref<string | null>(null)
 
 interface DynamicItem {
     id?: number
@@ -358,14 +516,39 @@ interface DynamicItem {
     type: string
     value: string | number
     conformity: boolean
+    initial_conformity?: boolean
     location?: string
     comment?: string
+    attachments?: Array<{
+        id: number
+        file_path: string
+        file_name?: string
+        file_type?: string
+        file_size?: number
+    }>
+    pendingPhotos?: Array<{
+        file: File
+        preview: string
+    }>
+    uploadingPhoto?: boolean
 }
+
+const initialConformityRate = ref<number | null>(null)
 
 const form = reactive({
     site_name: "",
     date: "",
+    user_id: "",
+    status: "DRAFT",
     observations: "",
+})
+
+const selectedInspectorName = computed(() => {
+    if (!form.user_id) return "Non assigné"
+    const found = users.value.find(u => String(u.id) === String(form.user_id))
+    if (!found) return "Inspecteur assigné"
+    const fullName = `${found.first_name || ""} ${found.last_name || ""}`.trim()
+    return fullName || found.email || "Inspecteur assigné"
 })
 
 const items = ref<DynamicItem[]>([])
@@ -378,11 +561,78 @@ function addNewItem() {
         conformity: true,
         location: "",
         comment: "",
+        attachments: [],
+        pendingPhotos: [],
     })
 }
 
 function removeItem(index: number) {
     items.value.splice(index, 1)
+}
+
+function resolvePhotoUrl(path: string) {
+    if (!path) return ""
+    if (path.startsWith("http")) return path
+    const backendUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace("/api", "") : "http://127.0.0.1:8000"
+    return `${backendUrl}${path}`
+}
+
+function previewImage(url: string) {
+    lightboxUrl.value = url
+}
+
+async function onAddPhoto(event: Event, item: DynamicItem) {
+    const input = event.target as HTMLInputElement
+    if (!input.files || input.files.length === 0) return
+    const files = Array.from(input.files)
+
+    for (const file of files) {
+        if (item.id) {
+            try {
+                item.uploadingPhoto = true
+                const res = await equipments.uploadItemPhoto(item.id, file)
+                if (res?.data?.attachment) {
+                    if (!item.attachments) item.attachments = []
+                    item.attachments.push(res.data.attachment)
+                    toast.success(`Photo ajoutée pour ${item.name || 'le matériel'}`)
+                }
+            } catch (err) {
+                console.error("Erreur lors de l'upload de photo:", err)
+                toast.error("Impossible de téléverser la photo.")
+            } finally {
+                item.uploadingPhoto = false
+            }
+        } else {
+            if (!item.pendingPhotos) item.pendingPhotos = []
+            item.pendingPhotos.push({
+                file,
+                preview: URL.createObjectURL(file),
+            })
+        }
+    }
+    input.value = ""
+}
+
+async function removeExistingPhoto(item: DynamicItem, photoId: number) {
+    try {
+        await equipments.deleteItemPhoto(photoId)
+        if (item.attachments) {
+            item.attachments = item.attachments.filter(att => att.id !== photoId)
+        }
+        toast.success("Photo supprimée avec succès")
+    } catch (err) {
+        console.error("Erreur suppression photo:", err)
+        toast.error("Impossible de supprimer la photo.")
+    }
+}
+
+function removePendingPhoto(item: DynamicItem, index: number) {
+    if (item.pendingPhotos) {
+        const removed = item.pendingPhotos.splice(index, 1)
+        if (removed[0]?.preview) {
+            URL.revokeObjectURL(removed[0].preview)
+        }
+    }
 }
 
 const compliantCount = computed(() => items.value.filter(it => it.conformity).length)
@@ -420,7 +670,13 @@ async function fetchDetails() {
         if (d) {
             form.site_name = typeof d.site_name === "object" ? d.site_name?.name : d.site_name
             form.date = d.date || ""
+            form.user_id = d.user?.id || d.user_id || ""
+            
+            const validStatuses = ["DRAFT", "IN_PROGRESS", "COMPLETED", "CANCELLED"]
+            form.status = validStatuses.includes(d.status) ? d.status : "COMPLETED"
+            
             form.observations = d.observations || ""
+            initialConformityRate.value = d.initial_conformity_rate !== undefined ? d.initial_conformity_rate : (d.conformity_rate ?? 100)
 
             if (d.items && Array.isArray(d.items)) {
                 items.value = d.items.map((it: any) => ({
@@ -429,8 +685,11 @@ async function fetchDetails() {
                     type: it.type || "divers",
                     value: it.value,
                     conformity: Boolean(it.conformity),
+                    initial_conformity: it.initial_conformity !== undefined ? Boolean(it.initial_conformity) : Boolean(it.conformity),
                     location: it.location || "",
                     comment: it.comment || "",
+                    attachments: it.attachments ? [...it.attachments] : [],
+                    pendingPhotos: [],
                 }))
             }
         }
@@ -455,14 +714,17 @@ async function submit() {
         const payload: any = {
             site_name: form.site_name,
             date: form.date,
+            user_id: form.user_id || undefined,
+            status: form.status,
             observations: form.observations || null,
-            status: estimatedStatus.value,
             conformity_rate: conformityRate.value,
+            initial_conformity_rate: initialConformityRate.value !== null ? initialConformityRate.value : conformityRate.value,
             items: items.value.map(it => ({
                 id: it.id,
                 name: it.name || "Matériel non spécifié",
                 type: it.type || "divers",
                 conformity: it.conformity,
+                initial_conformity: it.initial_conformity !== undefined ? it.initial_conformity : it.conformity,
                 value_type: typeof it.value === "number" ? "number" : "text",
                 value: String(it.value ?? ""),
                 location: it.location || null,
@@ -470,7 +732,26 @@ async function submit() {
             })),
         }
 
-        await equipments.update(monitoringId.value, payload)
+        const updateRes = await equipments.update(monitoringId.value, payload)
+        const returnedItems = updateRes?.data?.items || []
+
+        // Téléverser les photos en attente pour chaque matériel
+        for (let i = 0; i < items.value.length; i++) {
+            const item = items.value[i]
+            if (item.pendingPhotos && item.pendingPhotos.length > 0) {
+                const targetId = item.id || returnedItems[i]?.id || returnedItems.find((r: any) => r.name === item.name)?.id
+                if (targetId) {
+                    for (const p of item.pendingPhotos) {
+                        try {
+                            await equipments.uploadItemPhoto(targetId, p.file)
+                        } catch (uploadErr) {
+                            console.error("Erreur upload photo différée:", uploadErr)
+                        }
+                    }
+                }
+            }
+        }
+
         toast.success("Suivi du matériel mis à jour avec succès !")
         router.push({ name: "EQUIPMENT_MONITORING_DETAILS", params: { id: monitoringId.value } })
     } catch (err: any) {
@@ -496,8 +777,19 @@ function fetchSiteNames() {
         })
 }
 
+function fetchUsers() {
+    userService.index()
+        .then(res => {
+            users.value = res.data?.data || res.data || []
+        })
+        .catch(err => {
+            console.error("Erreur chargement utilisateurs:", err)
+        })
+}
+
 onMounted(() => {
     fetchSiteNames()
+    fetchUsers()
     fetchDetails()
 })
 </script>

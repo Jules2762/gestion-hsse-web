@@ -297,9 +297,18 @@
                                         {{ item.inspector }}
                                     </td>
                                     <td class="py-2.5 text-center">
-                                        <div class="inline-flex items-center gap-1.5 font-semibold" :class="conformityTextColor(item.conformity_rate)">
-                                            <span class="w-2 h-2 rounded-full" :class="statusDotBg(item.status_color)"></span>
-                                            <span>{{ item.conformity_rate }}%</span>
+                                        <div class="inline-flex flex-col items-center">
+                                            <div class="inline-flex items-center gap-1.5 font-semibold" :class="conformityTextColor(item.conformity_rate)">
+                                                <span class="w-2 h-2 rounded-full" :class="statusDotBg(item.status_color)"></span>
+                                                <span>{{ item.conformity_rate }}%</span>
+                                            </div>
+                                            <span
+                                                v-if="item.is_resolved"
+                                                class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full mt-0.5"
+                                                :title="`Taux initial constaté lors de la visite : ${item.initial_conformity_rate}%`"
+                                            >
+                                                Initial: {{ item.initial_conformity_rate }}%
+                                            </span>
                                         </div>
                                     </td>
                                     <td class="py-2.5 text-right">
@@ -443,6 +452,8 @@ const kpis = ref({
     total_bacs: 0,
     unique_sites: 0,
     avg_conformity: 100,
+    avg_initial_conformity: 100,
+    resolved_anomalies_count: 0,
     total_anomalies: 0,
 });
 
@@ -460,16 +471,30 @@ const categoriesBreakdown = ref<any[]>([]);
 
 const monthlySeries = ref<any[]>([
     { name: 'Contrôles réalisés', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-    { name: 'Taux de conformité moyen (%)', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
+    { name: 'Taux initial constaté (%)', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+    { name: 'Taux actuel résolu (%)', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
 ]);
 
 const monthlyOptions = ref({
     chart: { type: 'area', toolbar: { show: false }, fontFamily: 'inherit' },
-    stroke: { curve: 'smooth', width: 2 },
+    stroke: { curve: 'smooth', width: [2, 2.5, 2.5] },
     xaxis: { categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'] },
-    colors: ['#3B82F6', '#10B981'],
+    colors: ['#3B82F6', '#F59E0B', '#10B981'],
     dataLabels: { enabled: false },
     grid: { borderColor: '#f1f5f9' },
+    tooltip: {
+        y: {
+            formatter: (val: number, opts: any) => {
+                if (opts?.seriesIndex === 0) return `${val} contrôles`;
+                return `${val}%`;
+            }
+        }
+    },
+    legend: {
+        position: 'bottom',
+        fontSize: '12px',
+        fontWeight: 500,
+    }
 });
 
 const barSeries = ref<any[]>([

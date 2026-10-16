@@ -13,6 +13,7 @@ export type EquipmentItemType = {
     type: string
     name: string
     conformity: boolean
+    initial_conformity?: boolean
     value_type: 'number' | 'boolean' | 'text'
     value: any
     location?: string
@@ -57,14 +58,19 @@ export type EquipmentMonitoringType = {
 
     status?: string
     conformity_rate?: number
+    initial_conformity_rate?: number
+    original_conformity_rate?: number
+    is_resolved?: boolean
     observations?: string
     items?: EquipmentItemType[]
+    user?: any
 
     created_at?: string
 }
 
 export type EquipmentMonitoringFormType = {
     site_name: string | null
+    user_id?: string | number | null
     p50: number
     p9: number
     p6: number
@@ -95,6 +101,8 @@ export type EquipmentMonitoringFormType = {
 
     status?: string
     conformity_rate?: number
+    initial_conformity_rate?: number
+    original_conformity_rate?: number
     observations?: string
     items?: Partial<EquipmentItemType>[]
 }
@@ -108,6 +116,7 @@ export type EquipmentMonitoringFilterType = {
     }
     site?: string[]
     status?: string[]
+    conformity?: string
     inspector?: string[]
     search?: string
 }

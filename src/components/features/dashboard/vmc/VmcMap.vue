@@ -24,8 +24,22 @@
           v-model="selectedProvince"
           class="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white outline-none focus:border-primary text-gray-700"
         >
-          <option value="ALL">Toutes provinces</option>
+          <option value="ALL">Toutes provinces ({{ sites.length }})</option>
           <option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</option>
+        </select>
+
+        <!-- Filtre Statut -->
+        <select
+          v-model="selectedStatus"
+          class="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white outline-none focus:border-primary text-gray-700 font-medium"
+        >
+          <option value="ALL">Tous les statuts</option>
+          <option value="green">🟢 Conforme (Clôturée)</option>
+          <option value="yellow">🟡 Contrôle / En cours</option>
+          <option value="red">🔴 Anomalie / Non conforme</option>
+          <option value="COMPLETED">✅ Visite Clôturée</option>
+          <option value="IN_PROGRESS">🔄 Visite En cours</option>
+          <option value="DRAFT">📅 Visite Planifiée</option>
         </select>
 
         <button
@@ -108,6 +122,7 @@
                 </div>
                 <div v-if="site.last_vmc_date" class="text-[10px] text-gray-500 border-t border-slate-200/60 pt-1 mt-1">
                   Dernière VMC : <b>{{ site.last_vmc_date }}</b>
+                  <p v-if="site.last_vmc_status" class="text-gray-700 font-medium">Statut : {{ site.last_vmc_status }}</p>
                   <p v-if="site.last_vmc_type" class="text-gray-700 font-medium">Type : {{ site.last_vmc_type }}</p>
                   <p v-if="site.last_vmc_recommendation" class="italic text-gray-500 truncate mt-0.5">« {{ site.last_vmc_recommendation }} »</p>
                 </div>
@@ -160,6 +175,7 @@ const leafletMap = ref<any>(null);
 const sites = ref<any[]>([]);
 const center = ref<[number, number]>([-18.8792, 47.5079]);
 const selectedProvince = ref<string>("ALL");
+const selectedStatus = ref<string>("ALL");
 
 const provinces = computed(() => {
   const set = new Set<string>();
@@ -173,6 +189,13 @@ const filteredSites = computed(() => {
   return sites.value.filter(s => {
     if (selectedProvince.value !== "ALL" && s.province !== selectedProvince.value) {
       return false;
+    }
+    if (selectedStatus.value !== "ALL") {
+      if (['green', 'yellow', 'red'].includes(selectedStatus.value)) {
+        if (s.status !== selectedStatus.value) return false;
+      } else {
+        if (s.last_vmc_status !== selectedStatus.value) return false;
+      }
     }
     return Boolean(s.latitude && s.longitude);
   });

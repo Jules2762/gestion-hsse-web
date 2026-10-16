@@ -24,8 +24,22 @@
           v-model="selectedProvince"
           class="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white outline-none focus:border-primary text-gray-700"
         >
-          <option value="ALL">Toutes provinces</option>
+          <option value="ALL">Toutes provinces ({{ sites.length }})</option>
           <option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</option>
+        </select>
+
+        <!-- Filtre Statut -->
+        <select
+          v-model="selectedStatus"
+          class="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white outline-none focus:border-primary text-gray-700 font-medium"
+        >
+          <option value="ALL">Tous les statuts</option>
+          <option value="green">🟢 Conforme (≥ 90%)</option>
+          <option value="yellow">🟡 Contrôle requis (&lt; 90%)</option>
+          <option value="red">🔴 Anomalie (&lt; 70%)</option>
+          <option value="COMPLETED">✅ Inspection Clôturée</option>
+          <option value="IN_PROGRESS">🔄 Inspection En cours</option>
+          <option value="DRAFT">📅 Inspection Planifiée</option>
         </select>
 
         <button
@@ -159,6 +173,7 @@ const leafletMap = ref<any>(null);
 const sites = ref<any[]>([]);
 const center = ref<[number, number]>([-18.8792, 47.5079]);
 const selectedProvince = ref<string>("ALL");
+const selectedStatus = ref<string>("ALL");
 
 const provinces = computed(() => {
   const set = new Set<string>();
@@ -172,6 +187,13 @@ const filteredSites = computed(() => {
   return sites.value.filter(s => {
     if (selectedProvince.value !== "ALL" && s.province !== selectedProvince.value) {
       return false;
+    }
+    if (selectedStatus.value !== "ALL") {
+      if (['green', 'yellow', 'red'].includes(selectedStatus.value)) {
+        if (s.status !== selectedStatus.value) return false;
+      } else {
+        if (s.last_checklist_status !== selectedStatus.value) return false;
+      }
     }
     return Boolean(s.latitude && s.longitude);
   });

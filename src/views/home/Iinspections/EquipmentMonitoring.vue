@@ -122,15 +122,36 @@
                                     {{ getSiteNameText(item.site_name) }}
                                 </td>
 
-                                <td class="whitespace-nowrap">
-                                    <span class="px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs" :class="badgeColor(item.status, item.conformity_rate)">
-                                        <span class="w-2 h-2 rounded-full inline-block" :class="statusDotColor(item.status, item.conformity_rate)"></span>
-                                        {{ formatStatusText(item.status, item.conformity_rate) }}
-                                    </span>
+                                <td class="whitespace-nowrap text-xs text-gray-700">
+                                    <div class="inline-flex items-center gap-1.5 font-medium">
+                                        <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[10px] font-bold shrink-0">
+                                            <User :size="12" />
+                                        </div>
+                                        <span class="truncate max-w-[140px]">{{ formatInspector(item.user) }}</span>
+                                    </div>
                                 </td>
 
-                                <td class="whitespace-nowrap font-bold text-xs" :class="(item.conformity_rate ?? 100) >= 90 ? 'text-emerald-600' : 'text-red-600'">
-                                    {{ formatConformityRate(item.conformity_rate) }}
+                                <td class="whitespace-nowrap">
+                                    <ChecklistStatus :name="(item.status as any) || 'COMPLETED'" />
+                                </td>
+
+                                <td class="whitespace-nowrap font-bold text-xs">
+                                    <div class="inline-flex flex-col items-start">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                            :class="(item.conformity_rate ?? 100) >= 90 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ((item.conformity_rate ?? 100) >= 70 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200')"
+                                        >
+                                            <span class="w-1.5 h-1.5 rounded-full" :class="(item.conformity_rate ?? 100) >= 90 ? 'bg-emerald-500' : ((item.conformity_rate ?? 100) >= 70 ? 'bg-amber-500' : 'bg-red-500')"></span>
+                                            {{ formatConformityRate(item.conformity_rate) }}
+                                        </span>
+                                        <span
+                                            v-if="item.initial_conformity_rate !== undefined && item.initial_conformity_rate !== item.conformity_rate"
+                                            class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded-full mt-0.5"
+                                            :title="`Taux initial constaté lors de la visite : ${item.initial_conformity_rate}%`"
+                                        >
+                                            Initial: {{ item.initial_conformity_rate }}%
+                                        </span>
+                                    </div>
                                 </td>
 
                                 <td class="whitespace-nowrap text-right pr-6" @click.stop>
@@ -207,16 +228,23 @@
                     <h4 class="mt-0.5 font-bold text-gray-900 truncate text-sm">
                         {{ getSiteNameText(right_sidebar.equipment?.site_name) || 'Détails du matériel' }}
                     </h4>
-                    <div class="flex items-center gap-2 mt-1">
+                    <div class="flex items-center gap-2 mt-2 flex-wrap">
+                        <ChecklistStatus :name="(right_sidebar.equipment?.status as any) || 'COMPLETED'" />
                         <span
-                            class="px-2 py-0.5 rounded-full text-[10px] font-bold inline-block"
-                            :class="badgeColor(right_sidebar.equipment?.status, right_sidebar.equipment?.conformity_rate)"
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold"
+                            :class="(right_sidebar.equipment?.conformity_rate ?? 100) >= 90 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ((right_sidebar.equipment?.conformity_rate ?? 100) >= 70 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200')"
                         >
-                            {{ formatStatus(right_sidebar.equipment?.status, right_sidebar.equipment?.conformity_rate) }}
+                            Conformité : {{ right_sidebar.equipment?.conformity_rate ?? 100 }}%
                         </span>
-                        <span class="text-xs font-semibold text-gray-600">
-                            Conformité : <b>{{ right_sidebar.equipment?.conformity_rate ?? 100 }}%</b>
-                        </span>
+                    </div>
+                    <div class="mt-2.5 flex items-center gap-2 text-xs text-gray-700 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                        <div class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <User :size="12" />
+                        </div>
+                        <div class="min-w-0">
+                            <span class="text-[10px] uppercase font-bold text-gray-400 block leading-tight">Inspecteur</span>
+                            <span class="font-semibold text-gray-800 truncate block">{{ formatInspector(right_sidebar.equipment?.user) }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -279,15 +307,24 @@
                             </p>
                         </div>
                         <!-- Bouton bascule conformité -->
-                        <button
-                            type="button"
-                            @click="toggleItemConformity(item)"
-                            class="px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition select-none"
-                            :class="item.conformity ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
-                            :title="'Cliquer pour basculer l\'état de conformité'"
-                        >
-                            {{ item.conformity ? '🟢 Conforme' : '🔴 Non conforme' }}
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button
+                                type="button"
+                                @click="toggleItemConformity(item)"
+                                class="px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition select-none"
+                                :class="item.conformity ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
+                                :title="'Cliquer pour basculer l\'état de conformité'"
+                            >
+                                {{ item.conformity ? '🟢 Conforme' : '🔴 Non conforme' }}
+                            </button>
+                            <span
+                                v-if="item.initial_conformity === false && item.conformity === true"
+                                class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full"
+                                title="Régularisé (initialement non conforme)"
+                            >
+                                Régularisé
+                            </span>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between text-[11px] text-gray-600">
@@ -757,7 +794,8 @@
     import { EquipmentMonitoringFormData } from '../../../@data/EquipementMonitoring.data.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-    import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, XIcon } from '@lucide/vue';
+    import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
+    import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
@@ -854,6 +892,16 @@
         if (typeof site === 'string') return site
         if (typeof site === 'object' && site.name) return String(site.name)
         return String(site)
+    }
+
+    function formatInspector(user: any): string {
+        if (!user) return 'Non assigné'
+        if (user.first_name || user.last_name) {
+            return `${user.first_name || ''} ${user.last_name || ''}`.trim()
+        }
+        if (user.name) return user.name
+        if (user.email) return user.email
+        return 'Non assigné'
     }
 
     function resolvePhotoUrl(path: string) {
@@ -956,6 +1004,7 @@
         "#",
         "DATE",
         "SITE",
+        "INSPECTEUR",
         "STATUT",
         "CONFORMITÉ",
         "ACTIONS",

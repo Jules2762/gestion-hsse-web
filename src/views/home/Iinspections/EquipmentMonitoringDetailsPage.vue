@@ -21,6 +21,7 @@
                     <span class="text-sm font-bold text-gray-800 truncate" v-if="equipment">
                         Fiche n° {{ equipment.id }} — {{ getSiteNameText(equipment.site_name) }}
                     </span>
+                    <ChecklistStatus v-if="equipment" :name="(equipment.status as any) || 'COMPLETED'" />
                     <span
                         v-if="equipment"
                         class="px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-block"
@@ -84,7 +85,7 @@
                             </h1>
                             <p class="text-xs text-gray-500 mt-0.5">Réseau des Stations-Service & Sites Pétroliers Galana</p>
                         </div>
-                        <div class="border-t border-gray-300 bg-gray-50/70 grid grid-cols-2 sm:grid-cols-4 text-xs divide-x divide-gray-300">
+                        <div class="border-t border-gray-300 bg-gray-50/70 grid grid-cols-2 sm:grid-cols-5 text-xs divide-x divide-gray-300">
                             <div class="p-2 text-center">
                                 <span class="text-gray-400 block text-[10px] uppercase font-bold">Référence</span>
                                 <span class="font-mono font-bold text-gray-800">{{ equipment.id }}</span>
@@ -101,6 +102,10 @@
                                 <span class="text-gray-400 block text-[10px] uppercase font-bold">Inspecteur</span>
                                 <span class="font-medium text-gray-800">{{ inspectorName }}</span>
                             </div>
+                            <div class="p-2 text-center flex flex-col items-center justify-center">
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold mb-0.5">Statut</span>
+                                <ChecklistStatus :name="(equipment.status as any) || 'COMPLETED'" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -109,9 +114,16 @@
             <!-- BANDEAU KPI DE CONFORMITÉ -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
-                    <span class="text-[11px] font-semibold text-gray-500">Taux de conformité</span>
+                    <span class="text-[11px] font-semibold text-gray-500">Taux actuel</span>
                     <span class="text-xl font-black mt-0.5" :class="(equipment.conformity_rate ?? 100) >= 90 ? 'text-emerald-700' : 'text-red-700'">
                         {{ equipment.conformity_rate ?? 100 }}%
+                    </span>
+                    <span
+                        v-if="equipment.initial_conformity_rate !== undefined && equipment.initial_conformity_rate !== equipment.conformity_rate"
+                        class="text-[9px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full mt-1 border border-amber-200"
+                        :title="`Taux initial constaté lors de la visite : ${equipment.initial_conformity_rate}%`"
+                    >
+                        Taux initial : {{ equipment.initial_conformity_rate }}%
                     </span>
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
@@ -179,6 +191,13 @@
                                 >
                                     {{ item.conformity ? '🟢 Conforme' : '🔴 Non conforme' }}
                                 </button>
+                                <span
+                                    v-if="item.initial_conformity === false && item.conformity === true"
+                                    class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"
+                                    title="Cet équipement était initialement non conforme et a été régularisé"
+                                >
+                                    Régularisé
+                                </span>
                             </div>
                             <div class="hidden print:block text-xs font-bold" :class="item.conformity ? 'text-emerald-700' : 'text-red-700'">
                                 {{ item.conformity ? 'CONFORME' : 'NON CONFORME' }}
@@ -306,6 +325,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Header from '../../../components/shared/Header.vue';
+import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
 import type { EquipmentItemType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type';
 import { useEquipmentMonitoringService } from '../../../core/services/equipmentMonitoring.service';
 import {

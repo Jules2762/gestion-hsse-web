@@ -29,17 +29,17 @@
                                         Nouveau contrôle de matériel
                                     </h2>
                                     <p class="text-xs text-gray-500">
-                                        Renseignez le site, la date et les équipements contrôlés.
+                                        Planifiez le contrôle, assignez l'inspecteur responsable et renseignez les matériels.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- SECTION 1 : INFORMATIONS NÉCESSAIRES AU SUIVI -->
+                        <!-- SECTION 1 : INFORMATIONS NÉCESSAIRES AU SUIVI & PLANIFICATION -->
                         <div class="p-6 border-b border-gray-100 space-y-4">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
-                                <h3 class="font-bold text-gray-800 text-sm">Informations générales de la visite</h3>
+                                <h3 class="font-bold text-gray-800 text-sm">Informations générales & Planification</h3>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -63,13 +63,44 @@
 
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                                        Date de relevé <span class="text-red-500">*</span>
+                                        Date prévue / du relevé <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model="form.date"
                                         type="date"
                                         class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                     />
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+                                        <span>Inspecteur assigné</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">Choisi à l'avance</span>
+                                    </label>
+                                    <select
+                                        v-model="form.user_id"
+                                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer"
+                                    >
+                                        <option value="">Sélectionner un inspecteur (par défaut vous-même)...</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">
+                                            {{ user.first_name || '' }} {{ user.last_name || '' }} {{ user.email ? `(${user.email})` : '' }} {{ user.job ? `— ${user.job}` : '' }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+                                        <span>Statut de l'inspection</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">Cycle d'inspection</span>
+                                    </label>
+                                    <select
+                                        v-model="form.status"
+                                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer font-medium"
+                                    >
+                                        <option v-for="st in ChecklistStatusJsonData" :key="st.value" :value="st.value">
+                                            {{ st.label }} ({{ st.value }})
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -264,14 +295,24 @@
                         <!-- INFOS CLEFS -->
                         <div class="space-y-2 text-xs">
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Site sélectionné :</span>
+                                <span class="text-gray-500">Site :</span>
                                 <span class="font-bold text-gray-900 text-right truncate max-w-[170px]">
-                                    {{ form.site_name || 'Aucun site sélectionné' }}
+                                    {{ form.site_name || 'Aucun site' }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Date du relevé :</span>
+                                <span class="text-gray-500">Date prévue :</span>
                                 <span class="font-mono text-gray-800">{{ form.date || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Inspecteur :</span>
+                                <span class="font-semibold text-gray-800 text-right truncate max-w-[170px]" :title="selectedInspectorName">
+                                    {{ selectedInspectorName }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Statut d'inspection :</span>
+                                <ChecklistStatus :name="(form.status as any)" />
                             </div>
                             <div class="flex justify-between items-center py-1">
                                 <span class="text-gray-500">Total équipements :</span>
@@ -308,9 +349,9 @@
                             </div>
                         </div>
 
-                        <!-- STATUT ESTIMÉ -->
+                        <!-- ÉVALUATION CONFORMITÉ -->
                         <div class="flex items-center justify-between text-xs py-1">
-                            <span class="text-gray-500">Statut estimé :</span>
+                            <span class="text-gray-500">Qualité du parc :</span>
                             <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold" :class="statusBadgeClass">
                                 {{ statusText }}
                             </span>
@@ -326,7 +367,7 @@
                             >
                                 <Loader v-if="loading" :size="15" class="animate-spin" />
                                 <Save v-else :size="15" />
-                                <span>{{ loading ? 'Enregistrement en cours...' : 'Enregistrer le relevé' }}</span>
+                                <span>{{ loading ? 'Enregistrement en cours...' : 'Créer / Planifier le contrôle' }}</span>
                             </button>
 
                             <button
@@ -356,16 +397,22 @@ import {
     Sparkles,
     Package,
     Loader,
+    UserCheck,
 } from "@lucide/vue"
 import Header from "../../../components/shared/Header.vue"
+import ChecklistStatus from "../../../components/features/checklist/ChecklistStatus.vue"
+import { ChecklistStatusJsonData } from "../../../@data/Checklist.data.ts"
 import type { SiteNameType } from "../../../@types/SiteName..type.ts"
 import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service.ts"
+import { useUserService } from "../../../core/services/user.service.ts"
 import { toast } from "vue3-toastify"
 
 const router = useRouter()
 const equipments = useEquipmentMonitoringService()
+const userService = useUserService()
 const loading = ref(false)
 const sites = ref<SiteNameType[]>([])
+const users = ref<any[]>([])
 const errors = ref<{ site_name?: string[]; date?: string[] } | null>(null)
 
 interface DynamicItem {
@@ -380,7 +427,17 @@ interface DynamicItem {
 const form = reactive({
     site_name: "",
     date: new Date().toISOString().split("T")[0],
+    user_id: "",
+    status: "DRAFT",
     observations: "",
+})
+
+const selectedInspectorName = computed(() => {
+    if (!form.user_id) return "Non assigné (vous-même)"
+    const found = users.value.find(u => String(u.id) === String(form.user_id))
+    if (!found) return "Inspecteur assigné"
+    const fullName = `${found.first_name || ""} ${found.last_name || ""}`.trim()
+    return fullName || found.email || "Inspecteur assigné"
 })
 
 const items = ref<DynamicItem[]>([])
@@ -469,13 +526,16 @@ async function submit() {
         const payload: any = {
             site_name: form.site_name,
             date: form.date,
+            user_id: form.user_id || undefined,
+            status: form.status,
             observations: form.observations || null,
-            status: estimatedStatus.value,
             conformity_rate: conformityRate.value,
+            initial_conformity_rate: conformityRate.value,
             items: items.value.map(it => ({
                 name: it.name || "Matériel non spécifié",
                 type: it.type || "divers",
                 conformity: it.conformity,
+                initial_conformity: it.conformity,
                 value_type: typeof it.value === "number" ? "number" : "text",
                 value: String(it.value ?? ""),
                 location: it.location || null,
@@ -484,7 +544,7 @@ async function submit() {
         }
 
         const res = await equipments.store(payload)
-        toast.success("Suivi du matériel enregistré avec succès !")
+        toast.success("Contrôle de matériel enregistré avec succès !")
         const newId = res?.data?.id
         if (newId) {
             router.push({ name: "EQUIPMENT_MONITORING_DETAILS", params: { id: newId } })
@@ -514,8 +574,19 @@ function fetchSiteNames() {
         })
 }
 
+function fetchUsers() {
+    userService.index()
+        .then(res => {
+            users.value = res.data?.data || res.data || []
+        })
+        .catch(err => {
+            console.error("Erreur chargement utilisateurs:", err)
+        })
+}
+
 onMounted(() => {
     fetchSiteNames()
+    fetchUsers()
     loadStandardGalanaTemplates()
 })
 </script>

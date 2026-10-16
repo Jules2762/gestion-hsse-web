@@ -16,8 +16,11 @@ export const useEquipmentMonitoringService = defineStore("equipment-monitoring",
         async updateItem(itemId: number, data: { conformity?: boolean; value?: any; comment?: string; location?: string }) {
             return await equipmentMonitoringApi.updateItem(itemId, data)
         },
-        async uploadItemPhoto(itemId: number, photo: File) {
+        async uploadItemPhoto(itemId: number | string, photo: File) {
             return await equipmentMonitoringApi.uploadItemPhoto(itemId, photo)
+        },
+        async deleteItemPhoto(photoId: number | string) {
+            return await equipmentMonitoringApi.deleteItemPhoto(photoId)
         },
         async export(params?: EquipmentMonitoringFilterType) {
             return await equipmentMonitoringApi.export(params)

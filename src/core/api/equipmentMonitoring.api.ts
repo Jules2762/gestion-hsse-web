@@ -14,7 +14,7 @@ export default {
     updateItem(itemId: number, data: { conformity?: boolean; value?: any; comment?: string; location?: string }) {
         return api.put('/home/equipments-monitoring/equipments/items/' + itemId, data);
     },
-    uploadItemPhoto(itemId: number, photo: File) {
+    uploadItemPhoto(itemId: number | string, photo: File) {
         const formData = new FormData();
         formData.append('photo', photo);
         return api.post('/home/equipments-monitoring/equipments/items/' + itemId + '/photo', formData, {
@@ -22,6 +22,9 @@ export default {
                 'Content-Type': 'multipart/form-data',
             },
         });
+    },
+    deleteItemPhoto(photoId: number | string) {
+        return api.delete('/home/equipments-monitoring/equipments/items/photo/' + photoId);
     },
     export(params?: EquipmentMonitoringFilterType) {
         return api.get("/home/equipments-monitoring/export", { params });
