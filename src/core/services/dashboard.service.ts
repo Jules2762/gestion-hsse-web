@@ -62,5 +62,19 @@ export default {
     // Equipment Dashboard
     async getEquipmentKPIs() {
         return await dashboardApi.getEquipmentKPIs()
+    },
+
+    // Admin Dashboard
+    async getAdminKPIs() {
+        return await dashboardApi.getAdminKPIs()
+    },
+    async getAdminActivityChart(params?: { days?: number }) {
+        return await dashboardApi.getAdminActivityChart(params)
+    },
+    async getAdminDirectionsStats() {
+        return await dashboardApi.getAdminDirectionsStats()
+    },
+    async getAdminRecentActivities() {
+        return await dashboardApi.getAdminRecentActivities()
     }
 }

@@ -98,6 +98,7 @@ export const fr: LangType = {
             "general": "Général",
             "training plan": "Plan de formation",
             "inspection": "Inspection",
+            "administration": "Administration",
         }
     },
 

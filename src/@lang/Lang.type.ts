@@ -110,6 +110,7 @@ type LangType = {
             "general": string,
             "training plan": string,
             "inspection": string,
+            "administration": string,
         }
     },
 

@@ -99,6 +99,7 @@ export const en: LangType = {
             "general": 'General',
             "training plan": "Training Plan",
             "inspection": "Inspection",
+            "administration": "Administration",
         }
     },
 

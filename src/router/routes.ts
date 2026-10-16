@@ -76,6 +76,14 @@ const routes = [
                 },
                 children: [
                     {
+                        path: "dashboard",
+                        name: "ADMIN_DASHBOARD",
+                        redirect: {
+                            name: "DASHBOARD",
+                            query: { tab: "admin" }
+                        }
+                    },
+                    {
                         path: "/users",
                         name: "USERS",
                         component: UsersPage

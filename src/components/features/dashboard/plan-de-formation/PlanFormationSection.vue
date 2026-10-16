@@ -15,11 +15,17 @@
     <!-- Personnes formées par direction -->
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
       <ChartCard title="Personnes formées par direction">
-        <apexchart type="bar" height="320" :options="direction_options" :series="direction_series" />
+        <apexchart v-if="direction_series_data.length" :key="`bar-${direction_series_data.map((s) => s.name).join('-')}`" type="bar" height="320" :options="direction_options" :series="direction_series" />
+        <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
+          Chargement des données...
+        </div>
       </ChartCard>
 
       <ChartCard title="Répartition des personnes formées par direction">
-        <apexchart type="donut" height="320" :options="pie_options" :series="pie_series" />
+        <apexchart v-if="direction_series_data.length" :key="pie_chart_key" type="donut" height="320" :options="pie_options" :series="pie_series" />
+        <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
+          Chargement des données...
+        </div>
       </ChartCard>
     </div>
 
@@ -72,11 +78,17 @@
           </option>
         </select>
       </div>
-      <apexchart type="bar" height="320" :options="monthly_options" :series="monthly_series" />
+      <apexchart v-if="data_monthly_chart.data.length" :key="`monthly-${currentYear}`" type="bar" height="320" :options="monthly_options" :series="monthly_series" />
+      <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
+        Chargement des données...
+      </div>
     </ChartCard>
     <!-- Sessions : barres horizontales pour que les intitulés longs restent lisibles -->
     <ChartCard title="Nombre de personnes formées par session">
-      <apexchart type="bar" :height="session_height" :options="session_options" :series="session_series" />
+      <apexchart v-if="sessions.length" :key="`sessions-${sessions.length}`" type="bar" :height="session_height" :options="session_options" :series="session_series" />
+      <div v-else class="h-[300px] flex items-center justify-center text-gray-400 text-sm">
+        Aucune session enregistrée.
+      </div>
     </ChartCard>
   </div>
 </template>
@@ -121,14 +133,12 @@
   };
 
   /* ---------- Personnes formées par direction ---------- */
-  const direction_series_data=ref<DashboardTrainingPlanChartDirectionType[]>([
-   
-  ]);
+  const direction_series_data = ref<DashboardTrainingPlanChartDirectionType[]>([]);
   const direction_series = computed(() => [
-    { name: 'Personnes formées', data: direction_series_data.value.map((s) => s.trained) }
+    { name: 'Personnes formées', data: direction_series_data.value.map((s) => s.trained) },
   ]);
   const direction_options = computed(() => ({
-    chart: { ...baseChart, type: 'bar' },
+    chart: { ...baseChart, type: 'bar' as const },
     colors: ['#008FFB'],
     plotOptions: { bar: { borderRadius: 4, columnWidth: '45%' } },
     dataLabels: { enabled: true },
@@ -138,54 +148,72 @@
   }));
 
   /* ---------- Répartition (donut) ---------- */
-  const pie_series:ComputedRef<number[]> = computed(()=>direction_series_data.value.map((item)=>item.trained/data_kpis.value.totalParticipants*100));
+  const pie_chart_key = computed(() => `donut-${direction_series_data.value.map((d) => d.name).join('-')}`);
+  const pie_series = computed<number[]>(() => direction_series_data.value.map((item) => item.trained));
   const pie_options = computed(() => ({
     chart: {
       ...baseChart,
-      type: 'donut',
+      type: 'donut' as const,
     },
-
-    labels: direction_series_data.value.map(item => item.name),
-
+    labels: direction_series_data.value.map((item) => item.name),
     colors,
-
     legend: {
       show: true,
-      position: 'bottom',
-    },
-
-    dataLabels: {
-      formatter: (val: number) => `${val.toFixed(2)}%`,
-    },
-
-    tooltip: {
-      y: {
-        formatter: (val: number) => `${val.toFixed(2)}%`,
+      position: 'bottom' as const,
+      horizontalAlign: 'center' as const,
+      fontSize: '12px',
+      formatter: (seriesName: string, opts: any) => {
+        const val = opts.w.globals.series[opts.seriesIndex];
+        return `${seriesName} (${val})`;
       },
     },
-
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => `${val.toFixed(1)}%`,
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number, opts: any) => {
+          const total = opts.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
+          const percent = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+          return `${val} personne${val > 1 ? 's' : ''} (${percent}%)`;
+        },
+      },
+    },
     plotOptions: {
       pie: {
         donut: {
-          size: '60%',
-
+          size: '62%',
           labels: {
             show: true,
-
+            name: {
+              show: true,
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#475569',
+            },
+            value: {
+              show: true,
+              fontSize: '20px',
+              fontWeight: 700,
+              color: '#0f172a',
+              formatter: (val: string) => `${val} pers.`,
+            },
             total: {
               show: true,
-              label: 'Total',
-              formatter: () => '100.00%',
-            },
-
-            value: {
-              formatter: (val: string) => `${Number(val).toFixed(2)}%`,
+              label: 'Total formés',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#64748b',
+              formatter: (w: any) => {
+                const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
+                return `${total} pers.`;
+              },
             },
           },
         },
       },
     },
-
     responsive: [
       {
         breakpoint: 480,
@@ -196,7 +224,7 @@
         },
       },
     ],
-  }))
+  }));
 
   /* ---------- Tableau ---------- */
   const table_section_data = ref<DashboardTrainingPlanTableDirectionType[]>([]);

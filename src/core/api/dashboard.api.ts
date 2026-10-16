@@ -65,5 +65,19 @@ export default {
     // Equipment Dashboard
     getEquipmentKPIs() {
         return api.get("/home/dashboard/equipment/kpis")
+    },
+
+    // Admin Dashboard
+    getAdminKPIs() {
+        return api.get("/home/dashboard/admin/kpis")
+    },
+    getAdminActivityChart(params?: { days?: number }) {
+        return api.get("/home/dashboard/admin/activity-chart", { params })
+    },
+    getAdminDirectionsStats() {
+        return api.get("/home/dashboard/admin/directions-stats")
+    },
+    getAdminRecentActivities() {
+        return api.get("/home/dashboard/admin/recent-activities")
     }
 }
