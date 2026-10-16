@@ -58,13 +58,21 @@ export default {
     async getInspectionKPIs(params?: { year?: number | string }) {
         return await dashboardApi.getInspectionKPIs(params)
     },
+    async getInspectionMapData(params?: { year?: number | string }) {
+        return await dashboardApi.getInspectionMapData(params)
+    },
+
+    // VMC Map
+    async getVmcMapData(params?: { year?: number | string }) {
+        return await dashboardApi.getVmcMapData(params)
+    },
 
     // Equipment Dashboard
-    async getEquipmentKPIs() {
-        return await dashboardApi.getEquipmentKPIs()
+    async getEquipmentKPIs(params?: { year?: number | string }) {
+        return await dashboardApi.getEquipmentKPIs(params)
     },
-    async getEquipmentMapData() {
-        return await dashboardApi.getEquipmentMapData()
+    async getEquipmentMapData(params?: { year?: number | string }) {
+        return await dashboardApi.getEquipmentMapData(params)
     },
 
     // Admin Dashboard

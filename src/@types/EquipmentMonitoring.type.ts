@@ -24,7 +24,7 @@ export type EquipmentMonitoringType = {
     id?: string | number
     user_id?: string | number
 
-    site_name: SiteNameType
+    site_name: string | SiteNameType
     
     p50: number
     p9: number
@@ -107,5 +107,7 @@ export type EquipmentMonitoringFilterType = {
         to?: string
     }
     site?: string[]
+    status?: string[]
+    inspector?: string[]
     search?: string
 }

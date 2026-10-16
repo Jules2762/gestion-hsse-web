@@ -132,7 +132,7 @@
           <!-- TOOLTIP AU SURVOL -->
           <LTooltip :options="{ direction: 'top', offset: [0, -8] }">
             <div class="text-xs font-semibold">
-              <p class="font-bold text-gray-800">{{ site.name }}</p>
+              <p class="font-bold text-gray-800">{{ formatStationName(site.name) }}</p>
               <p class="text-gray-500 font-normal">{{ site.locality }}</p>
               <p class="text-emerald-700 font-semibold">{{ site.conformity_rate }}% conforme</p>
             </div>
@@ -144,7 +144,7 @@
               <!-- En-tête station -->
               <div class="border-b border-gray-100 pb-2">
                 <div class="flex items-center justify-between gap-2">
-                  <h4 class="font-bold text-sm text-gray-900 leading-tight">SS {{ site.name }}</h4>
+                  <h4 class="font-bold text-sm text-gray-900 leading-tight">{{ formatStationName(site.name) }}</h4>
                   <span
                     class="px-2 py-0.5 rounded-full text-[10px] font-bold inline-block"
                     :class="badgeColor(site.status)"
@@ -215,8 +215,23 @@
                 </div>
               </div>
 
-              <div class="text-[10px] text-gray-400 text-right pt-1">
-                Dernier contrôle : {{ site.last_monitoring_date || 'N/A' }}
+              <!-- Date dernier contrôle + Bouton de redirection vers les détails -->
+              <div class="pt-2 border-t border-gray-100 flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-[10px] text-gray-400">
+                  <span>Dernier contrôle :</span>
+                  <span class="font-medium text-gray-600">{{ site.last_monitoring_date || 'N/A' }}</span>
+                </div>
+
+                <button
+                  type="button"
+                  @click="goToMonitoringDetails(site)"
+                  class="w-full mt-1 py-1.5 px-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition active:scale-[0.98] cursor-pointer"
+                  :title="site.last_monitoring_id ? 'Consulter le suivi détaillé des équipements' : 'Accéder au registre des suivis pour ce site'"
+                >
+                  <Eye :size="13" />
+                  <span>{{ site.last_monitoring_id ? 'Consulter les détails du suivi' : 'Voir le suivi du site' }}</span>
+                  <ArrowUpRight :size="13" />
+                </button>
               </div>
             </div>
           </LPopup>
@@ -227,10 +242,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import 'leaflet/dist/leaflet.css';
 import { LMap, LTileLayer, LCircleMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
-import { MapPin, Maximize2, Minimize2 } from '@lucide/vue';
+import { ArrowUpRight, Eye, MapPin, Maximize2, Minimize2 } from '@lucide/vue';
 import DashboardSkeleton from '../DashboardSkeleton.vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
@@ -246,6 +262,8 @@ type SiteMapItem = {
   status: 'green' | 'yellow' | 'red';
   conformity_rate: number;
   last_monitoring_date?: string;
+  last_monitoring_id?: string;
+  last_monitoring_raw_id?: number;
   total_extincteurs: number;
   total_bacs: number;
   counts?: {
@@ -271,6 +289,7 @@ type SiteMapItem = {
   }>;
 };
 
+const router = useRouter();
 const loading = ref(true);
 const sites = ref<SiteMapItem[]>([]);
 const center = ref<[number, number]>([-18.8792, 47.5079]);
@@ -300,6 +319,31 @@ const filteredSites = computed(() => {
     return true;
   });
 });
+
+function formatStationName(name?: string) {
+  if (!name) return '';
+  const trimmed = name.trim();
+  return trimmed.toUpperCase().startsWith('SS') ? trimmed : `SS ${trimmed}`;
+}
+
+function goToMonitoringDetails(site: SiteMapItem) {
+  if (isFullscreen.value) {
+    isFullscreen.value = false;
+  }
+  if (site.last_monitoring_id) {
+    router.push({
+      name: 'EQUIPMENT_MONITORING_DETAILS',
+      params: { id: site.last_monitoring_id }
+    });
+  } else {
+    router.push({
+      name: 'EQUIPMENT_MONITORING',
+      query: {
+        site: site.name
+      }
+    });
+  }
+}
 
 function markerColor(status: string) {
   if (status === 'red') {
@@ -343,10 +387,15 @@ function onKeyDown(e: KeyboardEvent) {
   }
 }
 
-async function loadMapData() {
+const props = defineProps<{
+  year?: number;
+}>();
+
+async function loadMapData(yearOverride?: number) {
   loading.value = true;
   try {
-    const res = await dashboardService.getEquipmentMapData();
+    const yr = yearOverride ?? props.year;
+    const res = await dashboardService.getEquipmentMapData(yr ? { year: yr } : undefined);
     if (res?.data && Array.isArray(res.data)) {
       sites.value = res.data;
     }
@@ -356,6 +405,10 @@ async function loadMapData() {
     loading.value = false;
   }
 }
+
+watch(() => props.year, (newYear?: number) => {
+  loadMapData(newYear);
+});
 
 onMounted(() => {
   loadMapData();

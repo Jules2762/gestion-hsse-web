@@ -1,1456 +1,503 @@
-
-
 <template>
-
     <div class="w-full">
-
-        <!-- ============================================================ -->
         <!-- HEADER -->
-        <!-- ============================================================ -->
-
-        <Header title="inspections.equipment-monitoring.update.title" :thumbnails="[
-            {
-                label: 'thumbnails.home',
-                name: 'DASHBOARD'
-            },
-            {
-                label: 'thumbnails.inspection',
-                name: 'INSPECTION'
-            },
-            {
-                label: 'thumbnails.equipment-monitoring',
-                name: 'EQUIPMENT_MONITORING'
-            },
-            {
-                label: 'thumbnails.update',
-                name: 'EQUIPMENT_MONITORING_UPDATE'
-            }
+        <Header title="Modifier le suivi des équipements" :thumbnails="[
+            { label: 'Accueil', name: 'DASHBOARD' },
+            { label: 'Inspections', name: 'INSPECTION' },
+            { label: 'Suivi du matériel', name: 'EQUIPMENT_MONITORING' },
+            { label: 'Modifier', name: 'EQUIPMENT_MONITORING_UPDATE' }
         ]" />
 
+        <!-- CONTENT CONTAINER -->
+        <div class="max-w-7xl mt-5 mx-auto px-4 sm:px-6 pb-12">
+            <!-- CHARGEMENT INITIAL -->
+            <div v-if="loadingInitial" class="p-16 flex flex-col items-center justify-center text-center text-gray-400 gap-2">
+                <Loader :size="28" class="animate-spin text-primary" />
+                <span class="text-xs font-medium">Chargement des données du contrôle...</span>
+            </div>
 
-        <!-- ============================================================ -->
-        <!-- CONTENT -->
-        <!-- ============================================================ -->
-
-        <div class="
-                max-w-350
-                mt-5
-                mx-auto
-                px-4
-                sm:px-6
-                pb-10
-            ">
-
-            <div class="
-                    grid
-                    grid-cols-1
-                    xl:grid-cols-12
-                    gap-6
-                    items-start
-                ">
-
-
+            <div v-else class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                
                 <!-- ==================================================== -->
-                <!-- FORMULAIRE -->
+                <!-- FORMULAIRE PRINCIPAL (COLONNE GAUCHE) -->
                 <!-- ==================================================== -->
-
-                <form @submit.prevent="submit" class="
-                        xl:col-span-8
-                    ">
-
-                    <div class="
-                            bg-white
-                            border
-                            border-slate-200
-                            rounded-2xl
-                            shadow-sm
-                            overflow-hidden
-                        ">
-
+                <div class="xl:col-span-8 space-y-6">
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                        
                         <!-- CARD HEADER -->
-
-                        <div class="
-                                px-6
-                                py-5
-                                border-b
-                                border-border
-                                bg-surface-alt
-                            ">
-
+                        <div class="px-6 py-5 border-b border-gray-100 bg-slate-50/60 flex items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
-
-                                <div class="
-                                        w-10
-                                        h-10
-                                        rounded-xl
-                                        bg-primary
-                                        flex
-                                        items-center
-                                        justify-center
-                                        text-white
-                                    ">
-
-                                    <ClipboardList :size="20" />
-
+                                <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-xs">
+                                    <Edit :size="20" />
                                 </div>
-
-
                                 <div>
-
-                                    <h2 class="
-                                            text-lg
-                                            font-semibold
-                                            text-accent-dark
-                                        ">
-                                        Suivi des matériels
+                                    <h2 class="text-base font-bold text-gray-900">
+                                        Modification du suivi n° {{ monitoringId }}
                                     </h2>
-
-                                    <p class="
-                                            text-sm
-                                            text-text-muted
-                                        ">
-                                        Renseignez les équipements présents
-                                        sur le site.
+                                    <p class="text-xs text-gray-500">
+                                        Mettez à jour les informations du contrôle et les équipements relevés.
                                     </p>
-
                                 </div>
-
                             </div>
-
                         </div>
 
+                        <!-- SECTION 1 : INFORMATIONS NÉCESSAIRES AU SUIVI -->
+                        <div class="p-6 border-b border-gray-100 space-y-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
+                                <h3 class="font-bold text-gray-800 text-sm">Informations générales de la visite</h3>
+                            </div>
 
-                        <!-- FORM CONTENT -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Site / Station <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="form.site_name"
+                                        list="sites-update-datalist"
+                                        type="text"
+                                        placeholder="Sélectionner ou saisir un site..."
+                                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                        :class="errors?.site_name ? 'border-red-500' : ''"
+                                    />
+                                    <datalist id="sites-update-datalist">
+                                        <option v-for="site in sites" :key="site.id" :value="site.name">{{ site.name }}</option>
+                                    </datalist>
+                                    <p v-if="errors?.site_name" class="text-[11px] text-red-600 mt-1">Le site est requis.</p>
+                                </div>
 
-                        <div class="p-6 space-y-8">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Date de relevé <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="form.date"
+                                        type="date"
+                                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                    />
+                                </div>
+                            </div>
 
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Observations générales (optionnel)
+                                </label>
+                                <textarea
+                                    v-model="form.observations"
+                                    rows="2"
+                                    placeholder="Notes de visite, remarques sur la conformité globale du site..."
+                                    class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y"
+                                ></textarea>
+                            </div>
+                        </div>
 
-                            <!-- ================================================= -->
-                            <!-- INFORMATIONS GENERALES -->
-                            <!-- ================================================= -->
-
-                            <section>
-
-                                <div class="
-                                        flex
-                                        items-center
-                                        gap-3
-                                        mb-5
-                                    ">
-
-                                    <div class="
-                                            w-8
-                                            h-8
-                                            rounded-lg
-                                            bg-accent-dark/10
-                                            text-accent-dark
-                                            flex
-                                            items-center
-                                            justify-center
-                                        ">
-
-                                        <Info :size="17" />
-
-                                    </div>
-
-
+                        <!-- SECTION 2 : ÉQUIPEMENTS DYNAMIQUES (EquipmentItem) -->
+                        <div class="p-6 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
                                     <div>
-
-                                        <h3 class="
-                                                font-semibold
-                                                text-accent-dark
-                                            ">
-                                            Informations générales
+                                        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                                            <span>Matériels et équipements contrôlés</span>
+                                            <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">{{ items.length }}</span>
                                         </h3>
-
-                                        <p class="
-                                                text-xs
-                                                text-slate-500
-                                            ">
-                                            Informations du relevé
-                                        </p>
-
+                                        <p class="text-[11px] text-gray-500">Modifiez, ajoutez ou supprimez des équipements.</p>
                                     </div>
-
                                 </div>
 
-
-                                <div class="
-                                        grid
-                                        grid-cols-1
-                                        md:grid-cols-2
-                                        gap-5
-                                    ">
-
-                                    <Input v-model="form.site_name as string | undefined" label="Site"
-                                        placeholder="Sélectionner une site" list_id="site_id"
-                                        :lists="sites.map(item => item.name)" :error="errors?.site_name?.[0]" />
-
-
-                                    <Input v-model="form.date" label="Date de relevé" type="date"
-                                        :error="errors?.date?.[0]" />
-
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        @click="addNewItem"
+                                        class="px-3.5 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition cursor-pointer flex items-center gap-1.5"
+                                    >
+                                        <Plus :size="14" />
+                                        <span>Ajouter un matériel</span>
+                                    </button>
                                 </div>
-
-                            </section>
-
-
-                            <!-- ================================================= -->
-                            <!-- EXTINCTEURS -->
-                            <!-- ================================================= -->
-
-                            <section class="
-                                    border-t
-                                    border-border
-                                    pt-7
-                                ">
-
-                                <div class="
-                                        flex
-                                        items-center
-                                        gap-3
-                                        mb-5
-                                    ">
-
-                                    <div class="
-                                            w-8
-                                            h-8
-                                            rounded-lg
-                                            bg-red-50
-                                            text-red-600
-                                            flex
-                                            items-center
-                                            justify-center
-                                        ">
-
-                                        <ShieldAlert :size="17" />
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <h3 class="
-                                                font-semibold
-                                                text-accent-dark
-                                            ">
-                                            Extincteurs
-                                        </h3>
-
-                                        <p class="
-                                                text-xs
-                                                text-text-muted
-                                            ">
-                                            Quantité disponible
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="
-                                        grid
-                                        grid-cols-2
-                                        md:grid-cols-4
-                                        gap-4
-                                    ">
-
-                                    <Input v-model.number="form.p50" label="P50" type="number" :min="0"
-                                        :error="errors?.p50?.[0]" />
-
-                                    <Input v-model.number="form.p9" label="P9" type="number" :min="0"
-                                        :error="errors?.p9?.[0]" />
-
-                                    <Input v-model.number="form.p6" label="P6" type="number" :min="0"
-                                        :error="errors?.p6?.[0]" />
-
-                                    <Input v-model.number="form.co2" label="CO₂" type="number" :min="0"
-                                        :error="errors?.co2?.[0]" />
-
-                                </div>
-
-                            </section>
-
-
-                            <!-- ================================================= -->
-                            <!-- MATERIEL -->
-                            <!-- ================================================= -->
-
-                            <section class="
-                                    border-t
-                                    border-border
-                                    pt-7
-                                ">
-
-                                <div class="
-                                        flex
-                                        items-center
-                                        gap-3
-                                        mb-5
-                                    ">
-
-                                    <div class="
-                                            w-8
-                                            h-8
-                                            rounded-lg
-                                            bg-accent-medium/10
-                                            text-accent-medium
-                                            flex
-                                            items-center
-                                            justify-center
-                                        ">
-
-                                        <Package :size="17" />
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <h3 class="
-                                                font-semibold
-                                                text-accent-dark
-                                            ">
-                                            Matériel
-                                        </h3>
-
-                                        <p class="
-                                                text-xs
-                                                text-text-muted
-                                            ">
-                                            Quantité des équipements
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="
-                                        grid
-                                        grid-cols-2
-                                        md:grid-cols-4
-                                        gap-4
-                                    ">
-
-                                    <Input v-model.number="form.bas_met" label="Bac métal" type="number" :min="0"
-                                        :error="errors?.bas_met?.[0]" />
-
-                                    <Input v-model.number="form.bas_plast" label="Bac plastique" type="number" :min="0"
-                                        :error="errors?.bas_plast?.[0]" />
-                                    <Input v-model.number="form.bac_de_retention" label="Bac de retention" type="number" :min="0"
-                                        :error="errors?.bac_de_retention?.[0]" />
-
-                                    <Input v-model.number="form.pelles" label="Pelles" type="number" :min="0"
-                                        :error="errors?.pelles?.[0]" />
-
-                                    <Input v-model.number="form.caf" label="CAF" type="number" :min="0"
-                                        :error="errors?.caf?.[0]" />
-
-                                    <Input v-model.number="form.poubelles_120l" label="Poubelles 120L" type="number"
-                                        :min="0" :error="errors?.poubelles_120l?.[0]" />
-
-                                    <Input v-model.number="form.poubelles_240l" label="Poubelle 240L" type="number"
-                                        :min="0" :error="errors?.poubelles_240l?.[0]" />
-
-                                    <Input v-model.number="form.plots" label="Plots" type="number" :min="0"
-                                        :error="errors?.plots?.[0]" />
-
-                                    <Input v-model.number="form.chainettes" label="Chaînettes" type="number" :min="0"
-                                        :error="errors?.chainettes?.[0]" />
-
-                                    <Input v-model.number="form.detecteur_de_fumee" label="Détecteurs de fumée"
-                                        type="number" :min="0" :error="errors?.detecteur_de_fumee?.[0]" />
-
-                                </div>
-
-                            </section>
-
-
-                            <!-- ================================================= -->
-                            <!-- SIGNALISATION -->
-                            <!-- ================================================= -->
-
-                            <section class="
-                                    border-t
-                                    border-border
-                                    pt-7
-                                ">
-
-                                <div class="
-                                        flex
-                                        items-center
-                                        gap-3
-                                        mb-5
-                                    ">
-
-                                    <div class="
-                                            w-8
-                                            h-8
-                                            rounded-lg
-                                            bg-accent-light/20
-                                            text-accent-dark
-                                            flex
-                                            items-center
-                                            justify-center
-                                        ">
-
-                                        <Signpost :size="17" />
-
-                                    </div>
-
-
-                                    <div>
-
-                                        <h3 class="
-                                                font-semibold
-                                                text-accent-dark
-                                            ">
-                                            Signalisation
-                                        </h3>
-
-                                        <p class="
-                                                text-xs
-                                                text-text-muted
-                                            ">
-                                            Équipements de signalisation
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="
-                                        grid
-                                        grid-cols-1
-                                        sm:grid-cols-2
-                                        lg:grid-cols-3
-                                        gap-4
-                                    ">
-
-                                    <Input v-model.number="form.picto_ext" label="Picto extincteur" type="number"
-                                        :min="0" :error="errors?.picto_ext?.[0]" />
-
-                                    <Input v-model.number="form.picto_caf" label="Picto CAF" type="number" :min="0"
-                                        :error="errors?.picto_caf?.[0]" />
-
-                                    <Input v-model.number="form.picto_defense_de_fumer" label="Défense de fumer"
-                                        type="number" :min="0" :error="errors?.picto_defense_de_fumer?.[0]" />
-
-                                    <Input v-model.number="form.point_de_rasso" label="Point de rassemblement"
-                                        type="number" :min="0" :error="errors?.point_de_rasso?.[0]" />
-
-                                    <Input v-model.number="form.contact_d_urgence" label="Contact d'urgence"
-                                        type="number" :min="0" :error="errors?.contact_d_urgence?.[0]" />
-
-                                    <Input v-model.number="form.canne_d_enfutage" label="Canne d'enfûtage" type="number"
-                                        :min="0" :error="errors?.canne_d_enfutage?.[0]" />
-
-                                    <Input v-model.number="form.panneau_depotage_en_cours" label="Panneau dépotage"
-                                        type="number" :min="0" :error="errors?.panneau_depotage_en_cours?.[0]" />
-
-                                </div>
-
-                            </section>
-
-
-                            <!-- ================================================= -->
-                            <!-- CONTROLES -->
-                            <!-- ================================================= -->
-
-                            <section class="
-                                    border-t
-                                    border-border
-                                    pt-7
-                                ">
-
-                                <div class="
-                                        flex
-                                        items-center
-                                        justify-between
-                                        mb-5
-                                    ">
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            gap-3
-                                        ">
-
-                                        <div class="
-                                                w-8
-                                                h-8
-                                                rounded-lg
-                                                bg-status-success/10
-                                                text-status-success
-                                                flex
-                                                items-center
-                                                justify-center
-                                            ">
-
-                                            <ShieldCheck :size="17" />
-
+                            </div>
+
+                            <!-- ÉTAT VIDE -->
+                            <div v-if="items.length === 0" class="py-12 px-4 text-center border-2 border-dashed border-gray-200 rounded-xl bg-slate-50/50">
+                                <Package :size="32" class="mx-auto text-gray-300 mb-2" />
+                                <h4 class="text-xs font-bold text-gray-700">Aucun équipement renseigné</h4>
+                                <p class="text-[11px] text-gray-400 max-w-sm mx-auto mt-1">
+                                    Cliquez sur « Ajouter un matériel » pour enregistrer un équipement sur cette fiche.
+                                </p>
+                            </div>
+
+                            <!-- LISTE DES ÉQUIPEMENTS -->
+                            <div v-else class="space-y-3">
+                                <div
+                                    v-for="(item, index) in items"
+                                    :key="index"
+                                    class="p-3.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all shadow-2xs space-y-3"
+                                >
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-center gap-2 flex-1">
+                                            <span class="w-5 h-5 rounded-md bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] font-bold">
+                                                {{ index + 1 }}
+                                            </span>
+                                            <input
+                                                v-model="item.name"
+                                                type="text"
+                                                placeholder="Nom du matériel..."
+                                                class="font-bold text-xs text-gray-900 border-b border-gray-200 hover:border-primary focus:border-primary focus:outline-none flex-1 py-0.5"
+                                            />
                                         </div>
 
+                                        <div class="flex items-center gap-2">
+                                            <!-- Bouton bascule conformité -->
+                                            <button
+                                                type="button"
+                                                @click="item.conformity = !item.conformity"
+                                                class="px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition select-none flex items-center gap-1 shadow-2xs"
+                                                :class="item.conformity ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'"
+                                                :title="'Cliquer pour modifier l\'état de conformité'"
+                                            >
+                                                <span class="w-1.5 h-1.5 rounded-full inline-block" :class="item.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                                                <span>{{ item.conformity ? 'Conforme' : 'Non conforme' }}</span>
+                                            </button>
+
+                                            <!-- Bouton supprimer -->
+                                            <button
+                                                type="button"
+                                                @click="removeItem(index)"
+                                                class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition cursor-pointer"
+                                                title="Supprimer cet équipement"
+                                            >
+                                                <Trash2 :size="14" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                                        <div>
+                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Catégorie</label>
+                                            <select
+                                                v-model="item.type"
+                                                class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
+                                            >
+                                                <option value="extincteur">Extincteur</option>
+                                                <option value="bac">Bac & Rétention</option>
+                                                <option value="materiel">Matériel & Outils</option>
+                                                <option value="poubelle">Déchets & Poubelles</option>
+                                                <option value="signalisation">Signalétique & Pictogrammes</option>
+                                                <option value="securite">Sécurité Incendie</option>
+                                                <option value="conformite">Document & Affichage</option>
+                                                <option value="divers">Autre / Divers</option>
+                                            </select>
+                                        </div>
 
                                         <div>
-
-                                            <h3 class="
-                                                    font-semibold
-                                                    text-accent-dark
-                                                ">
-                                                Contrôles
-                                            </h3>
-
-                                            <p class="
-                                                    text-xs
-                                                    text-text-muted
-                                                ">
-                                                Vérifiez les éléments requis
-                                            </p>
-
+                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Relevé / Quantité</label>
+                                            <input
+                                                v-model="item.value"
+                                                type="text"
+                                                placeholder="Quantité ou Présent/Absent"
+                                                class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
+                                            />
                                         </div>
 
+                                        <div>
+                                            <label class="block text-[10px] text-gray-500 font-semibold mb-1">Emplacement</label>
+                                            <input
+                                                v-model="item.location"
+                                                type="text"
+                                                placeholder="Piste, TGBT, Boutique..."
+                                                class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
+                                            />
+                                        </div>
                                     </div>
-
-
-                                    <span class="
-                                            text-sm
-                                            font-semibold
-                                            text-status-success
-                                        ">
-                                        {{ validatedControls }}/{{ totalControls }}
-                                    </span>
-
-                                </div>
-
-
-                                <!-- CONTROLS -->
-
-                                <div class="
-                                        grid
-                                        grid-cols-1
-                                        md:grid-cols-2
-                                        gap-3
-                                    ">
-
-                                    <label class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            gap-4
-                                            p-4
-                                            rounded-xl
-                                            border
-                                            border-border
-                                            cursor-pointer
-                                            transition
-                                            hover:border-accent-medium
-                                            hover:bg-accent-medium/5
-                                        ">
-
-                                        <div class="
-                                                flex
-                                                items-center
-                                                gap-3
-                                            ">
-
-                                            <TriangleAlert :size="18" class="text-text-muted" />
-
-                                            <span class="
-                                                    text-sm
-                                                    font-medium
-                                                    text-text-primary
-                                                ">
-                                                Picto danger TGBT
-                                            </span>
-
-                                        </div>
-
-
-                                        <input v-model="form.picto_danger_tgbt" type="checkbox" class="
-                                                w-5
-                                                h-5
-                                                accent-status-success
-                                                cursor-pointer
-                                            " />
-
-                                    </label>
-
-
-                                    <label class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            gap-4
-                                            p-4
-                                            rounded-xl
-                                            border
-                                            border-border
-                                            cursor-pointer
-                                            transition
-                                            hover:border-accent-medium
-                                            hover:bg-accent-medium/5
-                                        ">
-
-                                        <div class="
-                                                flex
-                                                items-center
-                                                gap-3
-                                            ">
-
-                                            <PanelsTopLeft :size="18" class="text-text-muted" />
-
-                                            <span class="
-                                                    text-sm
-                                                    font-medium
-                                                    text-text-primary
-                                                ">
-                                                Panneau EVENT
-                                            </span>
-
-                                        </div>
-
-
-                                        <input v-model="form.panneau_event" type="checkbox" class="
-                                                w-5
-                                                h-5
-                                                accent-status-success
-                                                cursor-pointer
-                                            " />
-
-                                    </label>
-
-
-                                    <label class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            gap-4
-                                            p-4
-                                            rounded-xl
-                                            border
-                                            border-border
-                                            cursor-pointer
-                                            transition
-                                            hover:border-accent-medium
-                                            hover:bg-accent-medium/5
-                                        ">
-
-                                        <div class="
-                                                flex
-                                                items-center
-                                                gap-3
-                                            ">
-
-                                            <BookOpen :size="18" class="text-text-muted" />
-
-                                            <span class="
-                                                    text-sm
-                                                    font-medium
-                                                    text-text-primary
-                                                ">
-                                                Livret / fiche réflexe
-                                            </span>
-
-                                        </div>
-
-
-                                        <input v-model="form.livret_fiche_reflexe" type="checkbox" class="
-                                                w-5
-                                                h-5
-                                                accent-status-success
-                                                cursor-pointer
-                                            " />
-
-                                    </label>
-
-
-                                    <label class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            gap-4
-                                            p-4
-                                            rounded-xl
-                                            border
-                                            border-border
-                                            cursor-pointer
-                                            transition
-                                            hover:border-accent-medium
-                                            hover:bg-accent-medium/5
-                                        ">
-
-                                        <div class="
-                                                flex
-                                                items-center
-                                                gap-3
-                                            ">
-
-                                            <ShieldAlert :size="18" class="text-text-muted" />
-
-                                            <span class="
-                                                    text-sm
-                                                    font-medium
-                                                    text-text-primary
-                                                ">
-                                                Politique HSSE
-                                            </span>
-
-                                        </div>
-
-
-                                        <input v-model="form.politique" type="checkbox" class="
-                                                w-5
-                                                h-5
-                                                accent-status-success
-                                                cursor-pointer
-                                            " />
-
-                                    </label>
-
-                                </div>
-
-                            </section>
-
-                        </div>
-
-
-                        <!-- ================================================= -->
-                        <!-- ACTIONS -->
-                        <!-- ================================================= -->
-
-                        <div class="
-                                flex
-                                flex-col-reverse
-                                sm:flex-row
-                                sm:justify-end
-                                gap-3
-                                px-6
-                                py-5
-                                border-t
-                                border-border
-                                bg-surface-alt
-                            ">
-
-                            <Button variant="outline" :left-icon="Trash2" :disabled="loading" @click="cancel" type="button">
-                                Annuler
-                            </Button>
-
-
-                            <Button :left-icon="CheckCircle" :disabled="disabled" :loading="loading" type="submit" >
-                                Enregistrer
-                            </Button>
-
-                        </div>
-
-                    </div>
-
-                </form>
-
-
-                <!-- ==================================================== -->
-                <!-- PREVIEW -->
-                <!-- ==================================================== -->
-
-                <aside class="
-                        col-span-4
-                        sticky
-                        top-6
-                    ">
-
-                    <div class="
-                            bg-white
-                            border
-                            border-slate-200
-                            rounded-2xl
-                            shadow-sm
-                            overflow-hidden
-                        ">
-
-                        <!-- PREVIEW HEADER -->
-
-                        <div class="
-                                px-5
-                                py-4
-                                bg-primary
-                                text-white
-                            ">
-
-                            <div class="
-                                    flex
-                                    items-center
-                                    gap-3
-                                ">
-
-                                <div class="
-                                        w-9
-                                        h-9
-                                        rounded-lg
-                                        bg-white/10
-                                        flex
-                                        items-center
-                                        justify-center
-                                    ">
-
-                                    <ClipboardList :size="18" />
-
-                                </div>
-
-
-                                <div>
-
-                                    <h3 class="
-                                            font-semibold
-                                            text-sm
-                                            text-white
-                                        ">
-                                        Aperçu du relevé
-                                    </h3>
-
-                                    <p class="
-                                            text-xs
-                                            text-white/70
-                                            mt-0.5
-                                        ">
-                                        Résumé en temps réel
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- PREVIEW BODY -->
-
-                        <div class="p-5 space-y-5">
-
-
-                            <!-- SITE -->
-
-                            <div>
-
-                                <p class="
-                                        text-[11px]
-                                        uppercase
-                                        tracking-wide
-                                        text-text-muted
-                                        font-medium
-                                    ">
-                                    Site
-                                </p>
-
-                                <div class="
-                                        mt-2
-                                        flex
-                                        items-center
-                                        gap-3
-                                    ">
-
-                                    <div class="
-                                            w-9
-                                            h-9
-                                            rounded-lg
-                                            bg-accent-dark/10
-                                            flex
-                                            items-center
-                                            justify-center
-                                            text-accent-dark
-                                        ">
-
-                                        <Signpost :size="17" />
-
-                                    </div>
-
 
                                     <div>
-
-                                        <p class="
-                                                text-sm
-                                                font-semibold
-                                                text-text-primary
-                                            ">
-                                            {{ form.site_name || "Aucun site sélectionné" }}
-                                        </p>
-
-                                        <p class="
-                                                text-xs
-                                                text-text-muted
-                                            ">
-                                            {{ formattedDate }}
-                                        </p>
-
+                                        <input
+                                            v-model="item.comment"
+                                            type="text"
+                                            placeholder="Commentaire ou observation spécifique (optionnel)..."
+                                            class="w-full px-2.5 py-1 text-[11px] rounded-lg border border-dashed border-gray-200 text-gray-600 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-primary"
+                                        />
                                     </div>
-
                                 </div>
-
                             </div>
-
-
-                            <!-- SEPARATOR -->
-
-                            <div class="border-t border-border"></div>
-
-
-                            <!-- STATISTICS -->
-
-                            <div class="
-                                    grid
-                                    grid-cols-2
-                                    gap-3
-                                ">
-
-                                <!-- TOTAL -->
-
-                                <div class="
-                                        rounded-xl
-                                        bg-status-success/5
-                                        border
-                                        border-status-success/15
-                                        p-4
-                                    ">
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                        ">
-
-                                        <span class="
-                                                text-xs
-                                                text-text-muted
-                                            ">
-                                            Équipements
-                                        </span>
-
-                                        <Package :size="16" class="text-status-success" />
-
-                                    </div>
-
-
-                                    <p class="
-                                            mt-2
-                                            text-2xl
-                                            font-bold
-                                            text-status-success
-                                        ">
-                                        {{ totalEquipment }}
-                                    </p>
-
-                                </div>
-
-
-                                <!-- CONTROLES -->
-
-                                <div class="
-                                        rounded-xl
-                                        bg-accent-dark/5
-                                        border
-                                        border-accent-dark/10
-                                        p-4
-                                    ">
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                        ">
-
-                                        <span class="
-                                                text-xs
-                                                text-text-muted
-                                            ">
-                                            Contrôles
-                                        </span>
-
-                                        <ShieldCheck :size="16" class="text-accent-dark" />
-
-                                    </div>
-
-
-                                    <p class="
-                                            mt-2
-                                            text-2xl
-                                            font-bold
-                                            text-accent-dark
-                                        ">
-                                        {{ validatedControls }}/{{ totalControls }}
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- PROGRESS -->
-
-                            <div>
-
-                                <div class="
-                                        flex
-                                        items-center
-                                        justify-between
-                                        mb-2
-                                    ">
-
-                                    <span class="
-                                            text-xs
-                                            font-medium
-                                            text-text-secondary
-                                        ">
-                                        Contrôles validés
-                                    </span>
-
-                                    <span class="
-                                            text-xs
-                                            font-semibold
-                                            text-status-success
-                                        ">
-                                        {{ controlProgress }}%
-                                    </span>
-
-                                </div>
-
-
-                                <div class="
-                                        h-2
-                                        bg-border
-                                        rounded-full
-                                        overflow-hidden
-                                    ">
-
-                                    <div class="
-                                            h-full
-                                            bg-status-success
-                                            rounded-full
-                                            transition-all
-                                            duration-300
-                                        " :style="{
-                                            width: `${controlProgress}%`
-                                        }"></div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- SEPARATOR -->
-
-                            <div class="border-t border-border"></div>
-
-
-                            <!-- RESUME -->
-
-                            <div>
-
-                                <p class="
-                                        text-xs
-                                        font-semibold
-                                        text-accent-dark
-                                        mb-3
-                                    ">
-                                    État des contrôles
-                                </p>
-
-
-                                <div class="space-y-2">
-
-
-                                    <!-- TGBT -->
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            text-xs
-                                        ">
-
-                                        <span class="text-text-secondary">
-                                            Picto danger TGBT
-                                        </span>
-
-                                        <span v-if="form.picto_danger_tgbt" class="text-status-success font-semibold">
-                                            ✓ Validé
-                                        </span>
-
-                                        <span v-else class="text-text-muted">
-                                            Non vérifié
-                                        </span>
-
-                                    </div>
-
-
-                                    <!-- EVENT -->
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            text-xs
-                                        ">
-
-                                        <span class="text-text-secondary">
-                                            Panneau EVENT
-                                        </span>
-
-                                        <span v-if="form.panneau_event" class="text-status-success font-semibold">
-                                            ✓ Validé
-                                        </span>
-
-                                        <span v-else class="text-text-muted">
-                                            Non vérifié
-                                        </span>
-
-                                    </div>
-
-
-                                    <!-- LIVRET -->
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            text-xs
-                                        ">
-
-                                        <span class="text-text-secondary">
-                                            Livret / fiche réflexe
-                                        </span>
-
-                                        <span v-if="form.livret_fiche_reflexe"
-                                            class="text-status-success font-semibold">
-                                            ✓ Validé
-                                        </span>
-
-                                        <span v-else class="text-text-muted">
-                                            Non vérifié
-                                        </span>
-
-                                    </div>
-
-
-                                    <!-- POLITIQUE -->
-
-                                    <div class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            text-xs
-                                        ">
-
-                                        <span class="text-text-secondary">
-                                            Politique HSSE
-                                        </span>
-
-                                        <span v-if="form.politique" class="text-status-success font-semibold">
-                                            ✓ Validé
-                                        </span>
-
-                                        <span v-else class="text-text-muted">
-                                            Non vérifié
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- INFORMATION -->
-
-                            <div class="
-                                    flex
-                                    gap-3
-                                    p-3
-                                    rounded-xl
-                                    bg-accent-light/10
-                                    border
-                                    border-accent-light/20
-                                ">
-
-                                <Info :size="16" class="
-                                        shrink-0
-                                        text-accent-dark
-                                        mt-0.5
-                                    " />
-
-                                <p class="
-                                        text-[11px]
-                                        leading-relaxed
-                                        text-text-secondary
-                                    ">
-                                    Les informations affichées ici sont
-                                    mises à jour automatiquement pendant
-                                    la saisie du relevé.
-                                </p>
-
-                            </div>
-
                         </div>
 
                     </div>
+                </div>
 
+                <!-- ==================================================== -->
+                <!-- APERÇU ET ACTIONS (COLONNE DROITE) -->
+                <!-- ==================================================== -->
+                <aside class="xl:col-span-4 sticky top-6 space-y-4">
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Synthèse en direct</p>
+                                <h3 class="font-bold text-gray-900 text-sm">Aperçu du contrôle</h3>
+                            </div>
+                            <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                                <ClipboardList :size="16" />
+                            </span>
+                        </div>
+
+                        <!-- INFOS CLEFS -->
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Site sélectionné :</span>
+                                <span class="font-bold text-gray-900 text-right truncate max-w-[170px]">
+                                    {{ form.site_name || 'Aucun site' }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Date du relevé :</span>
+                                <span class="font-mono text-gray-800">{{ form.date || '-' }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-gray-500">Total équipements :</span>
+                                <span class="font-bold text-gray-900">{{ items.length }}</span>
+                            </div>
+                        </div>
+
+                        <!-- INDICATEURS DE CONFORMITÉ -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-gray-600">Taux de conformité</span>
+                                <span class="text-base font-black" :class="conformityRate >= 90 ? 'text-emerald-700' : 'text-red-700'">
+                                    {{ conformityRate }}%
+                                </span>
+                            </div>
+
+                            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                <div
+                                    class="h-full rounded-full transition-all duration-300"
+                                    :class="conformityRate >= 90 ? 'bg-emerald-500' : (conformityRate >= 70 ? 'bg-amber-500' : 'bg-red-500')"
+                                    :style="{ width: `${conformityRate}%` }"
+                                ></div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-center text-xs pt-1">
+                                <div class="bg-white p-2 rounded-lg border border-gray-100">
+                                    <span class="text-[10px] text-gray-400 block">Conformes</span>
+                                    <span class="font-bold text-emerald-600">{{ compliantCount }}</span>
+                                </div>
+                                <div class="bg-white p-2 rounded-lg border border-gray-100">
+                                    <span class="text-[10px] text-gray-400 block">Anomalies</span>
+                                    <span class="font-bold text-red-600">{{ nonCompliantCount }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STATUT ESTIMÉ -->
+                        <div class="flex items-center justify-between text-xs py-1">
+                            <span class="text-gray-500">Statut estimé :</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold" :class="statusBadgeClass">
+                                {{ statusText }}
+                            </span>
+                        </div>
+
+                        <!-- ACTIONS -->
+                        <div class="space-y-2 pt-2 border-t border-gray-100">
+                            <button
+                                type="button"
+                                @click="submit"
+                                :disabled="loading || !form.site_name"
+                                class="w-full py-2.5 px-4 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <Loader v-if="loading" :size="15" class="animate-spin" />
+                                <Save v-else :size="15" />
+                                <span>{{ loading ? 'Mise à jour en cours...' : 'Enregistrer les modifications' }}</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                @click="router.push({ name: 'EQUIPMENT_MONITORING' })"
+                                class="w-full py-2 px-4 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition cursor-pointer"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
                 </aside>
 
             </div>
-
         </div>
-
     </div>
-
 </template>
+
 <script setup lang="ts">
+import { computed, onMounted, reactive, ref } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import {
+    ClipboardList,
+    Plus,
+    Trash2,
+    Save,
+    Edit,
+    Package,
+    Loader,
+} from "@lucide/vue"
+import Header from "../../../components/shared/Header.vue"
+import type { SiteNameType } from "../../../@types/SiteName..type.ts"
+import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service.ts"
+import { toast } from "vue3-toastify"
 
-    import { computed, onMounted, reactive, ref, watch } from "vue"
-    import { useRoute, useRouter } from "vue-router"
+const route = useRoute()
+const router = useRouter()
+const equipments = useEquipmentMonitoringService()
+const monitoringId = computed(() => route.params.id as string)
 
-    import {
-        BookOpen,
-        CheckCircle,
-        ClipboardList,
-        Info,
-        Package,
-        PanelsTopLeft,
-        ShieldAlert,
-        ShieldCheck,
-        Signpost,
-        Trash2,
-        TriangleAlert,
-    } from "@lucide/vue"
+const loadingInitial = ref(true)
+const loading = ref(false)
+const sites = ref<SiteNameType[]>([])
+const errors = ref<{ site_name?: string[]; date?: string[] } | null>(null)
 
-    import Header from "../../../components/shared/Header.vue"
-    import Input from "../../../components/ui/Input.vue"
-    import Button from "../../../components/ui/Button.vue"
+interface DynamicItem {
+    id?: number
+    name: string
+    type: string
+    value: string | number
+    conformity: boolean
+    location?: string
+    comment?: string
+}
 
-    import type { SiteNameType } from "../../../@types/SiteName..type.ts"
-    import type { EquipmentMonitoringFormType } from "../../../@types/EquipmentMonitoring.type"
-    import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service.ts"
-    import { useI18n } from "vue-i18n"
-    import { toast } from "vue3-toastify"
+const form = reactive({
+    site_name: "",
+    date: "",
+    observations: "",
+})
 
+const items = ref<DynamicItem[]>([])
 
-    const router = useRouter()
-
-    /*
-    |--------------------------------------------------------------------------
-    | STATE
-    |--------------------------------------------------------------------------
-    */
-    const { t } = useI18n()
-    const loading = ref(false)
-    const disabled = ref(true)
-    const sites = ref<SiteNameType[]>([])
-    const equipments = useEquipmentMonitoringService()
-    const form = reactive<EquipmentMonitoringFormType>({
-
-        site_name: null,
-
-
-
-        date: new Date()
-            .toISOString()
-            .split("T")[0],
-
-        // Extincteurs
-        p50: 0,
-        p9: 0,
-        p6: 0,
-        co2: 0,
-
-        // Matériel
-        bas_met: 0,
-        bas_plast: 0,
-        bac_de_retention: 0,
-        pelles: 0,
-        poubelles_120l: 0,
-        poubelles_240l: 0,
-        caf: 0,
-        detecteur_de_fumee: 0,
-        plots: 0,
-        chainettes: 0,
-
-        // Signalisation
-        picto_ext: 0,
-        picto_caf: 0,
-        picto_defense_de_fumer: 0,
-        point_de_rasso: 0,
-        contact_d_urgence: 0,
-        canne_d_enfutage: 0,
-        panneau_depotage_en_cours: 0,
-
-        // Contrôles
-        picto_danger_tgbt: false,
-        panneau_event: false,
-        livret_fiche_reflexe: false,
-        politique: false
-
+function addNewItem() {
+    items.value.push({
+        name: "",
+        type: "materiel",
+        value: 1,
+        conformity: true,
+        location: "",
+        comment: "",
     })
-    const errors = ref<Record<keyof EquipmentMonitoringFormType, string[] | undefined> | undefined>()
-    const route=useRoute()
-    /*
-    |--------------------------------------------------------------------------
-    | TOTAL DES ÉQUIPEMENTS
-    |--------------------------------------------------------------------------
-    */
-    const totalEquipment = computed(() => {
-        return Object.values(form).filter(item => typeof item == 'number').reduce((sum, value) => sum + value, 0)
-    })
+}
 
-    /*
-    |--------------------------------------------------------------------------
-    | CONTRÔLES
-    |--------------------------------------------------------------------------
-    */
+function removeItem(index: number) {
+    items.value.splice(index, 1)
+}
 
-    const totalControls = 4
+const compliantCount = computed(() => items.value.filter(it => it.conformity).length)
+const nonCompliantCount = computed(() => items.value.filter(it => !it.conformity).length)
 
-    const validatedControls = computed(() => {
+const conformityRate = computed(() => {
+    if (items.value.length === 0) return 100
+    const rate = (compliantCount.value / items.value.length) * 100
+    return Math.round(rate * 10) / 10
+})
 
-        return [
-            form.picto_danger_tgbt,
-            form.panneau_event,
-            form.livret_fiche_reflexe,
-            form.politique
-        ].filter(Boolean).length
+const estimatedStatus = computed(() => {
+    if (conformityRate.value >= 90) return "COMPLETED"
+    if (conformityRate.value >= 70) return "WARNING"
+    return "NON_CONFORME"
+})
 
-    })
+const statusText = computed(() => {
+    if (conformityRate.value >= 90) return "🟢 Conforme"
+    if (conformityRate.value >= 70) return "🟡 Contrôle requis"
+    return "🔴 Anomalie"
+})
 
+const statusBadgeClass = computed(() => {
+    if (conformityRate.value >= 90) return "bg-emerald-50 text-emerald-800 border border-emerald-200"
+    if (conformityRate.value >= 70) return "bg-amber-50 text-amber-800 border border-amber-200"
+    return "bg-red-50 text-red-800 border border-red-200"
+})
 
-    const controlProgress = computed(() => {
+async function fetchDetails() {
+    loadingInitial.value = true
+    try {
+        const res = await equipments.show(monitoringId.value)
+        const d = res?.data as any
+        if (d) {
+            form.site_name = typeof d.site_name === "object" ? d.site_name?.name : d.site_name
+            form.date = d.date || ""
+            form.observations = d.observations || ""
 
-        return Math.round(
-            (validatedControls.value / totalControls) * 100
-        )
+            if (d.items && Array.isArray(d.items)) {
+                items.value = d.items.map((it: any) => ({
+                    id: it.id,
+                    name: it.name,
+                    type: it.type || "divers",
+                    value: it.value,
+                    conformity: Boolean(it.conformity),
+                    location: it.location || "",
+                    comment: it.comment || "",
+                }))
+            }
+        }
+    } catch (err) {
+        console.error("Erreur chargement suivi:", err)
+        toast.error("Impossible de charger les données du suivi.")
+    } finally {
+        loadingInitial.value = false
+    }
+}
 
-    })
-    function formValidation() {
-        disabled.value = Object.values(form).some(item => item == null)
+async function submit() {
+    errors.value = null
+    if (!form.site_name) {
+        errors.value = { site_name: ["Le site est requis"] }
+        toast.error("Veuillez renseigner un site.")
+        return
     }
 
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DATE FORMAT
-    |--------------------------------------------------------------------------
-    */
-
-    const formattedDate = computed(() => {
-
-        if (!form.date) {
-            return "-"
+    loading.value = true
+    try {
+        const payload: any = {
+            site_name: form.site_name,
+            date: form.date,
+            observations: form.observations || null,
+            status: estimatedStatus.value,
+            conformity_rate: conformityRate.value,
+            items: items.value.map(it => ({
+                id: it.id,
+                name: it.name || "Matériel non spécifié",
+                type: it.type || "divers",
+                conformity: it.conformity,
+                value_type: typeof it.value === "number" ? "number" : "text",
+                value: String(it.value ?? ""),
+                location: it.location || null,
+                comment: it.comment || null,
+            })),
         }
 
-        const date = new Date(form.date)
+        await equipments.update(monitoringId.value, payload)
+        toast.success("Suivi du matériel mis à jour avec succès !")
+        router.push({ name: "EQUIPMENT_MONITORING_DETAILS", params: { id: monitoringId.value } })
+    } catch (err: any) {
+        console.error("Erreur mise à jour suivi:", err)
+        if (err?.response?.status === 422 && err.response.data.errors) {
+            errors.value = err.response.data.errors
+            toast.error("Veuillez vérifier les informations saisies.")
+        } else {
+            toast.error("Une erreur est survenue lors de la mise à jour.")
+        }
+    } finally {
+        loading.value = false
+    }
+}
 
-        return date.toLocaleDateString("fr-FR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
+function fetchSiteNames() {
+    equipments.getSiteNames()
+        .then(res => {
+            sites.value = res.data
         })
+        .catch(err => {
+            console.error("Erreur chargement sites:", err)
+        })
+}
 
-    })
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SUBMIT
-    |--------------------------------------------------------------------------
-    */
-
-    const submit = async () => {
-        errors.value = undefined
-        loading.value = true
-        disabled.value = true
-        console.table(form)
-        equipments.update(route.params.id as string,form)
-            .then(res => {
-                toast.success(t('inspections.equipment-monitoring.add.notifications.success'))
-                setTimeout(() => {
-                    router.push({
-                        name: "EQUIPMENT_MONITORING"
-                    })
-                }, 1000)
-            })
-            .catch(err => {
-                // console.error(err)
-                if (err?.response.status == "422") {
-                    console.error(err?.response.data.errors)
-                    errors.value = Object.fromEntries(Object.entries(err?.response.data.errors as Record<keyof EquipmentMonitoringFormType, string[]>).map(
-                        ([key, value]) => [
-                            key,
-                            value.map(item => t('inspections.equipment-monitoring.add.notifications.errors.' + item)
-                            )
-                        ])
-                    ) as Record<keyof EquipmentMonitoringFormType, string[]>
-                }
-            })
-            .finally(() => {
-                loading.value = false
-                disabled.value = false
-            })
-
-    }
-
-   
-
-    /*
-    |--------------------------------------------------------------------------
-    | CANCEL
-    |--------------------------------------------------------------------------
-    */
-
-    const cancel = () => {
-        router.back()
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | FETCHDATA
-    |--------------------------------------------------------------------------
-    */
-
-    function fetchSiteNames() {
-        equipments.getSiteNames()
-            .then(res => {
-                console.log(res.data)
-                sites.value = res.data
-            })
-            .catch(err => {
-                console.error(err)
-            })
-    }
-    function fetchData() {
-        const id = route.params.id
-        equipments.show(id as string)
-            .then(res => {
-               console.log(res.data)
-                Object.assign(form,res.data)
-            })
-            .catch(err => {
-                console.error(err)
-            })
-    }
-    /*
-    |--------------------------------------------------------------------------
-    | INIT
-    |--------------------------------------------------------------------------
-    */
-    watch(form, () => {
-        formValidation()
-    })
-
-    onMounted(() => {
-        disabled.value = true
-        fetchSiteNames()
-        fetchData()
-    })
-
-
+onMounted(() => {
+    fetchSiteNames()
+    fetchDetails()
+})
 </script>

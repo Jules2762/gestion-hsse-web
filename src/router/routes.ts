@@ -19,6 +19,7 @@ import ChecklistDetailsPage from "../views/home/Iinspections/ChecklistDetailsPag
 import ChecklistNewPage from "../views/home/Iinspections/ChecklistNewPage.vue";
 import ChecklistPage from "../views/home/Iinspections/ChecklistPage.vue";
 import EquipmentMonitoring from "../views/home/Iinspections/EquipmentMonitoring.vue";
+import EquipmentMonitoringDetailsPage from "../views/home/Iinspections/EquipmentMonitoringDetailsPage.vue";
 import EquipmentMonitoringImportPage from "../views/home/Iinspections/EquipmentMonitoringImportPage.vue";
 import EquipmentMonitoringNewPage from "../views/home/Iinspections/EquipmentMonitoringNewPage.vue";
 import TemplatePage from "../views/home/Iinspections/TemplatePage.vue";
@@ -207,6 +208,11 @@ const routes = [
                         path: "/equipment-monitoring",
                         name: "EQUIPMENT_MONITORING",
                         component: EquipmentMonitoring
+                    },
+                    {
+                        path: "/equipment-monitoring/details/:id",
+                        name: "EQUIPMENT_MONITORING_DETAILS",
+                        component: EquipmentMonitoringDetailsPage
                     },
                     {
                         path: "/equipment-monitoring/new",

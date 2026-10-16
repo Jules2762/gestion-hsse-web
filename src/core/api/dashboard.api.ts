@@ -61,13 +61,21 @@ export default {
     getInspectionKPIs(params?: { year?: number | string }) {
         return api.get("/home/dashboard/inspection/kpis", { params })
     },
+    getInspectionMapData(params?: { year?: number | string }) {
+        return api.get("/home/dashboard/inspection/map", { params })
+    },
+
+    // VMC Map
+    getVmcMapData(params?: { year?: number | string }) {
+        return api.get("/home/dashboard/vmc/map", { params })
+    },
 
     // Equipment Dashboard
-    getEquipmentKPIs() {
-        return api.get("/home/dashboard/equipment/kpis")
+    getEquipmentKPIs(params?: { year?: number | string }) {
+        return api.get("/home/dashboard/equipment/kpis", { params })
     },
-    getEquipmentMapData() {
-        return api.get("/home/dashboard/equipment/map")
+    getEquipmentMapData(params?: { year?: number | string }) {
+        return api.get("/home/dashboard/equipment/map", { params })
     },
 
     // Admin Dashboard
