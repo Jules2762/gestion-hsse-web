@@ -66,6 +66,9 @@ export default {
     getEquipmentKPIs() {
         return api.get("/home/dashboard/equipment/kpis")
     },
+    getEquipmentMapData() {
+        return api.get("/home/dashboard/equipment/map")
+    },
 
     // Admin Dashboard
     getAdminKPIs() {

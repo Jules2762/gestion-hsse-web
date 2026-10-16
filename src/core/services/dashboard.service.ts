@@ -63,6 +63,9 @@ export default {
     async getEquipmentKPIs() {
         return await dashboardApi.getEquipmentKPIs()
     },
+    async getEquipmentMapData() {
+        return await dashboardApi.getEquipmentMapData()
+    },
 
     // Admin Dashboard
     async getAdminKPIs() {

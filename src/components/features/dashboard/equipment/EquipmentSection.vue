@@ -90,6 +90,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- CARTOGRAPHIE DES ÉQUIPEMENTS PAR STATION (ZONE GPS) -->
+        <EquipmentMap />
     </div>
 </template>
 
@@ -98,6 +101,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from '../Card.vue';
 import DashboardSkeleton from '../DashboardSkeleton.vue';
+import EquipmentMap from './EquipmentMap.vue';
 import { ClipboardCheck, Flame, ShieldCheck, Building2, ArrowUpRight } from '@lucide/vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
