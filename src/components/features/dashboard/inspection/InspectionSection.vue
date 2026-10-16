@@ -2,17 +2,12 @@
     <div class="flex flex-col gap-y-4 p-4">
         <!-- GRAPH EVOLUTION DES INSPECTIONS -->
         <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-xs flex flex-col">
-            <div class="flex items-center justify-between mb-2">
-                <div>
-                    <h3 class="font-bold text-gray-800 text-base">Évolution des inspections</h3>
-                    <p class="text-xs text-gray-500">Comparatif des inspections programmées vs réalisées par mois</p>
-                </div>
-                <div v-if="loading" class="flex items-center text-xs text-primary gap-1">
-                    <Loader2 class="animate-spin" :size="14" />
-                    Chargement...
-                </div>
+            <div class="mb-2">
+                <h3 class="font-bold text-gray-800 text-base">Évolution des inspections</h3>
+                <p class="text-xs text-gray-500">Comparatif des inspections programmées vs réalisées par mois</p>
             </div>
-            <apexchart type="area" height="320" :options="options" :series="series"></apexchart>
+            <DashboardSkeleton v-if="loading" type="chart" :height="320" />
+            <apexchart v-else type="area" height="320" :options="options" :series="series"></apexchart>
         </div>
 
         <!-- KPI CARDS -->
@@ -22,24 +17,28 @@
                 theme="green"
                 :value="String(kpis.completed)"
                 :icon="ClipboardCheck"
+                :loading="loading"
             />
             <Card
                 title="Inspections en retard"
                 theme="blue"
                 :value="String(kpis.delayed)"
                 :icon="ClockAlert"
+                :loading="loading"
             />
             <Card
                 title="Taux de conformité moyen"
                 theme="red"
                 :value="kpis.avg_conformity + '%'"
                 :icon="ShieldCheck"
+                :loading="loading"
             />
             <Card
                 title="Non-conformités détectées"
                 theme="cyan"
                 :value="String(kpis.non_conformities)"
                 :icon="TriangleAlert"
+                :loading="loading"
             />
         </div>
 
@@ -50,7 +49,8 @@
                     <h3 class="font-bold text-gray-800 text-sm">Conformité par catégorie</h3>
                     <p class="text-xs text-gray-500">Pourcentage de critères conformes relevés lors des contrôles</p>
                 </div>
-                <apexchart type="bar" height="280" :options="optionsConf" :series="seriesConf"></apexchart>
+                <DashboardSkeleton v-if="loading" type="chart" :height="280" />
+                <apexchart v-else type="bar" height="280" :options="optionsConf" :series="seriesConf"></apexchart>
             </div>
             <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5 shadow-xs flex flex-col justify-between">
                 <div>
@@ -67,7 +67,8 @@
 import { onMounted, ref } from 'vue';
 import Map from '../map/Map.vue';
 import Card from '../Card.vue';
-import { ClipboardCheck, ClockAlert, ShieldCheck, TriangleAlert, Loader2 } from '@lucide/vue';
+import DashboardSkeleton from '../DashboardSkeleton.vue';
+import { ClipboardCheck, ClockAlert, ShieldCheck, TriangleAlert } from '@lucide/vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
 const loading = ref(true);

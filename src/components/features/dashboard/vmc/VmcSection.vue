@@ -26,96 +26,107 @@
 
         <!-- PAR DIRECTION : GRAPHIQUE ET TABLEAU -->
         <ChartCard title="Taux de réalisation pour chaque Direction" class="xl:col-span-6 flex flex-col">
-          <apexchart type="bar" height="240" :options="directions_chart_options" :series="directions_chart_series" class="mb-4" />
+          <template v-if="loading">
+            <DashboardSkeleton type="chart" :height="240" class="mb-4" />
+            <DashboardSkeleton type="table" :rows="4" />
+          </template>
+          <template v-else>
+            <apexchart type="bar" height="240" :options="directions_chart_options" :series="directions_chart_series" class="mb-4" />
 
-          <div class="overflow-x-auto flex-1">
-            <table class="min-w-full text-sm">
-              <thead>
-                <tr class="text-left text-gray-500 border-b border-gray-200">
-                  <th class="py-2 pr-3 font-medium">Direction</th>
-                  <th class="py-2 pr-3 font-medium text-center">Réalisées</th>
-                  <th class="py-2 pr-3 font-medium text-center">Total</th>
-                  <th class="py-2 font-medium w-4/12">Taux</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-if="directions_data.length">
-                  <tr v-for="dir in directions_data" :key="dir.direction"
-                    class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
-                    <td class="py-2.5 pr-3 font-medium text-gray-800">{{ dir.direction }}</td>
-                    <td class="py-2.5 pr-3 font-semibold text-center text-green-600">{{ dir.completed }}</td>
-                    <td class="py-2.5 pr-3 font-medium text-center text-gray-700">{{ dir.total }}</td>
-                    <td class="py-2.5">
-                      <div class="flex items-center gap-2">
-                        <div class="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden">
-                          <div class="h-full rounded-full bg-blue-500" :style="{ width: `${dir.rate}%` }" />
+            <div class="overflow-x-auto flex-1">
+              <table class="min-w-full text-sm">
+                <thead>
+                  <tr class="text-left text-gray-500 border-b border-gray-200">
+                    <th class="py-2 pr-3 font-medium">Direction</th>
+                    <th class="py-2 pr-3 font-medium text-center">Réalisées</th>
+                    <th class="py-2 pr-3 font-medium text-center">Total</th>
+                    <th class="py-2 font-medium w-4/12">Taux</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-if="directions_data.length">
+                    <tr v-for="dir in directions_data" :key="dir.direction"
+                      class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
+                      <td class="py-2.5 pr-3 font-medium text-gray-800">{{ dir.direction }}</td>
+                      <td class="py-2.5 pr-3 font-semibold text-center text-green-600">{{ dir.completed }}</td>
+                      <td class="py-2.5 pr-3 font-medium text-center text-gray-700">{{ dir.total }}</td>
+                      <td class="py-2.5">
+                        <div class="flex items-center gap-2">
+                          <div class="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden">
+                            <div class="h-full rounded-full bg-blue-500" :style="{ width: `${dir.rate}%` }" />
+                          </div>
+                          <span class="w-11 text-right tabular-nums text-xs font-semibold text-gray-700">{{ dir.rate }}%</span>
                         </div>
-                        <span class="w-11 text-right tabular-nums text-xs font-semibold text-gray-700">{{ dir.rate }}%</span>
-                      </div>
+                      </td>
+                    </tr>
+                  </template>
+                  <tr v-else>
+                    <td colspan="4" class="py-8 text-center text-gray-400">
+                      Aucune donnée de direction disponible.
                     </td>
                   </tr>
-                </template>
-                <tr v-else>
-                  <td colspan="4" class="py-8 text-center text-gray-400">
-                    Aucune donnée de direction disponible.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+          </template>
         </ChartCard>
 
         <!-- PAR PERSONNE : TABLEAU DÉTAILLÉ -->
         <ChartCard title="Nombre de VMC réalisé pour chaque personne et taux de réalisation" class="xl:col-span-6 flex flex-col">
-          <div class="mb-3">
-            <input
-              type="text"
-              v-model="personSearch"
-              placeholder="Filtrer une personne ou fonction..."
-              class="w-full text-xs px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-primary"
-            />
-          </div>
+          <template v-if="loading">
+            <DashboardSkeleton type="table" :rows="6" />
+          </template>
+          <template v-else>
+            <div class="mb-3">
+              <input
+                type="text"
+                v-model="personSearch"
+                placeholder="Filtrer une personne ou fonction..."
+                class="w-full text-xs px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-primary"
+              />
+            </div>
 
-          <div class="overflow-x-auto flex-1 max-h-[360px] overflow-y-auto">
-            <table class="min-w-full text-sm">
-              <thead class="sticky top-0 bg-white">
-                <tr class="text-left text-gray-500 border-b border-gray-200">
-                  <th class="py-2 pr-3 font-medium">Personne</th>
-                  <th class="py-2 pr-3 font-medium">Direction</th>
-                  <th class="py-2 pr-3 font-medium text-center">Réalisées</th>
-                  <th class="py-2 pr-3 font-medium text-center">Prévues</th>
-                  <th class="py-2 font-medium w-3/12">Taux</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-if="filteredPeople.length">
-                  <tr v-for="person in filteredPeople" :key="person.id"
-                    class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
-                    <td class="py-2.5 pr-3">
-                      <p class="font-medium text-gray-800 leading-tight">{{ person.name }}</p>
-                      <p class="text-xs text-gray-400 leading-tight">{{ person.fonction }}</p>
-                    </td>
-                    <td class="py-2.5 pr-3 text-xs text-gray-600 font-medium">{{ person.direction }}</td>
-                    <td class="py-2.5 pr-3 font-semibold text-center text-green-600">{{ person.completed }}</td>
-                    <td class="py-2.5 pr-3 font-medium text-center text-gray-700">{{ person.total }}</td>
-                    <td class="py-2.5">
-                      <div class="flex items-center gap-2">
-                        <div class="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden">
-                          <div class="h-full rounded-full bg-emerald-500" :style="{ width: `${person.rate}%` }" />
+            <div class="overflow-x-auto flex-1 max-h-[360px] overflow-y-auto">
+              <table class="min-w-full text-sm">
+                <thead class="sticky top-0 bg-white">
+                  <tr class="text-left text-gray-500 border-b border-gray-200">
+                    <th class="py-2 pr-3 font-medium">Personne</th>
+                    <th class="py-2 pr-3 font-medium">Direction</th>
+                    <th class="py-2 pr-3 font-medium text-center">Réalisées</th>
+                    <th class="py-2 pr-3 font-medium text-center">Prévues</th>
+                    <th class="py-2 font-medium w-3/12">Taux</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-if="filteredPeople.length">
+                    <tr v-for="person in filteredPeople" :key="person.id"
+                      class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
+                      <td class="py-2.5 pr-3">
+                        <p class="font-medium text-gray-800 leading-tight">{{ person.name }}</p>
+                        <p class="text-xs text-gray-400 leading-tight">{{ person.fonction }}</p>
+                      </td>
+                      <td class="py-2.5 pr-3 text-xs text-gray-600 font-medium">{{ person.direction }}</td>
+                      <td class="py-2.5 pr-3 font-semibold text-center text-green-600">{{ person.completed }}</td>
+                      <td class="py-2.5 pr-3 font-medium text-center text-gray-700">{{ person.total }}</td>
+                      <td class="py-2.5">
+                        <div class="flex items-center gap-2">
+                          <div class="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden">
+                            <div class="h-full rounded-full bg-emerald-500" :style="{ width: `${person.rate}%` }" />
+                          </div>
+                          <span class="w-11 text-right tabular-nums text-xs font-semibold text-gray-700">{{ person.rate }}%</span>
                         </div>
-                        <span class="w-11 text-right tabular-nums text-xs font-semibold text-gray-700">{{ person.rate }}%</span>
-                      </div>
+                      </td>
+                    </tr>
+                  </template>
+                  <tr v-else>
+                    <td colspan="5" class="py-8 text-center text-gray-400">
+                      Aucune personne trouvée.
                     </td>
                   </tr>
-                </template>
-                <tr v-else>
-                  <td colspan="5" class="py-8 text-center text-gray-400">
-                    Aucune personne trouvée.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+          </template>
         </ChartCard>
 
       </div>
@@ -140,12 +151,14 @@
               </option>
             </select>
           </div>
-          <apexchart type="bar" height="300" :options="monthly_options" :series="monthly_series" />
+          <DashboardSkeleton v-if="loading" type="chart" :height="300" />
+          <apexchart v-else type="bar" height="300" :options="monthly_options" :series="monthly_series" />
         </ChartCard>
 
         <!-- SITES OPÉRATIONNELS -->
         <ChartCard title="Visites par site opérationnel" class="xl:col-span-5">
-          <div class="overflow-x-auto max-h-[340px] overflow-y-auto">
+          <DashboardSkeleton v-if="loading" type="table" :rows="6" />
+          <div v-else class="overflow-x-auto max-h-[340px] overflow-y-auto">
             <table class="min-w-full text-sm">
               <thead class="sticky top-0 bg-white">
                 <tr class="text-left text-gray-500 border-b border-gray-200">
@@ -198,6 +211,7 @@
   } from '../../../../@types/Dashboard.type.ts';
   import dashboardService from '../../../../core/services/dashboard.service.ts';
   import VmcKPICards from './VmcKPICards.vue';
+  import DashboardSkeleton from '../DashboardSkeleton.vue';
 
   /* Composant conteneur de carte */
   const ChartCard = defineComponent({

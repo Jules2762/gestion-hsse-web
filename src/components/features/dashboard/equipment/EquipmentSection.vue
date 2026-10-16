@@ -7,24 +7,28 @@
                 theme="green"
                 :value="String(kpis.total_records)"
                 :icon="ClipboardCheck"
+                :loading="loading"
             />
             <Card
                 title="Total extincteurs"
                 theme="red"
                 :value="String(kpis.total_extincteurs)"
                 :icon="Flame"
+                :loading="loading"
             />
             <Card
                 title="Bacs de rétention"
                 theme="cyan"
                 :value="String(kpis.total_bacs)"
                 :icon="ShieldCheck"
+                :loading="loading"
             />
             <Card
                 title="Sites contrôlés"
                 theme="orange"
                 :value="String(kpis.unique_sites)"
                 :icon="Building2"
+                :loading="loading"
             />
         </div>
 
@@ -32,17 +36,12 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <!-- GRAPHIQUE RÉPARTITION EXTINCTEURS -->
             <div class="lg:col-span-7 bg-white rounded-xl border border-gray-200 p-5 shadow-xs">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Inventaire du parc extincteurs</h3>
-                        <p class="text-xs text-gray-500">Répartition par calibre et type de protection incendie</p>
-                    </div>
-                    <div v-if="loading" class="flex items-center text-xs text-primary gap-1">
-                        <Loader2 class="animate-spin" :size="14" />
-                        Chargement...
-                    </div>
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-800 text-sm">Inventaire du parc extincteurs</h3>
+                    <p class="text-xs text-gray-500">Répartition par calibre et type de protection incendie</p>
                 </div>
-                <apexchart type="bar" height="280" :options="chartOptions" :series="chartSeries"></apexchart>
+                <DashboardSkeleton v-if="loading" type="chart" :height="280" />
+                <apexchart v-else type="bar" height="280" :options="chartOptions" :series="chartSeries"></apexchart>
             </div>
 
             <!-- TABLEAU RÉCAPITULATIF MATÉRIELS -->
@@ -61,7 +60,8 @@
                         </button>
                     </div>
 
-                    <div class="space-y-2.5 text-xs">
+                    <DashboardSkeleton v-if="loading" type="table" :rows="6" />
+                    <div v-else class="space-y-2.5 text-xs">
                         <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50">
                             <span class="font-medium text-gray-700">Poudre 50 kg (P50)</span>
                             <span class="font-bold text-gray-900 bg-white px-2 py-0.5 rounded border border-gray-200">{{ details.p50 || 0 }}</span>
@@ -97,7 +97,8 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from '../Card.vue';
-import { ClipboardCheck, Flame, ShieldCheck, Building2, Loader2, ArrowUpRight } from '@lucide/vue';
+import DashboardSkeleton from '../DashboardSkeleton.vue';
+import { ClipboardCheck, Flame, ShieldCheck, Building2, ArrowUpRight } from '@lucide/vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
 const router = useRouter();

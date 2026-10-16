@@ -16,16 +16,12 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
       <ChartCard title="Personnes formées par direction">
         <apexchart v-if="direction_series_data.length" :key="`bar-${direction_series_data.map((s) => s.name).join('-')}`" type="bar" height="320" :options="direction_options" :series="direction_series" />
-        <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
-          Chargement des données...
-        </div>
+        <DashboardSkeleton v-else type="chart" :height="320" />
       </ChartCard>
 
       <ChartCard title="Répartition des personnes formées par direction">
         <apexchart v-if="direction_series_data.length" :key="pie_chart_key" type="donut" height="320" :options="pie_options" :series="pie_series" />
-        <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
-          Chargement des données...
-        </div>
+        <DashboardSkeleton v-else type="donut" :height="320" />
       </ChartCard>
     </div>
 
@@ -36,8 +32,7 @@
           <thead>
             <tr class="text-left text-gray-500 border-b border-gray-200">
               <th class="py-2 pr-4 font-medium w-fit">Direction</th>
-              
-              <th class="py-2 font-medium ">personnes formées</th>
+              <th class="py-2 font-medium">personnes formées</th>
               <th class="py-2 font-medium w-8/12">Taux de personnes formées</th>
             </tr>
           </thead>
@@ -45,11 +40,8 @@
             <template v-if="table_section_data.length">
               <tr v-for="item in table_section_data" :key="item.direction"
                 class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                  <td class="py-2.5 pr-4 font-medium text-gray-800 ">{{ item.direction }}</td>
-                  <td class="py-2.5 pr-4 font-medium text-gray-800 ">{{ item.trained_per_direction}} <span class="text-gray-400 text-xs">/ {{ item.direction_personnel_count }}</span></td>
-                  
-               
-                
+                  <td class="py-2.5 pr-4 font-medium text-gray-800">{{ item.direction }}</td>
+                  <td class="py-2.5 pr-4 font-medium text-gray-800">{{ item.trained_per_direction}} <span class="text-gray-400 text-xs">/ {{ item.direction_personnel_count }}</span></td>
                 <td class="py-2.5">
                   <div class="flex items-center gap-3">
                     <div class="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden">
@@ -60,6 +52,11 @@
                 </td>
               </tr>
             </template>
+            <tr v-else-if="loading">
+              <td colspan="3" class="py-4">
+                <DashboardSkeleton type="table" :rows="3" />
+              </td>
+            </tr>
             <tr v-else>
               <td colspan="3" class="py-8 text-center text-gray-400">
                 Aucune donnée disponible pour le moment.
@@ -79,16 +76,12 @@
         </select>
       </div>
       <apexchart v-if="data_monthly_chart.data.length" :key="`monthly-${currentYear}`" type="bar" height="320" :options="monthly_options" :series="monthly_series" />
-      <div v-else class="h-[320px] flex items-center justify-center text-gray-400 text-sm">
-        Chargement des données...
-      </div>
+      <DashboardSkeleton v-else type="chart" :height="320" />
     </ChartCard>
     <!-- Sessions : barres horizontales pour que les intitulés longs restent lisibles -->
     <ChartCard title="Nombre de personnes formées par session">
       <apexchart v-if="sessions.length" :key="`sessions-${sessions.length}`" type="bar" :height="session_height" :options="session_options" :series="session_series" />
-      <div v-else class="h-[300px] flex items-center justify-center text-gray-400 text-sm">
-        Aucune session enregistrée.
-      </div>
+      <DashboardSkeleton v-else type="chart" :height="session_height" />
     </ChartCard>
   </div>
 </template>
@@ -98,6 +91,7 @@
   import type { DashboardTrainingPlanChartDirectionType, DashboardTrainingPlanChartSessionType, DashboardTrainingPlanKPIs, DashboardTrainingPlanTableDirectionType } from '../../../../@types/Dashboard.type.ts';
   import dashboardService from '../../../../core/services/dashboard.service.ts';
   import KPICards from './KPICards.vue';
+  import DashboardSkeleton from '../DashboardSkeleton.vue';
 
   /* Carte réutilisable : un seul style pour tous les blocs */
   const ChartCard = defineComponent({

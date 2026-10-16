@@ -166,24 +166,28 @@ onBeforeUnmount(() => {
                 theme="red"
                 :value="kpis.plan_completion_rate + '%'"
                 :icon="Target"
+                :loading="loading"
             />
             <Card
                 title="Inspections réalisées"
                 theme="green"
                 :value="String(kpis.inspections_realisees)"
                 :icon="ClipboardCheck"
+                :loading="loading"
             />
             <Card
                 title="Taux de conformité global"
                 theme="orange"
                 :value="kpis.global_conformity_rate + '%'"
                 :icon="ShieldCheck"
+                :loading="loading"
             />
             <Card
                 title="Actions ouvertes"
                 theme="cyan"
                 :value="String(kpis.open_actions)"
                 :icon="ClipboardPen"
+                :loading="loading"
             />
         </div>
 
@@ -195,10 +199,6 @@ onBeforeUnmount(() => {
                     <p class="text-xs text-gray-500">Évolution mensuelle consolidée des formations, inspections, actions et non-conformités</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <div v-if="loadingPerf" class="flex items-center text-xs text-primary gap-1 mr-2">
-                        <Loader2 class="animate-spin" :size="14" />
-                        Chargement...
-                    </div>
                     <div ref="yearDropdownRef" class="relative inline-flex items-center justify-center">
                         <button
                             type="button"
@@ -237,7 +237,10 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
             </div>
-            <apexchart type="area" height="340" :options="options" :series="series"></apexchart>
+            <div v-if="!loadingPerf">
+                <apexchart type="area" height="340" :options="options" :series="series"></apexchart>
+            </div>
+            <DashboardSkeleton v-else type="chart" :height="340" />
         </div>
 
         <!-- DERNIÈRES INSPECTIONS & DERNIÈRES ACTIONS CORRECTIVES -->
@@ -259,9 +262,7 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
 
-                    <div v-if="loading" class="py-12 flex justify-center text-gray-400">
-                        <Loader2 class="animate-spin" :size="24" />
-                    </div>
+                    <DashboardSkeleton v-if="loading" type="table" :rows="4" />
 
                     <div v-else-if="latestInspections.length === 0" class="py-10 text-center text-xs text-gray-400">
                         Aucune inspection récente enregistrée
@@ -325,9 +326,7 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
 
-                    <div v-if="loading" class="py-12 flex justify-center text-gray-400">
-                        <Loader2 class="animate-spin" :size="24" />
-                    </div>
+                    <DashboardSkeleton v-if="loading" type="table" :rows="4" />
 
                     <div v-else-if="latestActions.length === 0" class="py-10 text-center text-xs text-gray-400">
                         Aucune action corrective enregistrée
