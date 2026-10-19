@@ -11,19 +11,14 @@ import DocumentSection from './sections/DocumentSection.vue'
 
 import {
   Building2,
-  FileCode,
   FolderArchive,
   Globe2,
   Mail,
-  RotateCcw,
   Search,
   ShieldAlert,
   ShieldCheck,
-  Sliders,
   Type
 } from '@lucide/vue'
-import settingService from '../../../core/services/setting.service'
-import { toast } from 'vue3-toastify'
 
 /*
 |--------------------------------------------------------------------------
@@ -82,8 +77,6 @@ const tabs: SettingTab[] = [
 
 const currentTab = ref<string>('general')
 const searchQuery = ref<string>('')
-const isResetting = ref(false)
-const showResetConfirm = ref(false)
 
 const filteredTabs = computed(() => {
   if (!searchQuery.value.trim()) return tabs
@@ -93,28 +86,6 @@ const filteredTabs = computed(() => {
     t.subtitle.toLowerCase().includes(query)
   )
 })
-
-function openSwagger() {
-  window.open('http://127.0.0.1:8000/api/documentation', '_blank')
-}
-
-function handleResetAll() {
-  isResetting.value = true
-  settingService.reset()
-    .then(() => {
-      toast.success('Tous les paramètres ont été réinitialisés aux valeurs d’usine !')
-      showResetConfirm.value = false
-      setTimeout(() => {
-        window.location.reload()
-      }, 700)
-    })
-    .catch(() => {
-      toast.error('Erreur lors de la réinitialisation des paramètres.')
-    })
-    .finally(() => {
-      isResetting.value = false
-    })
-}
 </script>
 
 <template>
@@ -122,55 +93,6 @@ function handleResetAll() {
     <Header title="Paramètres" show-search />
 
     <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-
-      <!-- ========================================================= -->
-      <!-- HERO HEADER AVEC ACTIONS GLOBALES                         -->
-      <!-- ========================================================= -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-border bg-surface p-5 sm:p-6 shadow-2xs">
-        <div class="flex items-start gap-4">
-          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0F9D58]/10 text-[#0F9D58] ring-4 ring-[#0F9D58]/5">
-            <Sliders class="h-6 w-6 stroke-[2.2]" />
-          </div>
-          <div>
-            <div class="flex items-center gap-2.5">
-              <h1 class="text-lg sm:text-xl font-bold tracking-tight text-text-primary">
-                Paramètres de la Plateforme GALANA HSSE
-              </h1>
-              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-[#0F9D58] ring-1 ring-[#0F9D58]/20">
-                <span class="h-1.5 w-1.5 rounded-full bg-[#0F9D58] animate-pulse"></span>
-                Base synchronisée
-              </span>
-            </div>
-            <p class="mt-1 text-xs text-text-secondary max-w-2xl leading-relaxed">
-              Configurez l'organisation, les protocoles de conformité HSSE, la typographie globale (taille de police), la messagerie et les politiques de sécurité.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2 sm:self-center">
-          <!-- BOUTON SWAGGER -->
-          <button
-            type="button"
-            @click="openSwagger"
-            class="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:border-slate-300"
-            title="Consulter la documentation interactive de l'API"
-          >
-            <FileCode class="h-3.5 w-3.5 text-blue-600" />
-            <span>Swagger API</span>
-          </button>
-
-          <!-- BOUTON RÉINITIALISER -->
-          <button
-            type="button"
-            @click="showResetConfirm = true"
-            class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100/60"
-            title="Restaurer toutes les valeurs par défaut"
-          >
-            <RotateCcw class="h-3.5 w-3.5" />
-            <span>Réinitialiser</span>
-          </button>
-        </div>
-      </div>
 
       <!-- ========================================================= -->
       <!-- CORPS PRINCIPAL : SIDEBAR + PANNEAU DE CONFIGURATION     -->
@@ -286,52 +208,6 @@ function handleResetAll() {
 
       </div>
 
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- MODAL DE CONFIRMATION DE RÉINITIALISATION                 -->
-    <!-- ========================================================= -->
-    <div
-      v-if="showResetConfirm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl space-y-4">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
-            <RotateCcw class="h-5 w-5" />
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-text-primary">
-              Réinitialiser tous les paramètres ?
-            </h3>
-            <p class="text-xs text-text-secondary">
-              Cette action restaurera les 46 paramètres système à leurs valeurs initiales d'usine.
-            </p>
-          </div>
-        </div>
-
-        <div class="rounded-xl bg-amber-50 border border-amber-200/60 p-3 text-xs text-amber-900 leading-relaxed">
-          ⚠️ Toutes vos personnalisations (taille de police, identité d'organisation, délais d'alerte VMC, quotas GED) seront réinitialisées.
-        </div>
-
-        <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
-          <button
-            type="button"
-            @click="showResetConfirm = false"
-            class="rounded-xl border border-border bg-surface px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-surface-alt"
-          >
-            Annuler
-          </button>
-          <button
-            type="button"
-            :disabled="isResetting"
-            @click="handleResetAll"
-            class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-rose-700 disabled:opacity-50"
-          >
-            {{ isResetting ? 'Réinitialisation en cours...' : 'Confirmer la réinitialisation' }}
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>

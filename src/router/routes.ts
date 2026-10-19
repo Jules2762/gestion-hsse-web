@@ -33,6 +33,7 @@ import PersonnelUpdatePage from "../views/home/administration/PersonnelUpdatePag
 import VmcPage from "../views/home/Iinspections/VmcPage.vue";
 import VMCAddPage from "../views/home/Iinspections/VMCAddPage.vue";
 import VMCDetailsPage from "../views/home/Iinspections/VMCDetailsPage.vue";
+import EmergencyContactPage from "../views/home/emergency/EmergencyContactPage.vue";
 
 
 const routes = [
@@ -246,6 +247,11 @@ const routes = [
                 path: "setting",
                 name: "SETTING",
                 component: SettingPage
+            },
+            {
+                path: "emergency-contacts",
+                name: "EMERGENCY_CONTACT",
+                component: EmergencyContactPage
             },
         ]
     }

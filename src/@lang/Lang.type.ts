@@ -57,6 +57,7 @@ type LangType = {
         "corrective actions": string,
         "checklists": string,
         "equipment monitoring": string,
+        "emergency contacts": string,
         "inventory": string,
         "settings": string,
         "profile": string,

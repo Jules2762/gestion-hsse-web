@@ -1,4 +1,4 @@
-import { ClipboardCheck, FolderClosedIcon, GraduationCapIcon, HomeIcon, PackageIcon, Settings, Settings2Icon, User2Icon, Users2Icon } from "@lucide/vue"
+import { ClipboardCheck, FolderClosedIcon, GraduationCapIcon, HomeIcon, PackageIcon, PhoneCall, Settings, Settings2Icon, User2Icon, Users2Icon } from "@lucide/vue"
 
 const sidebar_routes = [
     {
@@ -82,8 +82,14 @@ const sidebar_routes = [
 
             },
         ]
-    }
-    ,
+    },
+    {
+        label: "emergency contacts",
+        icon: PhoneCall,
+        isOpen: false,
+        name: "EMERGENCY_CONTACT",
+        children: []
+    },
     {
         label: "inventory",
         icon: PackageIcon,

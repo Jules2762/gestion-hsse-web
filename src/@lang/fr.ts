@@ -42,6 +42,7 @@ export const fr: LangType = {
         "corrective actions": "Actions Correctives",
         "checklists": "Checklists",
         "equipment monitoring": "Suivi des équipements",
+        "emergency contacts": "Contacts d'urgence",
         "hsse management": "Gestion HSSE",
         "inventory": "Inventaire",
         "settings": "Paramètres",

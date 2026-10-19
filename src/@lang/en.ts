@@ -43,6 +43,7 @@ export const en: LangType = {
         "corrective actions": "Corrective Actions",
         "checklists": "Checklists",
         "equipment monitoring": "Equipment Monitoring",
+        "emergency contacts": "Emergency Contacts",
         "hsse management": "HSSE Management",
         "inventory": "Inventory",
         "settings": "Settings",
