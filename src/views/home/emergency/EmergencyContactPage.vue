@@ -500,6 +500,51 @@
                         Appeler
                       </a>
                     </div>
+
+                    <!-- STATIONS-SERVICE (SS) GALANA LES PLUS PROCHES -->
+                    <div
+                      v-if="getNearestSitesForContact(contact).length > 0"
+                      class="mt-2.5 pt-2 border-t border-dashed border-gray-200/90 flex flex-col gap-1.5"
+                      @click.stop
+                    >
+                      <div class="flex items-center justify-between text-[10px] font-bold text-amber-950">
+                        <span class="flex items-center gap-1">
+                          <Fuel :size="12" class="text-amber-600 shrink-0" />
+                          <span>Stations Galana les plus proches :</span>
+                        </span>
+                        <span class="text-[9px] text-amber-700 font-semibold">
+                          {{ getNearestSitesForContact(contact).length }} SS
+                        </span>
+                      </div>
+
+                      <div class="flex flex-wrap gap-1">
+                        <button
+                          v-for="st in getNearestSitesForContact(contact)"
+                          :key="st.id"
+                          type="button"
+                          @click="handleSelectStationFromCard(st)"
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] transition cursor-pointer border shadow-2xs group/st"
+                          :class="selectedStation?.id === st.id
+                            ? 'bg-amber-600 text-white border-amber-600 font-bold'
+                            : 'bg-amber-50/80 hover:bg-amber-100 text-amber-950 border-amber-200 hover:border-amber-300'"
+                          :title="'Centrer sur la station ' + st.name + ' (' + formatDistance(st.distance_km) + ') sur la carte'"
+                        >
+                          <span class="font-bold text-amber-900" :class="{ '!text-white': selectedStation?.id === st.id }">⛽ {{ st.name }}</span>
+                          <span
+                            class="font-mono text-[9px] px-1 py-0.2 rounded font-semibold"
+                            :class="selectedStation?.id === st.id
+                              ? 'bg-white/20 text-white'
+                              : st.distance_km < 5
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : st.distance_km < 25
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-gray-100 text-gray-700'"
+                          >
+                            {{ formatDistance(st.distance_km) }}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
