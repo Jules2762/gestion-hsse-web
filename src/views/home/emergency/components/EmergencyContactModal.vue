@@ -499,9 +499,12 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import {
   CheckCircle2,
+  Compass,
   Crosshair,
   Loader2,
   MapPin,
+  Maximize2,
+  Minimize2,
   Phone,
   Search,
   Sparkles,

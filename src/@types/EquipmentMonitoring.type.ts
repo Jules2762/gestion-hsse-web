@@ -65,6 +65,25 @@ export type EquipmentMonitoringType = {
     items?: EquipmentItemType[]
     user?: any
 
+    site_location?: {
+        locality?: string;
+        province?: string;
+        latitude?: number;
+        longitude?: number;
+    } | null
+    site?: {
+        id?: number;
+        name?: string;
+        locality?: string;
+        province?: string;
+        latitude?: number;
+        longitude?: number;
+    } | null
+    latitude?: number | null
+    longitude?: number | null
+    locality?: string | null
+    province?: string | null
+
     created_at?: string
 }
 

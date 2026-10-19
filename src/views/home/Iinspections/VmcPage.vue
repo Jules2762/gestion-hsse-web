@@ -128,7 +128,18 @@
             </header>
 
             <!-- Contenu -->
-            <div class="flex flex-1 flex-col gap-5 overflow-y-auto p-4 bg-slate-50/50">
+            <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-4 bg-slate-50/50">
+
+                <!-- CARTOGRAPHIE DE L'EMPLACEMENT DU SITE VMC -->
+                <SidebarLocationMap
+                    :site-name="selected.site || selected.inspection?.site"
+                    :location-name="selected.site"
+                    :latitude="selected.site_location?.latitude"
+                    :longitude="selected.site_location?.longitude"
+                    :locality="selected.site_location?.locality"
+                    :province="selected.site_location?.province"
+                    :status="selected.status"
+                />
 
                 <!-- RÉSUMÉ DE LA VISITE CLÔTURÉE / ÉVALUÉE -->
                 <section v-if="selected.status === 'COMPLETED' || selectedStats.total > 0" class="flex flex-col gap-3">
@@ -290,6 +301,7 @@
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
     import Button from '../../../components/ui/Button.vue';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
+    import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
     import { computed, onMounted, onUnmounted, ref, watch, type ComputedRef } from 'vue';
     import type { VMCDataType, VMCFilterType } from '../../../@types/VMC.type.ts';

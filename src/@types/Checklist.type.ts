@@ -23,7 +23,13 @@ type Checklistype = {
     completed_at?: string,
     contact: string,
     manager: string,
-    added_by?:string
+    added_by?:string,
+    site_location?: {
+        locality?: string;
+        province?: string;
+        latitude?: number;
+        longitude?: number;
+    } | null,
     sections:ChecklistSectionType[]
 }
 type CheckllistFormType={

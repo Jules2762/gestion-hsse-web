@@ -264,6 +264,18 @@
                 </div>
             </div>
 
+            <!-- CARTOGRAPHIE DE L'EMPLACEMENT DU SITE -->
+            <SidebarLocationMap
+                class="mt-3.5"
+                :site-name="getSiteNameText(right_sidebar.equipment?.site_name)"
+                :latitude="right_sidebar.equipment?.site_location?.latitude ?? right_sidebar.equipment?.latitude"
+                :longitude="right_sidebar.equipment?.site_location?.longitude ?? right_sidebar.equipment?.longitude"
+                :locality="right_sidebar.equipment?.site_location?.locality ?? right_sidebar.equipment?.locality"
+                :province="right_sidebar.equipment?.site_location?.province ?? right_sidebar.equipment?.province"
+                :status="right_sidebar.equipment?.status"
+                :conformity-rate="right_sidebar.equipment?.conformity_rate"
+            />
+
             <!-- ONGLET ITEMS VS SYNTHESE -->
             <div class="flex border-b border-gray-200 mt-3 text-xs font-medium">
                 <button
@@ -795,6 +807,7 @@
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
+    import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
     import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';

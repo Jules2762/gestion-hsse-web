@@ -42,6 +42,12 @@ type VMCDataType = {
     safety_report_form?: any,
     safety_moment?: any,
     safety_awareness_items?: any[],
+    site_location?: {
+        locality?: string;
+        province?: string;
+        latitude?: number;
+        longitude?: number;
+    } | null,
     created_at?: string,
     updated_at?: string,
 }

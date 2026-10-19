@@ -1056,7 +1056,12 @@ function exportData() {
       latitude: c.latitude !== undefined && c.latitude !== null ? String(c.latitude) : "—",
       longitude: c.longitude !== undefined && c.longitude !== null ? String(c.longitude) : "—",
       distance: c.distance_km !== undefined && c.distance_km !== 99999 ? formatDistance(c.distance_km) : "—",
-      reference_station: selectedStation.value ? `${selectedStation.value.name} (${selectedStation.value.locality || ''})` : "Toutes stations",
+      reference_station: selectedStation.value
+        ? `${selectedStation.value.name} (${selectedStation.value.locality || ''})`
+        : (() => {
+            const nearest = getNearestSitesForContact(c, 1);
+            return nearest.length > 0 ? `${nearest[0].name} (${formatDistance(nearest[0].distance_km)})` : "—";
+          })(),
       notes: c.notes || "—",
     }));
 

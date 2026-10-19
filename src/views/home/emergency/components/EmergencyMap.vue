@@ -1,8 +1,11 @@
 <template>
-  <div
-    class="bg-white rounded-2xl border border-border p-4 shadow-2xs flex flex-col gap-3 transition-all duration-200"
-    :class="isFullscreen ? 'fixed inset-0 z-[9999] w-screen h-screen rounded-none p-4 md:p-6 overflow-hidden flex flex-col bg-white' : 'h-full'"
-  >
+  <Teleport to="body" :disabled="!isFullscreen">
+    <div
+      class="bg-white rounded-2xl border border-border p-4 shadow-2xs flex flex-col gap-3"
+      :class="isFullscreen
+        ? '!fixed !inset-0 !z-[100000] !w-screen !h-screen !rounded-none !p-4 md:!p-6 !m-0 !overflow-hidden !flex !flex-col !bg-white'
+        : 'h-full transition-colors'"
+    >
     <!-- EN-TÊTE COMPACT AVEC FILTRES ET ACTIONS -->
     <div class="flex flex-col gap-2 pb-2.5 border-b border-border shrink-0">
       <div class="flex items-center justify-between gap-2">
@@ -270,7 +273,8 @@
 
     <!-- CONTENEUR CARTE LEAFLET -->
     <div
-      class="rounded-xl overflow-hidden border border-gray-200 relative transition-all"
+      ref="mapContainerRef"
+      class="rounded-xl overflow-hidden border border-gray-200 relative"
       :class="isFullscreen ? 'flex-1 w-full min-h-0' : 'h-[500px] lg:h-[calc(100vh-270px)] min-h-[440px] w-full'"
     >
       <!-- SPINNER CHARGEMENT -->
@@ -311,6 +315,7 @@
 
       <!-- CARTE VUE-LEAFLET -->
       <LMap
+        ref="lMapComponentRef"
         class="z-0 w-full h-full"
         :zoom="zoom"
         :center="mapCenter"
@@ -523,6 +528,7 @@
       </LMap>
     </div>
   </div>
+</Teleport>
 </template>
 
 <script setup lang="ts">
@@ -842,15 +848,44 @@ function handleSearchEnter() {
   }
 }
 
+const mapContainerRef = ref<HTMLElement | null>(null);
+const lMapComponentRef = ref<any>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+function getMapInstance(): any {
+  if (leafletMap.value) {
+    if (typeof leafletMap.value.invalidateSize === "function") return leafletMap.value;
+    if (typeof leafletMap.value.leafletObject?.invalidateSize === "function") return leafletMap.value.leafletObject;
+  }
+  if (lMapComponentRef.value) {
+    if (typeof lMapComponentRef.value.invalidateSize === "function") return lMapComponentRef.value;
+    if (typeof lMapComponentRef.value.leafletObject?.invalidateSize === "function") return lMapComponentRef.value.leafletObject;
+  }
+  return null;
+}
+
+function refreshMapSize() {
+  const map = getMapInstance();
+  if (map) {
+    try {
+      map.invalidateSize({ animate: false, pan: false });
+    } catch {}
+  }
+}
+
 function onMapReady(map: any) {
   leafletMap.value = map;
+  nextTick(() => {
+    refreshMapSize();
+  });
 }
 
 function jumpTo(coords: number[] | [number, number], targetZoom = 12) {
   mapCenter.value = [coords[0], coords[1]];
   zoom.value = targetZoom;
-  if (leafletMap.value) {
-    leafletMap.value.setView(coords, targetZoom, { animate: true });
+  const map = getMapInstance();
+  if (map) {
+    map.setView(coords, targetZoom, { animate: true });
   }
 }
 
@@ -873,12 +908,14 @@ function handleStationMarkerClick(site: EmergencySiteType) {
 
 function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value;
+
   nextTick(() => {
-    setTimeout(() => {
-      if (leafletMap.value) {
-        leafletMap.value.invalidateSize();
-      }
-    }, 250);
+    refreshMapSize();
+    [40, 100, 200, 350, 600].forEach((delay) => {
+      setTimeout(() => {
+        refreshMapSize();
+      }, delay);
+    });
   });
 }
 
@@ -888,12 +925,32 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
+function onWindowResize() {
+  refreshMapSize();
+}
+
 onMounted(() => {
   window.addEventListener("keydown", onKeydown);
+  window.addEventListener("resize", onWindowResize);
+
+  nextTick(() => {
+    refreshMapSize();
+    if (mapContainerRef.value && typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        refreshMapSize();
+      });
+      resizeObserver.observe(mapContainerRef.value);
+    }
+  });
 });
 
 onUnmounted(() => {
   window.removeEventListener("keydown", onKeydown);
+  window.removeEventListener("resize", onWindowResize);
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
 });
 
 // Couleurs par type de secours
@@ -940,6 +997,8 @@ defineExpose({
   jumpTo,
   selectContact,
   selectStation,
+  refreshMapSize,
+  toggleFullscreen,
 });
 </script>
 

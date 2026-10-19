@@ -148,6 +148,18 @@
                 </div>
             </div>
 
+            <!-- CARTOGRAPHIE DE L'EMPLACEMENT DU SITE -->
+            <SidebarLocationMap
+                class="mt-4"
+                :site-name="selected_checklist.location || selected_checklist.site"
+                :location-name="selected_checklist.location"
+                :latitude="selected_checklist.site_location?.latitude"
+                :longitude="selected_checklist.site_location?.longitude"
+                :locality="selected_checklist.site_location?.locality"
+                :province="selected_checklist.site_location?.province"
+                :status="selected_checklist.status"
+            />
+
             <!-- DESCRIPTION -->
 
             <div class="
@@ -507,6 +519,7 @@
 
     import { ChecklistsData, ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
+    import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { router } from '../../../router/index.ts';
     import type { ChecklistFilterType, Checklistype } from '../../../@types/Checklist.type.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
