@@ -1,167 +1,78 @@
 <template>
     <div class="flex flex-row w-full">
-        <div class="flex flex-col w-full transition-all" :class="selected_action ? 'w-[calc(100%-400px)]' : 'w-full'">
+        <div class="flex flex-col w-full transition-all" :class="selected_action ? 'w-[calc(100%-400px)] min-w-[calc(100%-400px)] max-w-[calc(100%-400px)]' : 'w-full'">
             <!-- HEADER -->
-            <Header title="Gestion des actions correctives" show-search @search="handleSearch" :thumbnails="[
+            <Header title="Gestion des actions correctives" :thumbnails="[
                 { label: 'Accueil', name: 'DASHBOARD' },
                 { label: 'Inspection', name: 'INSPECTION' },
                 { label: 'Actions correctives', name: 'ACTION' }
             ]" />
 
-            <!-- ======================= RIBBON TOOLBAR & FILTRES ======================= -->
+            <!-- ======================= RIBBON TOOLBAR ======================= -->
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
-                <div class="px-6 py-3 flex flex-wrap items-center justify-between gap-4">
-                    <!-- Onglets Origine (Toutes / Checklists / VMC) -->
-                    <div class="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl">
-                        <button
-                            type="button"
-                            @click="setOrigin('ALL')"
-                            :class="selectedOrigin === 'ALL' ? 'bg-white text-gray-900 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
-                            class="px-3.5 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer">
-                            <span>Toutes</span>
-                            <span class="px-1.5 py-0.5 rounded-full text-[10px]" :class="selectedOrigin === 'ALL' ? 'bg-primary/10 text-primary font-bold' : 'bg-gray-200 text-gray-600'">
-                                {{ meta.total }}
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            @click="setOrigin('CHECKLIST')"
-                            :class="selectedOrigin === 'CHECKLIST' ? 'bg-white text-blue-700 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
-                            class="px-3.5 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer">
-                            <ListChecks :size="14" class="text-blue-600" />
-                            <span>Checklists</span>
-                            <span class="px-1.5 py-0.5 rounded-full text-[10px]" :class="selectedOrigin === 'CHECKLIST' ? 'bg-blue-100 text-blue-800 font-bold' : 'bg-gray-200 text-gray-600'">
-                                {{ meta.checklist_count }}
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            @click="setOrigin('VMC')"
-                            :class="selectedOrigin === 'VMC' ? 'bg-white text-[#0F9D58] shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
-                            class="px-3.5 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 cursor-pointer">
-                            <ShieldAlert :size="14" class="text-[#0F9D58]" />
-                            <span>Visites VMC</span>
-                            <span class="px-1.5 py-0.5 rounded-full text-[10px]" :class="selectedOrigin === 'VMC' ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-gray-200 text-gray-600'">
-                                {{ meta.vmc_count }}
-                            </span>
-                        </button>
+                <div class="h-16 px-4 flex flex-row items-center justify-between">
+                    <div class="flex flex-row items-center gap-1">
+                        <ButtonFilter
+                            :text="'Exporter'"
+                            @click="exportData()"
+                            :loading="loading_export"
+                            :icon="DownloadIcon"
+                            :badge="filteredActions.length.toString()" />
+                        <ButtonFilter
+                            :text="'Actualiser'"
+                            @click="fetchActions()"
+                            :loading="loading"
+                            :icon="RefreshCw" />
                     </div>
-
-                    <!-- Filtres : Statut, Date, Recherche et Recharger -->
-                    <div class="flex flex-wrap items-center gap-3">
-                        <!-- Filtre Statut -->
-                        <div class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg p-0.5 text-xs">
-                            <button
-                                type="button"
-                                v-for="st in statusOptions"
-                                :key="st.value"
-                                @click="setStatusFilter(st.value)"
-                                :class="selectedStatus === st.value ? 'bg-white text-gray-900 shadow-xs font-bold border border-gray-200' : 'text-gray-600 hover:text-gray-900'"
-                                class="px-2.5 py-1 rounded-md transition-all cursor-pointer">
-                                {{ st.label }}
-                            </button>
-                        </div>
-
-                        <!-- Date -->
-                        <div class="relative flex items-center">
-                            <Calendar1Icon :size="15" class="absolute left-3 text-gray-400 pointer-events-none" />
+                    <div class="flex flex-row items-center gap-2">
+                        <div class="relative">
+                            <SearchIcon :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
-                                type="date"
-                                v-model="selectedDate"
-                                @change="fetchActions"
-                                class="pl-9 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary" />
+                                v-model="searchQuery"
+                                type="text"
+                                placeholder="Rechercher par écart, libellé, site, responsable..."
+                                class="h-9 w-64 sm:w-80 rounded-lg border border-gray-300 bg-white pl-8 pr-8 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                             <button
-                                v-if="selectedDate"
-                                @click="selectedDate = ''; fetchActions()"
-                                class="ml-1 text-gray-400 hover:text-gray-600 text-xs">
-                                ✕
+                                v-if="searchQuery"
+                                @click="searchQuery = ''"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <XIcon :size="14" />
                             </button>
                         </div>
-
-                        <!-- Actualiser -->
-                        <button
-                            type="button"
-                            @click="fetchActions"
-                            :disabled="loading"
-                            class="p-2 text-gray-600 hover:text-primary border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors cursor-pointer"
-                            title="Actualiser les actions">
-                            <RefreshCw :size="15" :class="loading ? 'animate-spin text-primary' : ''" />
-                        </button>
                     </div>
                 </div>
 
-                <!-- KPI SUMMARY BAR -->
-                <div class="border-t border-gray-100 px-6 py-2.5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50/50">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                        <span class="text-gray-500">Total actions :</span>
-                        <span class="font-bold text-gray-800">{{ meta.current_count ?? meta.total }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                        <span class="text-gray-500">En attente :</span>
-                        <span class="font-bold text-amber-600">{{ meta.pending }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                        <span class="text-gray-500">En cours :</span>
-                        <span class="font-bold text-blue-600">{{ meta.in_progress }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <span class="text-gray-500">Terminées :</span>
-                        <span class="font-bold text-emerald-600">{{ meta.finished }}</span>
-                    </div>
-                </div>
+                <!-- ======================= FILTER STRIP ======================= -->
+                <ChipFilter
+                    :filterable-keys="filterableKeys"
+                    :column-labels="columnLabels"
+                    :filters="filters"
+                    :column-options="columnOptions as Record<string, string[]>"
+                    :date-range="dateRange"
+                    :results-count="paginatedActions.length"
+                    :results-total="filteredActions.length"
+                    @clear-all="clearAllFilters" />
             </div>
 
-            <!-- CONTENU PRINCIPAL -->
-            <div class="flex flex-col flex-1 min-w-0">
-                <!-- CHARGEMENT -->
-                <div v-if="loading" class="p-16 flex flex-col items-center justify-center gap-3 text-gray-500">
-                    <Loader2 :size="32" class="animate-spin text-primary" />
-                    <span class="text-sm font-medium">Chargement des actions correctives en cours...</span>
-                </div>
-
-                <!-- AUCUN RÉSULTAT -->
-                <div v-else-if="actions.length === 0" class="p-16 flex flex-col items-center justify-center text-center">
-                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
-                        <AlertCircle :size="28" />
-                    </div>
-                    <h5 class="text-gray-700 font-semibold mb-1">Aucune action corrective trouvée</h5>
-                    <p class="text-sm text-gray-500 max-w-sm">
-                        Aucune action ne correspond aux filtres sélectionnés. Modifiez vos critères de recherche.
-                    </p>
-                    <div class="flex gap-2 mt-4">
-                        <button
-                            v-if="selectedOrigin !== 'ALL' || selectedStatus || selectedDate || searchQuery"
-                            @click="resetFilters"
-                            class="px-4 py-2 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition">
-                            Réinitialiser tous les filtres
-                        </button>
-                    </div>
-                </div>
-
-                <!-- TABLEAU (PLEINE LARGEUR, CONFORME AUX AUTRES PAGES) -->
-                <div v-else class="transition-all w-full overflow-x-auto scrollbar-hide">
-                    <table class="w-full">
-                        <thead>
-                            <tr>
-                                <th class="w-16 text-center">REF</th>
-                                <th>ORIGINE</th>
-                                <th>INSPECTION SOURCE</th>
-                                <th>ÉCART / CONSTAT</th>
-                                <th>ACTION CORRECTIVE</th>
-                                <th>RESPONSABLE</th>
-                                <th class="text-center">STATUT</th>
-                                <th class="text-center">E-MAIL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <!-- CONTENU PRINCIPAL (TABLEAU) -->
+            <div class="flex flex-row transition-all overflow-x-auto scrollbar-hide">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="w-16 text-center">REF</th>
+                            <th>ORIGINE</th>
+                            <th>INSPECTION SOURCE</th>
+                            <th>ÉCART / CONSTAT</th>
+                            <th>ACTION CORRECTIVE</th>
+                            <th>RESPONSABLE</th>
+                            <th class="text-center">STATUT</th>
+                            <th class="text-center">E-MAIL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="!loading && filteredActions.length > 0">
                             <tr
-                                v-for="(item, index) in actions"
+                                v-for="(item, index) in paginatedActions"
                                 :key="getActionKey(item)"
                                 @contextmenu.prevent="openContextMenu($event, item)"
                                 @click="selected_action = item"
@@ -250,20 +161,61 @@
                                     <ActionEmailStatus :status="item.email_status || 'NOT_SENT'" />
                                 </td>
                             </tr>
-                        </tbody>
-                        <tfoot>
                             <tr>
-                                <td colspan="8" class="w-full p-4 border-t border-gray-200">
-                                    <div class="flex flex-row items-center justify-between text-sm">
+                                <td colspan="8" class="w-full">
+                                    <div class="flex flex-row items-center text-sm justify-between px-4 py-3">
                                         <span class="text-xs text-gray-500 font-medium">
-                                            Affichage de {{ actions.length }} actions correctives
+                                            Affichage de {{ paginatedActions.length }} sur {{ filteredActions.length }} action{{ filteredActions.length > 1 ? 's' : '' }} corrective{{ filteredActions.length > 1 ? 's' : '' }}
                                         </span>
+                                        <vue-awesome-paginate
+                                            :hide-prev-next-when-ends="true"
+                                            :total-items="filteredActions.length"
+                                            :items-per-page="itemsPerPage"
+                                            :max-pages-shown="4"
+                                            v-model="currentPage"
+                                            @click="(page: number) => { currentPage = page }"
+                                        />
                                     </div>
                                 </td>
                             </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                        </template>
+
+                        <!-- AUCUN RÉSULTAT CORRESPONDANT AUX FILTRES -->
+                        <tr v-else-if="!loading && filteredActions.length === 0 && actions.length > 0">
+                            <td colspan="8" class="py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center gap-2">
+                                    <AlertCircle :size="28" class="text-gray-400 mb-1" />
+                                    <span class="font-medium text-sm">Aucun résultat ne correspond à ces critères</span>
+                                    <button
+                                        class="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                                        @click="clearAllFilters">
+                                        Réinitialiser les filtres
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- AUCUNE ACTION EN BASE -->
+                        <tr v-else-if="!loading && actions.length === 0">
+                            <td colspan="8" class="py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center gap-2">
+                                    <AlertCircle :size="28" class="text-gray-400 mb-1" />
+                                    <span class="font-medium text-sm">Aucune action corrective trouvée</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- CHARGEMENT -->
+                        <tr v-else>
+                            <td colspan="8" class="py-12">
+                                <div class="flex flex-col items-center justify-center gap-3">
+                                    <Loader2 :size="30" class="animate-spin text-primary" />
+                                    <span class="text-sm text-gray-500">Chargement des actions correctives en cours...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- MENU CONTEXTUEL -->
@@ -632,21 +584,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type Component } from 'vue'
+import { computed, onMounted, reactive, ref, watch, type Component } from 'vue'
 import Header from '../../../components/shared/Header.vue'
+import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
+import ChipFilter from '../../../components/ui/ChipFilter.vue'
 import ActionStatus from '../../../components/features/action/ActionStatus.vue'
 import ActionEmailStatus from '../../../components/features/action/ActionEmailStatus.vue'
 import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue'
 import { router } from '../../../router/index.ts'
 import { useActionService } from '../../../core/services/action.service.ts'
+import { exportUtils } from '../../../core/utils/export.utils.ts'
 import type { ActionAttachmentType, ActionMetaType, ActionStatusType, ActionType } from '../../../@types/Action.type.ts'
 import type { contextMenuType } from '../../../@types/ContextMenu.type.ts'
 import { toast } from 'vue3-toastify'
 import {
     AlertCircle,
-    Calendar1Icon,
     CheckCircle2,
     Download,
+    DownloadIcon,
     ExternalLink,
     Eye,
     FileText,
@@ -658,6 +613,7 @@ import {
     Plus,
     RefreshCw,
     RotateCcw,
+    SearchIcon,
     ShieldAlert,
     Trash2,
     Upload,
@@ -810,18 +766,185 @@ const meta = ref<ActionMetaType>({
     vmc_count: 0,
 })
 
-// Filtres
-const selectedOrigin = ref<'ALL' | 'CHECKLIST' | 'VMC'>('ALL')
-const selectedStatus = ref<ActionStatusType | ''>('')
-const selectedDate = ref<string>('')
-const searchQuery = ref<string>('')
+// Configuration ChipFilter & Filtres
+type FilterKey = 'origin' | 'status' | 'site' | 'assigned_to'
+const filterableKeys: FilterKey[] = ['origin', 'status', 'site', 'assigned_to']
+const columnLabels: Record<FilterKey, string> = {
+    origin: 'Origine',
+    status: 'Statut',
+    site: 'Site / Station',
+    assigned_to: 'Responsable',
+}
 
-const statusOptions: { label: string; value: ActionStatusType | '' }[] = [
-    { label: 'Tous', value: '' },
-    { label: 'En attente', value: 'PENDING' },
-    { label: 'En cours', value: 'IN_PROGRESS' },
-    { label: 'Terminée', value: 'FINISHED' },
+const filters = reactive<Record<FilterKey, string[]>>({
+    origin: [],
+    status: [],
+    site: [],
+    assigned_to: [],
+})
+
+const dateRange = reactive({ from: '', to: '' })
+const searchQuery = ref<string>('')
+const currentPage = ref<number>(1)
+const itemsPerPage = 15
+const loading_export = ref<boolean>(false)
+
+function clearAllFilters() {
+    for (const key of filterableKeys) {
+        filters[key] = []
+    }
+    dateRange.from = ''
+    dateRange.to = ''
+    searchQuery.value = ''
+    currentPage.value = 1
+}
+
+// Options uniques disponibles pour chaque colonne filtrable
+const columnOptions = computed<Record<string, string[]>>(() => {
+    const origins = new Set<string>()
+    const statuses = new Set<string>()
+    const sites = new Set<string>()
+    const responsibles = new Set<string>()
+
+    for (const item of actions.value) {
+        if (item.origin === 'CHECKLIST') origins.add('Checklist')
+        else if (item.origin === 'VMC') origins.add('Visite VMC')
+
+        if (item.status === 'PENDING') statuses.add('En attente')
+        else if (item.status === 'IN_PROGRESS') statuses.add('En cours')
+        else if (item.status === 'FINISHED') statuses.add('Terminée')
+
+        if (item.parent_site && item.parent_site !== '—') {
+            sites.add(item.parent_site)
+        }
+
+        const respName = item.assigned_to?.name || (item.assigned_to?.first_name ? `${item.assigned_to.first_name} ${item.assigned_to.last_name || ''}`.trim() : null)
+        if (respName) {
+            responsibles.add(respName)
+        } else {
+            responsibles.add('Non assigné')
+        }
+    }
+
+    if (origins.size === 0) {
+        origins.add('Checklist')
+        origins.add('Visite VMC')
+    }
+    if (statuses.size === 0) {
+        statuses.add('En attente')
+        statuses.add('En cours')
+        statuses.add('Terminée')
+    }
+
+    return {
+        origin: Array.from(origins).sort(),
+        status: ['En attente', 'En cours', 'Terminée'],
+        site: Array.from(sites).sort(),
+        assigned_to: Array.from(responsibles).sort(),
+    }
+})
+
+// Actions filtrées selon tous les critères actifs
+const filteredActions = computed<ActionType[]>(() => {
+    return actions.value.filter(item => {
+        // 1. Origine
+        if (filters.origin.length > 0) {
+            const originLabel = item.origin === 'CHECKLIST' ? 'Checklist' : 'Visite VMC'
+            if (!filters.origin.includes(originLabel)) return false
+        }
+
+        // 2. Statut
+        if (filters.status.length > 0) {
+            const statusLabel = item.status === 'FINISHED' ? 'Terminée' : (item.status === 'IN_PROGRESS' ? 'En cours' : 'En attente')
+            if (!filters.status.includes(statusLabel)) return false
+        }
+
+        // 3. Site
+        if (filters.site.length > 0) {
+            const siteName = item.parent_site || '—'
+            if (!filters.site.includes(siteName)) return false
+        }
+
+        // 4. Responsable
+        if (filters.assigned_to.length > 0) {
+            const respName = item.assigned_to?.name || (item.assigned_to?.first_name ? `${item.assigned_to.first_name} ${item.assigned_to.last_name || ''}`.trim() : null) || 'Non assigné'
+            if (!filters.assigned_to.includes(respName)) return false
+        }
+
+        // 5. Plage de dates (dateRange)
+        const dateVal = item.created_at_date || (item.created_at ? item.created_at.substring(0, 10) : '')
+        if (dateRange.from && dateVal && dateVal < dateRange.from) return false
+        if (dateRange.to && dateVal && dateVal > dateRange.to) return false
+
+        // 6. Recherche textuelle
+        if (searchQuery.value && searchQuery.value.trim()) {
+            const q = searchQuery.value.toLowerCase().trim()
+            const matchDesc = (item.description || '').toLowerCase().includes(q)
+            const matchParent = (item.parent_title || '').toLowerCase().includes(q)
+            const matchSite = (item.parent_site || '').toLowerCase().includes(q)
+            const matchItem = (item.item_title || '').toLowerCase().includes(q)
+            const matchObs = (item.item_observation || '').toLowerCase().includes(q)
+            const respName = (item.assigned_to?.name || `${item.assigned_to?.first_name || ''} ${item.assigned_to?.last_name || ''}`).toLowerCase()
+            const matchResp = respName.includes(q)
+            const matchId = (item.raw_id ? `#${item.raw_id}` : '').includes(q)
+
+            if (!matchDesc && !matchParent && !matchSite && !matchItem && !matchObs && !matchResp && !matchId) {
+                return false
+            }
+        }
+
+        return true
+    })
+})
+
+// Actions paginées (15 par page)
+const paginatedActions = computed<ActionType[]>(() => {
+    const start = (currentPage.value - 1) * itemsPerPage
+    return filteredActions.value.slice(start, start + itemsPerPage)
+})
+
+watch([filters, dateRange, searchQuery], () => {
+    currentPage.value = 1
+})
+
+// Export Excel
+const exportFields = [
+    { key: 'ref', excelName: 'Réf' },
+    { key: 'origin_label', excelName: 'Origine' },
+    { key: 'parent_title', excelName: 'Inspection source' },
+    { key: 'parent_site', excelName: 'Site / Station' },
+    { key: 'item_title', excelName: 'Écart / Constat' },
+    { key: 'description', excelName: 'Action corrective' },
+    { key: 'responsible_name', excelName: 'Responsable' },
+    { key: 'status_label', excelName: 'Statut' },
+    { key: 'created_at', excelName: 'Date création' },
 ]
+
+function exportData() {
+    loading_export.value = true
+    try {
+        const rows = filteredActions.value.map((item, idx) => ({
+            ref: item.raw_id ? `#${item.raw_id}` : `#${idx + 1}`,
+            origin_label: item.origin === 'CHECKLIST' ? 'Checklist' : 'Visite VMC',
+            parent_title: item.parent_title || '',
+            parent_site: item.parent_site || '',
+            item_title: item.item_title || '',
+            description: item.description || '',
+            responsible_name: item.assigned_to?.name || (item.assigned_to?.first_name ? `${item.assigned_to.first_name} ${item.assigned_to.last_name || ''}`.trim() : 'Non assigné'),
+            status_label: item.status === 'FINISHED' ? 'Terminée' : (item.status === 'IN_PROGRESS' ? 'En cours' : 'En attente'),
+            created_at: item.created_at_date || item.created_at || '',
+        }))
+        exportUtils(
+            rows,
+            exportFields,
+            () => toast.success('Export des actions correctives réussi'),
+            () => toast.error("Erreur lors de l'export des actions"),
+            'export_actions_correctives'
+        )
+    } finally {
+        loading_export.value = false
+    }
+}
 
 // Menu contextuel
 const contextMenu = ref<{
@@ -832,38 +955,12 @@ const contextMenu = ref<{
     isOpen: false,
 })
 
-function setOrigin(origin: 'ALL' | 'CHECKLIST' | 'VMC') {
-    selectedOrigin.value = origin
-    fetchActions()
-}
-
-function setStatusFilter(status: ActionStatusType | '') {
-    selectedStatus.value = status
-    fetchActions()
-}
-
-function handleSearch(query: string) {
-    searchQuery.value = query
-    fetchActions()
-}
-
-function resetFilters() {
-    selectedOrigin.value = 'ALL'
-    selectedStatus.value = ''
-    selectedDate.value = ''
-    searchQuery.value = ''
-    fetchActions()
-}
-
 // Chargement des actions depuis l'API
 async function fetchActions() {
     loading.value = true
     try {
         const res = await actionService.index({
-            origin: selectedOrigin.value,
-            status: selectedStatus.value || undefined,
-            date: selectedDate.value || undefined,
-            search: searchQuery.value || undefined,
+            origin: 'ALL',
         })
 
         actions.value = res.data.data || []

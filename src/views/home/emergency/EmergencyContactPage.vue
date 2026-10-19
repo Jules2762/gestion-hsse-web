@@ -1,7 +1,10 @@
 <template>
   <div class="min-h-screen bg-background text-text-primary pb-12">
     <!-- HEADER GLOBAL -->
-    <Header title="Contacts d'urgence & Secours" show-search />
+    <Header title="Contacts d'urgence & Secours" :thumbnails="[
+      { label: 'Accueil', name: 'DASHBOARD' },
+      { label: 'Contacts d\'urgence', name: 'EMERGENCY' }
+    ]" />
 
     <div class="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5">
 
@@ -107,7 +110,7 @@
         <div class="lg:col-span-6 space-y-4">
           <div class="rounded-2xl border border-border bg-surface p-4 sm:p-5 shadow-2xs space-y-4">
 
-            <!-- EN-TÊTE DE L'ANNUAIRE & BOUTON AJOUT -->
+            <!-- EN-TÊTE DE L'ANNUAIRE & ACTIONS -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 class="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
@@ -119,75 +122,212 @@
                 </p>
               </div>
 
-              <!-- Bouton Nouveau Contact -->
-              <button
-                type="button"
-                @click="openAddModal"
-                class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-primary/90 transition cursor-pointer shrink-0"
-              >
-                <Plus :size="14" />
-                <span>Nouveau secours</span>
-              </button>
+              <!-- Actions : Exporter, Actualiser, Nouveau secours -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <ButtonFilter
+                  :text="'Exporter'"
+                  @click="exportData"
+                  :loading="loading_export"
+                  :icon="DownloadIcon"
+                  :badge="filteredDirectoryContacts.length.toString()"
+                />
+                <ButtonFilter
+                  :text="'Actualiser'"
+                  @click="loadData"
+                  :loading="mapLoading"
+                  :icon="RefreshCw"
+                />
+                <button
+                  type="button"
+                  @click="openAddModal"
+                  class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-primary/90 transition cursor-pointer shrink-0"
+                >
+                  <Plus :size="14" />
+                  <span>Nouveau secours</span>
+                </button>
+              </div>
             </div>
 
-            <!-- FILTRE DE PROXIMITÉ PAR STATION-SERVICE GALANA (SS) -->
-            <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200/90 space-y-2">
+            <!-- FILTRE DE PROXIMITÉ PAR STATION-SERVICE GALANA (SS) - RECHERCHE AMÉLIORÉE -->
+            <div class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 shadow-2xs space-y-2.5 relative">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                  <Fuel :size="14" class="text-amber-600" />
-                  <span>Proximité d'une Station-Service (SS) Galana</span>
-                </span>
+                <div class="flex items-center gap-2">
+                  <div class="h-6 w-6 rounded-lg bg-amber-500/20 text-amber-800 flex items-center justify-center font-bold">
+                    <Fuel :size="14" class="text-amber-700" />
+                  </div>
+                  <div>
+                    <span class="text-xs font-bold text-amber-950 block">Proximité d'une Station-Service (SS) Galana</span>
+                    <span class="text-[10px] text-amber-700">Calcul automatique des secours les plus proches</span>
+                  </div>
+                </div>
                 <button
                   v-if="selectedStation"
                   type="button"
                   @click="clearStationSelection"
-                  class="text-[11px] font-bold text-amber-900 hover:text-amber-700 underline cursor-pointer"
+                  class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 hover:text-red-700 bg-white/80 hover:bg-white px-2 py-0.5 rounded-lg border border-amber-300 transition cursor-pointer"
+                  title="Désélectionner la station"
                 >
-                  ✕ Réinitialiser
+                  <XIcon :size="12" />
+                  <span>Réinitialiser</span>
                 </button>
               </div>
 
-              <!-- Sélecteur déroulant de station -->
-              <div class="flex items-center gap-2">
-                <select
-                  v-model="selectedStationIdModel"
-                  @change="onStationSelectChange"
-                  class="w-full rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 outline-none focus:border-amber-500 cursor-pointer"
+              <!-- Sélecteur interactif avec recherche dynamique -->
+              <div class="relative">
+                <button
+                  type="button"
+                  @click="isStationDropdownOpen = !isStationDropdownOpen"
+                  class="w-full rounded-xl border bg-white px-3.5 py-2 text-left text-xs font-medium text-gray-800 outline-none transition flex items-center justify-between gap-2 shadow-2xs cursor-pointer hover:border-amber-400"
+                  :class="isStationDropdownOpen ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-amber-300'"
                 >
-                  <option :value="null">-- Choisir une station Galana (ou cliquer sur un repère ⛽ de la carte) --</option>
-                  <option v-for="st in sites" :key="st.id" :value="st.id">
-                    ⛽ {{ st.name }} — {{ st.locality }} ({{ st.province }})
-                  </option>
-                </select>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-base shrink-0">{{ selectedStation ? '⛽' : '🔍' }}</span>
+                    <div v-if="selectedStation" class="min-w-0 truncate">
+                      <span class="font-bold text-gray-900">{{ selectedStation.name }}</span>
+                      <span class="text-gray-500 text-[11px] ml-1.5">— {{ selectedStation.locality || 'Madagascar' }} ({{ selectedStation.province || 'National' }})</span>
+                    </div>
+                    <span v-else class="text-gray-400 font-normal truncate">
+                      Rechercher ou choisir une station Galana (ou cliquer sur un repère ⛽ de la carte)...
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0 text-gray-400">
+                    <span v-if="sites.length" class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-md">
+                      {{ sites.length }} SS
+                    </span>
+                    <ChevronDown :size="14" class="transition-transform duration-200" :class="{ 'rotate-180': isStationDropdownOpen }" />
+                  </div>
+                </button>
+
+                <!-- Overlay pour fermer le popover en cliquant en dehors -->
+                <div
+                  v-if="isStationDropdownOpen"
+                  class="fixed inset-0 z-40"
+                  @click="isStationDropdownOpen = false"
+                />
+
+                <!-- Popover déroulant de sélection avec recherche instantanée -->
+                <div
+                  v-if="isStationDropdownOpen"
+                  class="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl border border-gray-200 bg-white p-3 shadow-xl space-y-2.5 max-h-96 flex flex-col"
+                >
+                  <!-- Champ de recherche interne -->
+                  <div class="relative">
+                    <Search :size="14" class="absolute left-3 top-2.5 text-gray-400" />
+                    <input
+                      v-model="stationSearchQuery"
+                      type="text"
+                      placeholder="Filtrer par nom de station, ville, province..."
+                      class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-8.5 pr-8 py-1.5 text-xs text-gray-800 outline-none focus:border-amber-500 focus:bg-white"
+                      autofocus
+                    />
+                    <button
+                      v-if="stationSearchQuery"
+                      type="button"
+                      @click="stationSearchQuery = ''"
+                      class="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600"
+                    >
+                      <XIcon :size="13" />
+                    </button>
+                  </div>
+
+                  <!-- Onglets de filtrage par province -->
+                  <div v-if="stationProvinces.length > 1" class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide text-[10px]">
+                    <button
+                      type="button"
+                      @click="stationProvinceFilter = 'ALL'"
+                      class="px-2 py-0.5 rounded-lg font-semibold transition shrink-0 cursor-pointer border"
+                      :class="stationProvinceFilter === 'ALL'
+                        ? 'bg-amber-600 text-white border-amber-600'
+                        : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
+                    >
+                      Toutes ({{ sites.length }})
+                    </button>
+                    <button
+                      v-for="prov in stationProvinces"
+                      :key="prov"
+                      type="button"
+                      @click="stationProvinceFilter = prov"
+                      class="px-2 py-0.5 rounded-lg font-semibold transition shrink-0 cursor-pointer border"
+                      :class="stationProvinceFilter === prov
+                        ? 'bg-amber-600 text-white border-amber-600'
+                        : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'"
+                    >
+                      {{ prov }}
+                    </button>
+                  </div>
+
+                  <!-- Liste scrollable des stations -->
+                  <div class="overflow-y-auto space-y-1 max-h-56 pr-1 divide-y divide-gray-50">
+                    <button
+                      v-for="st in filteredStations"
+                      :key="st.id"
+                      type="button"
+                      @click="selectStation(st)"
+                      class="w-full text-left p-2 rounded-xl text-xs flex items-center justify-between gap-2 hover:bg-amber-50/80 transition cursor-pointer group"
+                      :class="selectedStation?.id === st.id ? 'bg-amber-100/70 font-bold text-amber-950' : 'text-gray-700'"
+                    >
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-base shrink-0">⛽</span>
+                        <div class="min-w-0">
+                          <div class="font-bold text-gray-900 group-hover:text-amber-800 truncate">
+                            {{ st.name }}
+                          </div>
+                          <div class="text-[11px] text-gray-500 truncate">
+                            {{ st.locality || 'Madagascar' }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <span v-if="st.province" class="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 group-hover:bg-amber-200/60">
+                          {{ st.province }}
+                        </span>
+                        <Check v-if="selectedStation?.id === st.id" :size="14" class="text-amber-600 shrink-0" />
+                      </div>
+                    </button>
+
+                    <!-- État vide -->
+                    <div v-if="filteredStations.length === 0" class="py-6 text-center text-xs text-gray-400">
+                      Aucune station Galana ne correspond à votre recherche.
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Bannière Station Active -->
               <div
                 v-if="selectedStation"
-                class="flex items-center justify-between text-[11px] text-amber-900 bg-white/70 rounded-lg p-2 border border-amber-200"
+                class="flex items-center justify-between text-[11px] text-amber-900 bg-white/80 rounded-xl p-2.5 border border-amber-200 shadow-2xs"
               >
-                <span class="flex items-center gap-1">
-                  <span>🎯</span>
-                  <span>Secours classés par <strong>proximité géographique</strong> avec :</span>
-                  <strong class="underline">{{ selectedStation.name }}</strong>
+                <span class="flex items-center gap-1.5">
+                  <span class="text-sm">🎯</span>
+                  <span>Secours classés par <strong>proximité</strong> avec :</span>
+                  <strong class="underline font-bold">{{ selectedStation.name }}</strong>
                 </span>
-                <span class="font-mono text-[10px] text-amber-800 font-bold">
+                <span class="font-mono text-[10px] text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded-md">
                   {{ filteredDirectoryContacts.length }} secours à proximité
                 </span>
               </div>
             </div>
 
-            <!-- RECHERCHE TEXTUELLE & FILTRE PROVINCE -->
+            <!-- RECHERCHE TEXTUELLE GLOBALE & FILTRE PROVINCE -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <!-- Recherche rapide -->
+              <!-- Recherche rapide avec bouton effacer -->
               <div class="relative flex-1">
                 <Search :size="14" class="absolute left-3 top-2.5 text-gray-400" />
                 <input
                   v-model="searchQuery"
                   type="text"
-                  placeholder="Rechercher service, ville, tél..."
-                  class="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-8.5 pr-3 py-1.5 text-xs text-gray-800 outline-none focus:border-primary focus:bg-white"
+                  placeholder="Rechercher service, ville, tél, adresse..."
+                  class="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-8.5 pr-8 py-1.5 text-xs text-gray-800 outline-none focus:border-primary focus:bg-white"
                 />
+                <button
+                  v-if="searchQuery"
+                  type="button"
+                  @click="searchQuery = ''"
+                  class="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600"
+                >
+                  <XIcon :size="13" />
+                </button>
               </div>
 
               <!-- Filtre Province -->
@@ -195,9 +335,19 @@
                 v-model="selectedProvinceFilter"
                 class="rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-1.5 text-xs font-medium text-gray-700 outline-none focus:border-primary shrink-0 cursor-pointer"
               >
-                <option value="ALL">Toutes provinces</option>
+                <option value="ALL">Toutes provinces ({{ contacts.length }})</option>
                 <option v-for="prov in provinceList" :key="prov" :value="prov">{{ prov }}</option>
               </select>
+
+              <!-- Bouton reset si filtres actifs -->
+              <button
+                v-if="searchQuery || selectedCategory !== 'ALL' || selectedProvinceFilter !== 'ALL' || selectedStation"
+                type="button"
+                @click="resetFilters"
+                class="text-xs text-primary hover:underline font-semibold shrink-0 cursor-pointer px-1"
+              >
+                Effacer filtres
+              </button>
             </div>
 
             <!-- CHIPS DE FILTRAGE PAR TYPE DE SERVICE -->
@@ -470,18 +620,25 @@
 <script setup lang="ts">
 import {
   BookOpen,
+  Check,
+  ChevronDown,
   Compass,
+  DownloadIcon,
   Edit3,
   Fuel,
   MapPin,
   PhoneCall,
   Plus,
+  RefreshCw,
   Search,
   Trash2,
+  XIcon,
 } from "@lucide/vue";
 import { computed, onMounted, ref } from "vue";
 import { toast } from "vue3-toastify";
 import Header from "../../../components/shared/Header.vue";
+import ButtonFilter from "../../../components/ui/ButtonFilter.vue";
+import { exportUtils } from "../../../core/utils/export.utils.ts";
 import emergencyContactService from "../../../core/services/emergencyContact.service";
 import type {
   EmergencyContactFormType,
@@ -539,6 +696,42 @@ const selectedProvinceFilter = ref<string>("ALL");
 const selectedStationIdModel = ref<number | null>(null);
 const selectedStation = ref<EmergencySiteType | null>(null);
 
+// Filtre de proximité station amélioré (combobox avec recherche)
+const isStationDropdownOpen = ref(false);
+const stationSearchQuery = ref("");
+const stationProvinceFilter = ref("ALL");
+
+// Provinces uniques des stations Galana
+const stationProvinces = computed(() => {
+  const set = new Set<string>();
+  sites.value.forEach((s) => {
+    if (s.province) set.add(s.province.toUpperCase().trim());
+  });
+  return Array.from(set).sort();
+});
+
+// Stations filtrées pour le dropdown interactif
+const filteredStations = computed(() => {
+  let list = sites.value;
+
+  if (stationProvinceFilter.value !== "ALL") {
+    list = list.filter((s) => (s.province || "").toUpperCase().trim() === stationProvinceFilter.value);
+  }
+
+  if (stationSearchQuery.value.trim()) {
+    const q = stationSearchQuery.value.toLowerCase().trim();
+    list = list.filter((s) => {
+      const matchName = (s.name || "").toLowerCase().includes(q);
+      const matchLoc = (s.locality || "").toLowerCase().includes(q);
+      const matchProv = (s.province || "").toLowerCase().includes(q);
+      const matchCode = (s.code || "").toLowerCase().includes(q);
+      return matchName || matchLoc || matchProv || matchCode;
+    });
+  }
+
+  return list;
+});
+
 // Contact sélectionné pour centrage sur la carte
 const selectedContactId = ref<number | null>(null);
 
@@ -575,6 +768,56 @@ function formatDistance(dist?: number): string {
   if (dist === undefined || dist === null) return "";
   if (dist < 1) return `${Math.round(dist * 1000)} m`;
   return `${dist.toFixed(1)} km`;
+}
+
+interface NearbyStation {
+  id: number;
+  name: string;
+  locality?: string;
+  province?: string;
+  latitude?: number;
+  longitude?: number;
+  distance_km: number;
+}
+
+// Stations Galana (SS) les plus proches d'un contact d'urgence donné
+function getNearestSitesForContact(contact: EmergencyContactType, limit = 2): NearbyStation[] {
+  const cLat = contact.latitude !== undefined && contact.latitude !== null ? Number(contact.latitude) : null;
+  const cLng = contact.longitude !== undefined && contact.longitude !== null ? Number(contact.longitude) : null;
+  if (cLat === null || cLng === null || isNaN(cLat) || isNaN(cLng) || !sites.value.length) {
+    return [];
+  }
+
+  const list: NearbyStation[] = [];
+  for (const s of sites.value) {
+    const sLat = s.latitude !== undefined && s.latitude !== null ? Number(s.latitude) : null;
+    const sLng = s.longitude !== undefined && s.longitude !== null ? Number(s.longitude) : null;
+    if (sLat !== null && sLng !== null && !isNaN(sLat) && !isNaN(sLng)) {
+      list.push({
+        id: s.id,
+        name: s.name,
+        locality: s.locality,
+        province: s.province,
+        latitude: sLat,
+        longitude: sLng,
+        distance_km: calculateDistanceKm(cLat, cLng, sLat, sLng),
+      });
+    }
+  }
+
+  list.sort((a, b) => a.distance_km - b.distance_km);
+  return list.slice(0, limit);
+}
+
+// Sélection d'une station directement depuis le badge d'un contact d'urgence
+function handleSelectStationFromCard(nearbyStation: NearbyStation) {
+  const fullStation = sites.value.find((s) => s.id === nearbyStation.id);
+  if (fullStation) {
+    handleSelectStationFromMap(fullStation);
+    if (emergencyMapRef.value && fullStation.latitude && fullStation.longitude) {
+      emergencyMapRef.value.selectStation(fullStation);
+    }
+  }
 }
 
 // Contacts avec distance calculée par rapport à la station sélectionnée
@@ -682,14 +925,28 @@ const filteredDirectoryContacts = computed(() => {
       }
     }
 
-    // 3. Recherche textuelle
+    // 3. Recherche textuelle multi-champs
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase().trim();
-      const matchName = c.name?.toLowerCase().includes(q);
-      const matchLoc = c.locality?.toLowerCase().includes(q);
-      const matchC1 = c.contact_1?.toLowerCase().includes(q);
-      const matchC2 = c.contact_2?.toLowerCase().includes(q);
-      if (!matchName && !matchLoc && !matchC1 && !matchC2) {
+      const matchName = (c.name || "").toLowerCase().includes(q);
+      const matchLoc = (c.locality || c.location?.locality || "").toLowerCase().includes(q);
+      const matchProv = (resolveContactProvince(c) || "").toLowerCase().includes(q);
+      const matchAddr = (c.address || "").toLowerCase().includes(q);
+      const matchC1 = (c.contact_1 || c.phone || "").toLowerCase().includes(q);
+      const matchC2 = (c.contact_2 || "").toLowerCase().includes(q);
+      const matchC3 = (c.contact_3 || "").toLowerCase().includes(q);
+      const matchNotes = (c.notes || "").toLowerCase().includes(q);
+
+      const typeKeywords: Record<string, string[]> = {
+        POMPIER: ["pompier", "pompiers", "incendie", "118", "secours", "caserne"],
+        HOPITAL: ["hopital", "hôpital", "chu", "clinique", "urgence", "médical", "medecin", "docteur", "santé"],
+        AMBULANCE: ["ambulance", "samu", "évacuation", "evacuation", "smur"],
+        POLICE: ["police", "commissariat", "117", "sécurité"],
+        GENDARMERIE: ["gendarmerie", "gendarme", "brigade", "119"],
+      };
+      const matchTypeKeywords = (typeKeywords[c.type] || []).some(k => k.includes(q) || q.includes(k));
+
+      if (!matchName && !matchLoc && !matchProv && !matchAddr && !matchC1 && !matchC2 && !matchC3 && !matchNotes && !matchTypeKeywords) {
         return false;
       }
     }
@@ -704,6 +961,71 @@ const filteredDirectoryContacts = computed(() => {
 
   return list;
 });
+
+// Exportation Excel des contacts d'urgence avec leurs informations complètes
+const loading_export = ref(false);
+
+const exportFields = [
+  { key: "type_label", excelName: "Type de secours" },
+  { key: "name", excelName: "Nom de l'organisme / Centre" },
+  { key: "contact_1", excelName: "Téléphone d'urgence" },
+  { key: "contact_2", excelName: "Ligne directe / Secondaire" },
+  { key: "contact_3", excelName: "Autre contact" },
+  { key: "email", excelName: "E-mail" },
+  { key: "locality", excelName: "Ville / Localité" },
+  { key: "province", excelName: "Province / Région" },
+  { key: "address", excelName: "Adresse" },
+  { key: "latitude", excelName: "Latitude" },
+  { key: "longitude", excelName: "Longitude" },
+  { key: "distance", excelName: "Distance calculée" },
+  { key: "reference_station", excelName: "Station Galana de référence" },
+  { key: "notes", excelName: "Observations / Notes" },
+];
+
+function exportData() {
+  if (filteredDirectoryContacts.value.length === 0) {
+    toast.warning("Aucun contact d'urgence à exporter.");
+    return;
+  }
+
+  loading_export.value = true;
+  try {
+    const typeLabelMap: Record<string, string> = {
+      POMPIER: "Sapeurs-Pompiers",
+      HOPITAL: "Hôpital & Urgences médicales",
+      AMBULANCE: "Ambulance & SAMU",
+      POLICE: "Police Nationale",
+      GENDARMERIE: "Gendarmerie Nationale",
+    };
+
+    const rows = filteredDirectoryContacts.value.map((c) => ({
+      type_label: typeLabelMap[c.type] || c.type,
+      name: c.name || "—",
+      contact_1: c.contact_1 || c.phone || "—",
+      contact_2: c.contact_2 || "—",
+      contact_3: c.contact_3 || "—",
+      email: c.email || "—",
+      locality: c.locality || c.location?.locality || "—",
+      province: resolveContactProvince(c) || "—",
+      address: c.address || "—",
+      latitude: c.latitude !== undefined && c.latitude !== null ? String(c.latitude) : "—",
+      longitude: c.longitude !== undefined && c.longitude !== null ? String(c.longitude) : "—",
+      distance: c.distance_km !== undefined && c.distance_km !== 99999 ? formatDistance(c.distance_km) : "—",
+      reference_station: selectedStation.value ? `${selectedStation.value.name} (${selectedStation.value.locality || ''})` : "Toutes stations",
+      notes: c.notes || "—",
+    }));
+
+    exportUtils(
+      rows,
+      exportFields,
+      () => toast.success(`${rows.length} contacts d'urgence exportés avec succès !`),
+      () => toast.error("Échec de l'exportation des contacts d'urgence."),
+      "contacts_urgence_galana"
+    );
+  } finally {
+    loading_export.value = false;
+  }
+}
 
 async function loadData() {
   mapLoading.value = true;
@@ -751,28 +1073,28 @@ function handleSelectStationFromMap(station: EmergencySiteType) {
   selectedStation.value = station;
   selectedStationIdModel.value = station.id;
   selectedContactId.value = null;
+  isStationDropdownOpen.value = false;
+  stationSearchQuery.value = "";
   toast.info(`Secours classés par proximité avec la station ${station.name}`);
 }
 
-// Changement depuis le sélecteur dropdown de stations
-function onStationSelectChange() {
-  if (!selectedStationIdModel.value) {
-    clearStationSelection();
-    return;
-  }
-  const found = sites.value.find((s) => s.id === selectedStationIdModel.value);
-  if (found) {
-    selectedStation.value = found;
-    selectedContactId.value = null;
-    emergencyMapRef.value?.selectStation(found);
-    toast.info(`Secours classés par proximité avec la station ${found.name}`);
-  }
+// Sélection manuelle depuis le dropdown de recherche de stations
+function selectStation(station: EmergencySiteType) {
+  selectedStation.value = station;
+  selectedStationIdModel.value = station.id;
+  selectedContactId.value = null;
+  isStationDropdownOpen.value = false;
+  stationSearchQuery.value = "";
+  emergencyMapRef.value?.selectStation(station);
+  toast.info(`Secours classés par proximité avec la station ${station.name}`);
 }
 
 // Réinitialiser la sélection de station
 function clearStationSelection() {
   selectedStation.value = null;
   selectedStationIdModel.value = null;
+  isStationDropdownOpen.value = false;
+  stationSearchQuery.value = "";
 }
 
 function copyPhone(phone: string) {

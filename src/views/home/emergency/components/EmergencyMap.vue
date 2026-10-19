@@ -49,6 +49,147 @@
         </button>
       </div>
 
+      <!-- BARRE DE RECHERCHE RAPIDE CARTE (SECOURS & STATIONS) -->
+      <div class="relative w-full">
+        <div class="relative flex items-center">
+          <Search :size="14" class="absolute left-3 text-gray-400 pointer-events-none" />
+          <input
+            v-model="mapSearchQuery"
+            type="text"
+            placeholder="Rechercher sur la carte (secours, station Galana, ville, téléphone, adresse)..."
+            @focus="isSearchDropdownOpen = true"
+            @keydown.enter.prevent="handleSearchEnter"
+            @keydown.escape="isSearchDropdownOpen = false"
+            class="w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-24 py-1.5 text-xs text-gray-800 placeholder-gray-400 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
+          />
+          <div class="absolute right-2 flex items-center gap-1.5">
+            <span
+              v-if="mapSearchQuery.trim()"
+              class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary whitespace-nowrap"
+            >
+              {{ filteredContacts.length + filteredSites.length }} repères
+            </span>
+            <button
+              v-if="mapSearchQuery"
+              type="button"
+              @click="clearMapSearch"
+              class="p-0.5 rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition cursor-pointer"
+              title="Effacer la recherche"
+            >
+              <XIcon :size="13" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Popover déroulant des résultats de recherche -->
+        <div
+          v-if="isSearchDropdownOpen && mapSearchQuery.trim().length > 0"
+          class="fixed inset-0 z-[1040]"
+          @click="isSearchDropdownOpen = false"
+        />
+
+        <div
+          v-if="isSearchDropdownOpen && mapSearchQuery.trim().length > 0"
+          class="absolute left-0 right-0 top-full mt-1.5 z-[1050] rounded-2xl border border-gray-200 bg-white p-3 shadow-xl max-h-80 overflow-y-auto space-y-3"
+        >
+          <!-- Groupe 1 : Secours d'urgence -->
+          <div v-if="searchResultsContacts.length > 0">
+            <div class="flex items-center justify-between pb-1.5 border-b border-gray-100 text-[11px] font-bold text-gray-700">
+              <span class="flex items-center gap-1">
+                <span>🚨 Services de secours</span>
+                <span class="text-xs text-red-600 font-extrabold">({{ searchResultsContacts.length }})</span>
+              </span>
+              <span class="text-[10px] text-gray-400 font-normal">Cliquer pour localiser</span>
+            </div>
+            <div class="divide-y divide-gray-50 mt-1">
+              <button
+                v-for="c in searchResultsContacts"
+                :key="'c-' + c.id"
+                type="button"
+                @click="selectContactFromSearch(c)"
+                class="w-full text-left p-2 rounded-xl hover:bg-gray-50 flex items-center justify-between gap-2 transition cursor-pointer group"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <div
+                    class="h-7 w-7 rounded-lg flex items-center justify-center text-xs shrink-0 shadow-2xs font-bold"
+                    :style="{ backgroundColor: contactColors(c.type).fill + '15', color: contactColors(c.type).fill }"
+                  >
+                    {{ contactEmoji(c.type) }}
+                  </div>
+                  <div class="min-w-0 truncate">
+                    <div class="font-bold text-gray-900 text-xs truncate group-hover:text-primary">
+                      {{ c.name }}
+                    </div>
+                    <div class="text-[10px] text-gray-500 truncate flex items-center gap-1">
+                      <MapPin :size="10" class="text-gray-400 shrink-0" />
+                      <span>{{ c.locality || 'Madagascar' }}</span>
+                      <span v-if="resolveContactProvince(c)" class="text-gray-400">({{ resolveContactProvince(c) }})</span>
+                      <span v-if="c.contact_1 || c.phone" class="font-mono text-emerald-700 ml-1 font-semibold">📞 {{ c.contact_1 || c.phone }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="shrink-0 flex items-center gap-1 text-[10px] text-primary font-semibold group-hover:underline">
+                  <Compass :size="12" />
+                  <span>Voir</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Groupe 2 : Stations Galana (SS) -->
+          <div v-if="searchResultsSites.length > 0">
+            <div class="flex items-center justify-between pb-1.5 border-b border-gray-100 text-[11px] font-bold text-amber-900">
+              <span class="flex items-center gap-1">
+                <span>⛽ Stations Galana (SS)</span>
+                <span class="text-xs text-amber-600 font-extrabold">({{ searchResultsSites.length }})</span>
+              </span>
+              <span class="text-[10px] text-gray-400 font-normal">Cliquer pour centrer et voir secours proches</span>
+            </div>
+            <div class="divide-y divide-gray-50 mt-1">
+              <button
+                v-for="s in searchResultsSites"
+                :key="'s-' + s.id"
+                type="button"
+                @click="selectStationFromSearch(s)"
+                class="w-full text-left p-2 rounded-xl hover:bg-amber-50/60 flex items-center justify-between gap-2 transition cursor-pointer group"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="h-7 w-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs shrink-0 font-bold">
+                    ⛽
+                  </div>
+                  <div class="min-w-0 truncate">
+                    <div class="font-bold text-gray-900 text-xs truncate group-hover:text-amber-800">
+                      {{ s.name }}
+                    </div>
+                    <div class="text-[10px] text-gray-500 truncate flex items-center gap-1">
+                      <MapPin :size="10" class="text-gray-400 shrink-0" />
+                      <span>{{ s.locality || 'Madagascar' }}</span>
+                      <span v-if="s.province" class="text-gray-400">({{ s.province }})</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="shrink-0 flex items-center gap-1 text-[10px] text-amber-700 font-semibold group-hover:underline">
+                  <Compass :size="12" />
+                  <span>Centrer</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Aucun résultat -->
+          <div
+            v-if="searchResultsContacts.length === 0 && searchResultsSites.length === 0"
+            class="py-4 text-center text-gray-500"
+          >
+            <div class="text-xl mb-1">🔍</div>
+            <p class="text-xs font-semibold text-gray-700">Aucun résultat trouvé sur la carte</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">
+              Essayez un nom de ville (ex: Toamasina, Majunga), une catégorie (pompier, hôpital) ou une station Galana.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- FILTRES RAPIDES TYPE, PROVINCE & TOGGLES -->
       <div class="flex flex-wrap items-center gap-1.5 text-xs">
         <!-- Filtre Type de Secours -->
@@ -400,6 +541,9 @@ import {
   Maximize2,
   Minimize2,
   Radio,
+  Search,
+  XIcon,
+  MapPin,
 } from "@lucide/vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import type {
@@ -436,6 +580,10 @@ const selectedType = ref<string>("ALL");
 const selectedProvince = ref<string>("ALL");
 const showStations = ref(true);
 const showContacts = ref(true);
+
+// Recherche textuelle sur la carte
+const mapSearchQuery = ref("");
+const isSearchDropdownOpen = ref(false);
 
 const selectedStation = computed(() => {
   if (!props.selectedStationId) return null;
@@ -531,8 +679,76 @@ function getNearestContactsForStation(station: EmergencySiteType, limit = 6) {
     .slice(0, limit);
 }
 
+function normalizeSearchText(str?: string | null): string {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function matchesSearch(text: string | null | undefined, query: string): boolean {
+  if (!text) return false;
+  return normalizeSearchText(text).includes(query);
+}
+
+function matchesPhoneSearch(phone: string | null | undefined, queryDigits: string): boolean {
+  if (!phone || !queryDigits) return false;
+  const cleanedPhone = phone.replace(/\D/g, "");
+  return cleanedPhone.includes(queryDigits);
+}
+
+function contactEmoji(type: EmergencyType | string) {
+  switch (type) {
+    case "POMPIER":
+      return "🚒";
+    case "HOPITAL":
+      return "🏥";
+    case "AMBULANCE":
+      return "🚑";
+    case "POLICE":
+      return "👮";
+    case "GENDARMERIE":
+      return "🛡️";
+    default:
+      return "🚨";
+  }
+}
+
+function contactMatchesSearch(c: EmergencyContactType, q: string, qDigits: string): boolean {
+  if (!q) return true;
+  if (matchesSearch(c.name, q)) return true;
+  if (matchesSearch(c.locality, q)) return true;
+  if (matchesSearch(c.address, q)) return true;
+  if (matchesSearch(c.notes, q)) return true;
+  if (matchesSearch(c.type, q)) return true;
+  if (matchesSearch(contactLabel(c.type), q)) return true;
+  if (matchesSearch(resolveContactProvince(c), q)) return true;
+  if (matchesSearch(c.location?.label, q)) return true;
+  if (qDigits.length >= 3) {
+    if (matchesPhoneSearch(c.contact_1, qDigits)) return true;
+    if (matchesPhoneSearch(c.phone, qDigits)) return true;
+    if (matchesPhoneSearch(c.contact_2, qDigits)) return true;
+    if (matchesPhoneSearch(c.contact_3, qDigits)) return true;
+  }
+  return false;
+}
+
+function siteMatchesSearch(s: EmergencySiteType, q: string): boolean {
+  if (!q) return true;
+  if (matchesSearch(s.name, q)) return true;
+  if (matchesSearch(s.locality, q)) return true;
+  if (matchesSearch(s.province, q)) return true;
+  if (matchesSearch(s.code, q)) return true;
+  return false;
+}
+
 // Contacts filtrés sur la carte
 const filteredContacts = computed(() => {
+  const q = normalizeSearchText(mapSearchQuery.value);
+  const qDigits = mapSearchQuery.value.replace(/\D/g, "");
+
   return props.contacts
     .filter((c) => {
       const lat = c.latitude !== undefined && c.latitude !== null ? Number(c.latitude) : null;
@@ -547,6 +763,8 @@ const filteredContacts = computed(() => {
         if (contactProv && contactProv !== targetProv) return false;
       }
 
+      if (q && !contactMatchesSearch(c, q, qDigits)) return false;
+
       return true;
     })
     .map((c) => ({
@@ -558,6 +776,8 @@ const filteredContacts = computed(() => {
 
 // Sites Galana (SS) filtrés sur la carte
 const filteredSites = computed(() => {
+  const q = normalizeSearchText(mapSearchQuery.value);
+
   return props.sites
     .filter((s) => {
       const lat = s.latitude !== undefined && s.latitude !== null ? Number(s.latitude) : null;
@@ -565,6 +785,9 @@ const filteredSites = computed(() => {
       if (lat === null || lng === null || isNaN(lat) || isNaN(lng)) return false;
 
       if (selectedProvince.value !== "ALL" && s.province !== selectedProvince.value) return false;
+
+      if (q && !siteMatchesSearch(s, q)) return false;
+
       return true;
     })
     .map((s) => ({
@@ -573,6 +796,51 @@ const filteredSites = computed(() => {
       longitude: Number(s.longitude),
     }));
 });
+
+// Résultats de recherche rapide (dropdown)
+const searchResultsContacts = computed(() => {
+  if (!mapSearchQuery.value.trim()) return [];
+  const q = normalizeSearchText(mapSearchQuery.value);
+  const qDigits = mapSearchQuery.value.replace(/\D/g, "");
+  return props.contacts
+    .filter((c) => contactMatchesSearch(c, q, qDigits))
+    .slice(0, 6);
+});
+
+const searchResultsSites = computed(() => {
+  if (!mapSearchQuery.value.trim()) return [];
+  const q = normalizeSearchText(mapSearchQuery.value);
+  return props.sites
+    .filter((s) => siteMatchesSearch(s, q))
+    .slice(0, 6);
+});
+
+function clearMapSearch() {
+  mapSearchQuery.value = "";
+  isSearchDropdownOpen.value = false;
+}
+
+function selectContactFromSearch(contact: EmergencyContactType) {
+  showContacts.value = true;
+  isSearchDropdownOpen.value = false;
+  emit("select-contact", contact);
+  selectContact(contact);
+}
+
+function selectStationFromSearch(station: EmergencySiteType) {
+  showStations.value = true;
+  isSearchDropdownOpen.value = false;
+  emit("select-station", station);
+  selectStation(station);
+}
+
+function handleSearchEnter() {
+  if (searchResultsContacts.value.length > 0) {
+    selectContactFromSearch(searchResultsContacts.value[0]);
+  } else if (searchResultsSites.value.length > 0) {
+    selectStationFromSearch(searchResultsSites.value[0]);
+  }
+}
 
 function onMapReady(map: any) {
   leafletMap.value = map;
