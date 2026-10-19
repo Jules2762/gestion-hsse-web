@@ -157,7 +157,6 @@
                                 <th>RESPONSABLE</th>
                                 <th class="text-center">STATUT</th>
                                 <th class="text-center">E-MAIL</th>
-                                <th class="w-24 text-center">ACTIONS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -250,45 +249,11 @@
                                 <td class="text-center">
                                     <ActionEmailStatus :status="item.email_status || 'NOT_SENT'" />
                                 </td>
-
-                                <!-- Actions rapides -->
-                                <td class="text-center" @click.stop>
-                                    <div class="flex items-center justify-center gap-1">
-                                        <!-- Changement rapide de statut -->
-                                        <button
-                                            type="button"
-                                            @click="toggleNextStatus(item)"
-                                            class="p-1 text-gray-500 hover:text-primary rounded-md hover:bg-gray-100 transition-colors"
-                                            :title="getNextStatusLabel(item.status)">
-                                            <component :is="getNextStatusIcon(item.status)" :size="15" />
-                                        </button>
-
-                                        <!-- Envoyer e-mail -->
-                                        <button
-                                            type="button"
-                                            @click="sendEmail(item)"
-                                            :disabled="sendingEmailKey === getActionKey(item)"
-                                            class="p-1 text-gray-500 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors disabled:opacity-40"
-                                            :title="item.email_status === 'SENT' ? 'Réenvoyer l\'e-mail de notification' : 'Envoyer l\'e-mail au responsable'">
-                                            <Loader2 v-if="sendingEmailKey === getActionKey(item)" :size="15" class="animate-spin text-blue-600" />
-                                            <Mail v-else :size="15" />
-                                        </button>
-
-                                        <!-- Voir fiche source -->
-                                        <button
-                                            type="button"
-                                            @click="goToInspection(item)"
-                                            class="p-1 text-gray-500 hover:text-emerald-600 rounded-md hover:bg-emerald-50 transition-colors"
-                                            title="Voir la fiche source">
-                                            <ExternalLink :size="15" />
-                                        </button>
-                                    </div>
-                                </td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="9" class="w-full p-4 border-t border-gray-200">
+                                <td colspan="8" class="w-full p-4 border-t border-gray-200">
                                     <div class="flex flex-row items-center justify-between text-sm">
                                         <span class="text-xs text-gray-500 font-medium">
                                             Affichage de {{ actions.length }} actions correctives
@@ -422,6 +387,141 @@
                     <span class="font-medium text-gray-800">{{ selected_action.created_at }}</span>
                 </div>
 
+                <!-- PIÈCES JOINTES & PHOTOS -->
+                <div class="mt-4 border-t border-gray-200 pt-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-1.5">
+                            <Paperclip :size="14" class="text-gray-500" />
+                            <span class="text-[10px] uppercase tracking-wide font-bold text-gray-400">
+                                Pièces jointes & Photos
+                            </span>
+                            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-gray-100 text-gray-600">
+                                {{ selected_action.attachments?.length || 0 }}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            @click="triggerFileInput"
+                            :disabled="isUploadingAttachment"
+                            class="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 cursor-pointer disabled:opacity-50 transition-colors">
+                            <Loader2 v-if="isUploadingAttachment" :size="12" class="animate-spin" />
+                            <Plus v-else :size="12" />
+                            <span>Ajouter</span>
+                        </button>
+                    </div>
+
+                    <!-- Input caché pour upload de fichiers -->
+                    <input
+                        ref="fileInputRef"
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        class="hidden"
+                        @change="handleFileUpload"
+                    />
+
+                    <!-- Liste / Grille des pièces jointes -->
+                    <div v-if="selected_action.attachments && selected_action.attachments.length > 0" class="flex flex-col gap-2">
+                        <!-- Miniatures Photos -->
+                        <div v-if="photoAttachments.length > 0" class="flex flex-col gap-1.5">
+                            <span class="text-[10px] text-gray-400 font-semibold">Photos & Preuves :</span>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div
+                                    v-for="att in photoAttachments"
+                                    :key="att.id"
+                                    class="group relative h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 cursor-pointer shadow-xs hover:border-primary transition-all"
+                                    @click="openLightbox(att)"
+                                    :title="att.file_name">
+                                    <img
+                                        :src="resolveAttachmentUrl(att)"
+                                        :alt="att.file_name"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                        loading="lazy"
+                                    />
+                                    <!-- Source Badge -->
+                                    <span
+                                        :class="att.source === 'ACTION' ? 'bg-primary text-white' : 'bg-gray-800/80 text-white'"
+                                        class="absolute bottom-1 left-1 text-[8px] font-bold px-1 py-0.2 rounded backdrop-blur-xs">
+                                        {{ att.source === 'ACTION' ? 'Preuve' : 'Constat' }}
+                                    </span>
+                                    <!-- Overlay hover icons -->
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-opacity">
+                                        <button
+                                            type="button"
+                                            @click.stop="openLightbox(att)"
+                                            class="p-1 rounded-full bg-white/90 text-gray-800 hover:bg-white transition-colors"
+                                            title="Agrandir">
+                                            <Eye :size="13" />
+                                        </button>
+                                        <button
+                                            v-if="att.source === 'ACTION'"
+                                            type="button"
+                                            @click.stop="deleteAttachment(att)"
+                                            class="p-1 rounded-full bg-red-600/90 text-white hover:bg-red-600 transition-colors"
+                                            title="Supprimer">
+                                            <Trash2 :size="13" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents (PDF, Word, etc.) -->
+                        <div v-if="docAttachments.length > 0" class="flex flex-col gap-1.5 mt-1">
+                            <span class="text-[10px] text-gray-400 font-semibold">Documents :</span>
+                            <div class="flex flex-col gap-1.5">
+                                <div
+                                    v-for="att in docAttachments"
+                                    :key="att.id"
+                                    class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100/70 transition-colors text-xs">
+                                    <a
+                                        :href="resolveAttachmentUrl(att)"
+                                        target="_blank"
+                                        class="flex items-center gap-2 truncate flex-1 mr-2 text-gray-800 hover:text-primary">
+                                        <FileText :size="16" class="text-gray-500 shrink-0" />
+                                        <div class="truncate">
+                                            <p class="font-medium text-[11px] truncate">{{ att.file_name }}</p>
+                                            <p class="text-[9px] text-gray-400">{{ formatFileSize(att.file_size) }} • {{ att.source === 'ACTION' ? 'Preuve action' : 'Inspection' }}</p>
+                                        </div>
+                                    </a>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <a
+                                            :href="resolveAttachmentUrl(att)"
+                                            target="_blank"
+                                            download
+                                            class="p-1 text-gray-400 hover:text-primary rounded transition-colors"
+                                            title="Télécharger">
+                                            <Download :size="13" />
+                                        </a>
+                                        <button
+                                            v-if="att.source === 'ACTION'"
+                                            type="button"
+                                            @click="deleteAttachment(att)"
+                                            class="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                                            title="Supprimer">
+                                            <Trash2 :size="13" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- État vide -->
+                    <div
+                        v-else
+                        @click="triggerFileInput"
+                        class="p-4 border-2 border-dashed border-gray-200 hover:border-primary/50 rounded-xl flex flex-col items-center justify-center gap-1 text-center cursor-pointer transition-colors bg-gray-50/50 hover:bg-primary/5 group">
+                        <Upload :size="18" class="text-gray-400 group-hover:text-primary transition-colors" />
+                        <span class="text-xs font-semibold text-gray-600 group-hover:text-primary transition-colors">
+                            Aucune pièce jointe
+                        </span>
+                        <span class="text-[10px] text-gray-400">
+                            Cliquez pour joindre une photo ou un document de preuve
+                        </span>
+                    </div>
+                </div>
+
                 <!-- ACTIONS WORKFLOW -->
                 <div class="mt-5 border-t border-gray-200 pt-4 flex flex-col gap-2">
                     <!-- Statut Workflow Buttons -->
@@ -482,6 +582,52 @@
                     </button>
                 </div>
         </aside>
+
+        <!-- LIGHTBOX / APERÇU PHOTO AGRANDIE -->
+        <div
+            v-if="lightboxAttachment"
+            class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
+            @click="lightboxAttachment = null">
+            <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center gap-2" @click.stop>
+                <!-- Top action bar -->
+                <div class="w-full flex items-center justify-between text-white px-1">
+                    <div class="flex items-center gap-2 truncate mr-4">
+                        <span class="text-xs font-medium truncate">{{ lightboxAttachment.file_name }}</span>
+                        <span
+                            :class="lightboxAttachment.source === 'ACTION' ? 'bg-primary text-white' : 'bg-white/20 text-white'"
+                            class="text-[9px] font-bold px-1.5 py-0.5 rounded">
+                            {{ lightboxAttachment.source === 'ACTION' ? 'Preuve action' : 'Constat inspection' }}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <a
+                            :href="resolveAttachmentUrl(lightboxAttachment)"
+                            target="_blank"
+                            download
+                            class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                            title="Télécharger l'image">
+                            <Download :size="16" />
+                        </a>
+                        <button
+                            type="button"
+                            @click="lightboxAttachment = null"
+                            class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                            title="Fermer">
+                            <XIcon :size="16" />
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Image display -->
+                <div class="rounded-xl overflow-hidden shadow-2xl bg-black/40 flex items-center justify-center max-h-[82vh]">
+                    <img
+                        :src="resolveAttachmentUrl(lightboxAttachment)"
+                        :alt="lightboxAttachment.file_name"
+                        class="max-w-full max-h-[82vh] object-contain"
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -493,21 +639,28 @@ import ActionEmailStatus from '../../../components/features/action/ActionEmailSt
 import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue'
 import { router } from '../../../router/index.ts'
 import { useActionService } from '../../../core/services/action.service.ts'
-import type { ActionMetaType, ActionStatusType, ActionType } from '../../../@types/Action.type.ts'
+import type { ActionAttachmentType, ActionMetaType, ActionStatusType, ActionType } from '../../../@types/Action.type.ts'
 import type { contextMenuType } from '../../../@types/ContextMenu.type.ts'
 import { toast } from 'vue3-toastify'
 import {
     AlertCircle,
     Calendar1Icon,
     CheckCircle2,
+    Download,
     ExternalLink,
+    Eye,
+    FileText,
     ListChecks,
     Loader2,
     Mail,
+    Paperclip,
     PlayCircle,
+    Plus,
     RefreshCw,
     RotateCcw,
     ShieldAlert,
+    Trash2,
+    Upload,
     XIcon
 } from '@lucide/vue'
 
@@ -518,6 +671,124 @@ const actions = ref<ActionType[]>([])
 const selected_action = ref<ActionType>()
 const loading = ref<boolean>(false)
 const sendingEmailKey = ref<string | null>(null)
+
+// Pièces jointes & photos
+const lightboxAttachment = ref<ActionAttachmentType | null>(null)
+const isUploadingAttachment = ref<boolean>(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+const photoAttachments = computed<ActionAttachmentType[]>(() => {
+    const list = selected_action.value?.attachments || []
+    return list.filter(isImageAttachment)
+})
+
+const docAttachments = computed<ActionAttachmentType[]>(() => {
+    const list = selected_action.value?.attachments || []
+    return list.filter(att => !isImageAttachment(att))
+})
+
+function isImageAttachment(att: ActionAttachmentType): boolean {
+    if (att.file_type && att.file_type.startsWith('image/')) return true
+    const ext = (att.file_name || att.file_path || '').split('.').pop()?.toLowerCase()
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext || '')
+}
+
+function resolveAttachmentUrl(att: ActionAttachmentType): string {
+    if (att.url) {
+        if (att.url.startsWith('http')) return att.url
+        const backendUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8000'
+        return `${backendUrl}${att.url.startsWith('/') ? '' : '/'}${att.url}`
+    }
+    if (att.file_path) {
+        if (att.file_path.startsWith('http')) return att.file_path
+        const backendUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8000'
+        const clean = att.file_path.startsWith('/') ? att.file_path : `/${att.file_path}`
+        return clean.startsWith('/storage') ? `${backendUrl}${clean}` : `${backendUrl}/storage${clean}`
+    }
+    return ''
+}
+
+function formatFileSize(bytes?: number | null): string {
+    if (!bytes) return ''
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+function openLightbox(att: ActionAttachmentType) {
+    lightboxAttachment.value = att
+}
+
+function triggerFileInput() {
+    fileInputRef.value?.click()
+}
+
+async function handleFileUpload(event: Event) {
+    const target = event.target as HTMLInputElement
+    const files = target.files
+    if (!files || files.length === 0 || !selected_action.value) return
+
+    if (!selected_action.value.origin || !selected_action.value.id) {
+        toast.error("Impossible d'associer un fichier à cette action.")
+        return
+    }
+
+    isUploadingAttachment.value = true
+    try {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i]
+            const res = await actionService.uploadAttachment(
+                selected_action.value.origin,
+                selected_action.value.id,
+                file
+            )
+            const newAtt = res.data?.data
+            if (newAtt) {
+                if (!selected_action.value.attachments) {
+                    selected_action.value.attachments = []
+                }
+                selected_action.value.attachments.push(newAtt)
+
+                const actionInList = actions.value.find(a => getActionKey(a) === getActionKey(selected_action.value!))
+                if (actionInList) {
+                    if (!actionInList.attachments) actionInList.attachments = []
+                    actionInList.attachments.push(newAtt)
+                }
+            }
+        }
+        toast.success(files.length > 1 ? `${files.length} fichiers ajoutés avec succès.` : 'Pièce jointe ajoutée avec succès.')
+    } catch (err: any) {
+        console.error('Erreur lors de l\'upload du fichier:', err)
+        const msg = err.response?.data?.message || "Échec de l'enregistrement de la pièce jointe."
+        toast.error(msg)
+    } finally {
+        isUploadingAttachment.value = false
+        if (target) target.value = ''
+    }
+}
+
+async function deleteAttachment(att: ActionAttachmentType) {
+    if (!confirm(`Supprimer la pièce jointe "${att.file_name}" ?`)) return
+
+    try {
+        await actionService.deleteAttachment(att.id)
+        if (selected_action.value && selected_action.value.attachments) {
+            selected_action.value.attachments = selected_action.value.attachments.filter(a => a.id !== att.id)
+        }
+        const actionInList = actions.value.find(a => getActionKey(a) === getActionKey(selected_action.value!))
+        if (actionInList && actionInList.attachments) {
+            actionInList.attachments = actionInList.attachments.filter(a => a.id !== att.id)
+        }
+        if (lightboxAttachment.value?.id === att.id) {
+            lightboxAttachment.value = null
+        }
+        toast.success('Pièce jointe supprimée.')
+    } catch (err: any) {
+        console.error('Erreur lors de la suppression du fichier:', err)
+        const msg = err.response?.data?.message || "Échec de la suppression de la pièce jointe."
+        toast.error(msg)
+    }
+}
 
 function getActionKey(item?: ActionType): string {
     if (!item) return ''
@@ -739,6 +1010,13 @@ const contextMenuActions = computed(() => {
     const statusObj = textContextMenuStatus(action.status)
 
     return [
+        {
+            label: 'Détails & pièces jointes',
+            icon: Paperclip,
+            onClick: () => {
+                selected_action.value = action
+            }
+        },
         {
             label: statusObj.text,
             icon: statusObj.icon,

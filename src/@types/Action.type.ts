@@ -22,6 +22,16 @@ export type ActionResponsibleType = {
     type?: 'USER' | 'PERSONNEL'
 }
 
+export type ActionAttachmentType = {
+    id: number | string
+    file_name: string
+    file_path: string
+    file_type?: string | null
+    file_size?: number | null
+    url: string
+    source: 'ACTION' | 'INSPECTION'
+}
+
 export type ActionType = {
     id?: string | number
     raw_id?: number
@@ -41,6 +51,7 @@ export type ActionType = {
     item_answer?: string
     item_observation?: string
     checklist_item_id?: string | number
+    attachments?: ActionAttachmentType[]
     assigned_to?: ActionResponsibleType | UserDataType | any
 }
 

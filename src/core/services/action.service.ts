@@ -40,5 +40,11 @@ export const useActionService = defineStore('action-service', {
             useNotificationStore().fetchNotifications()
             return res
         },
+        async uploadAttachment(origin: string, id: string | number, file: File) {
+            return await actionApi.uploadAttachment(origin, id, file)
+        },
+        async deleteAttachment(attachmentId: string | number) {
+            return await actionApi.deleteAttachment(attachmentId)
+        },
     },
 })

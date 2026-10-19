@@ -22,6 +22,7 @@ export interface EmergencyContactType {
     type: EmergencyType;
     name: string;
     locality?: string;
+    province?: string;
     latitude?: number;
     longitude?: number;
     contact_1: string;
@@ -41,6 +42,7 @@ export interface EmergencyContactType {
         longitude?: number;
     };
     sites?: EmergencySiteType[];
+    distance_km?: number;
     created_at?: string;
     updated_at?: string;
 }

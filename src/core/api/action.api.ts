@@ -27,4 +27,17 @@ export default {
     }) {
         return api.post('/home/actions/vmc', data)
     },
+    uploadAttachment(origin: string, id: string | number, file: File) {
+        const formData = new FormData()
+        formData.append('file', file)
+        return api.post(`/home/actions/${origin}/${id}/attachments`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+    },
+    deleteAttachment(attachmentId: string | number) {
+        return api.delete(`/home/actions/attachments/${attachmentId}`)
+    },
 }
+
