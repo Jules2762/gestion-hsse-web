@@ -3,11 +3,11 @@
 
         <!-- HEADER & ACTIONS EN LIGNE (MASQUÉ À L'IMPRESSION) -->
         <div class="max-w-4xl mx-auto mb-4 px-4 sm:px-0 print:hidden">
-            <Header title="Fiche VMC Officielle" :thumbnails="[
-                { label: 'Accueil', name: 'DASHBOARD' },
-                { label: 'Inspection', name: 'INSPECTION' },
-                { label: 'VMC', name: 'VMC' },
-                { label: 'Fiche Officielle', name: 'VMC_DETAILS' }
+            <Header title="inspections.vmc.details" :thumbnails="[
+                { label: 'thumbnails.home', name: 'DASHBOARD' },
+                { label: 'thumbnails.inspections', name: 'INSPECTION' },
+                { label: 'thumbnails.vmc', name: 'VMC' },
+                { label: 'thumbnails.details', name: 'VMC_DETAILS' }
             ]" />
 
             <div class="mt-3 bg-white border border-gray-200 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Minus, TrendingDown, TrendingUp } from '@lucide/vue'
 import type { ColorType } from '../../../@types/Dashboard.type'
 
@@ -83,6 +84,18 @@ const deltaText = computed(() =>
 )
 
 const tag = computed(() => (props.clickable ? 'button' : 'div'))
+
+const { t, te, locale } = useI18n()
+
+const displayTitle = computed(() => {
+  if (te(props.title)) return t(props.title)
+  return props.title
+})
+
+const displayDeltaLabel = computed(() => {
+  if (props.deltaLabel && props.deltaLabel !== 'vs période précédente') return props.deltaLabel
+  return locale.value === 'en' ? 'vs previous period' : 'vs période précédente'
+})
 </script>
 
 <template>
@@ -100,7 +113,7 @@ const tag = computed(() => (props.clickable ? 'button' : 'div'))
   >
     <!-- En-tête : titre sur 2 lignes max, icône toujours visible -->
     <div class="flex w-full items-start justify-between gap-x-3">
-      <h5 class="line-clamp-2 min-w-0 text-sm font-semibold leading-snug text-slate-800">{{ title }}</h5>
+      <h5 class="line-clamp-2 min-w-0 text-sm font-semibold leading-snug text-slate-800">{{ displayTitle }}</h5>
 
       <div class="shrink-0 rounded-xl p-2.5 shadow-xs" :class="style.iconWrap">
         <component :is="icon" :size="20" :class="style.icon" aria-hidden="true" />
@@ -127,7 +140,7 @@ const tag = computed(() => (props.clickable ? 'button' : 'div'))
           <component :is="trend.icon" :size="12" aria-hidden="true" />
           {{ deltaText }}
         </span>
-        <span class="text-slate-600">{{ deltaLabel }}</span>
+        <span class="text-slate-600">{{ displayDeltaLabel }}</span>
       </p>
     </div>
   </component>

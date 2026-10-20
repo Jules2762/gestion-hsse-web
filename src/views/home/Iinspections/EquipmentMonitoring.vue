@@ -1,10 +1,10 @@
 <template>
     <div class="flex flex-row w-full">
         <div class="flex flex-col transition-all" :class="right_sidebar.isOpen ? 'w-[calc(100%-400px)]' : 'w-full'">
-            <Header title="Suivi du matériel" :thumbnails="[
-                { label: 'Accueil', name: 'DASHBOARD' },
-                { label: 'Inspections', name: 'INSPECTION' },
-                { label: 'Suivi du matériel', name: 'EQUIPMENT_MONITORING' },
+            <Header title="inspections.equipment-monitoring.title" :thumbnails="[
+                { label: 'thumbnails.home', name: 'DASHBOARD' },
+                { label: 'thumbnails.inspections', name: 'INSPECTION' },
+                { label: 'thumbnails.equipment-monitoring', name: 'EQUIPMENT_MONITORING' },
             ]" />
             <!-- ======================= RIBBON TOOLBAR ======================= -->
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -103,7 +103,7 @@
                     <table v-else class="w-full">
                         <thead>
                             <tr>
-                                <th v-for="header in headers" :key="header" :class="header === 'ACTIONS' ? 'text-right pr-6' : 'text-left'">
+                                <th v-for="header in headers" :key="header" class="text-left">
                                     {{ header }}
                                 </th>
                             </tr>
@@ -151,36 +151,6 @@
                                         >
                                             Initial: {{ item.initial_conformity_rate }}%
                                         </span>
-                                    </div>
-                                </td>
-
-                                <td class="whitespace-nowrap text-right pr-6" @click.stop>
-                                    <div class="flex items-center justify-end gap-1.5">
-                                        <button
-                                            type="button"
-                                            title="Consulter les détails complets"
-                                            @click="router.push({ name: 'EQUIPMENT_MONITORING_DETAILS', params: { id: item.id } })"
-                                            class="px-2.5 py-1 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary hover:text-white rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-                                        >
-                                            <Eye :size="13" />
-                                            <span>Détails</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            title="Modifier"
-                                            @click="router.push({ name: 'EQUIPMENT_MONITORING_UPDATE', params: { id: item.id } })"
-                                            class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-md transition-colors cursor-pointer"
-                                        >
-                                            <Edit :size="14" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            title="Supprimer"
-                                            @click="right_sidebar.equipment = item; modal_delete = true"
-                                            class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
-                                        >
-                                            <Trash2 :size="14" />
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -1021,7 +991,6 @@
         "INSPECTEUR",
         "STATUT",
         "CONFORMITÉ",
-        "ACTIONS",
     ]
     const data = ref<EquipmentMonitoringType[]>()
     type filtersKeyType = "site" | "status" | "inspector"

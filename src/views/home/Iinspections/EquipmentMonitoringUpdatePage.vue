@@ -1,11 +1,11 @@
 <template>
     <div class="w-full">
         <!-- HEADER -->
-        <Header title="Modifier le suivi des équipements" :thumbnails="[
-            { label: 'Accueil', name: 'DASHBOARD' },
-            { label: 'Inspections', name: 'INSPECTION' },
-            { label: 'Suivi du matériel', name: 'EQUIPMENT_MONITORING' },
-            { label: 'Modifier', name: 'EQUIPMENT_MONITORING_UPDATE' }
+        <Header title="inspections.equipment-monitoring.update" :thumbnails="[
+            { label: 'thumbnails.home', name: 'DASHBOARD' },
+            { label: 'thumbnails.inspections', name: 'INSPECTION' },
+            { label: 'thumbnails.equipment-monitoring', name: 'EQUIPMENT_MONITORING' },
+            { label: 'thumbnails.update', name: 'EQUIPMENT_MONITORING_UPDATE' }
         ]" />
 
         <!-- CONTENT CONTAINER -->

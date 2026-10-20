@@ -18,7 +18,7 @@
             <div class="flex items-center gap-x-2.5 min-w-0">
                 <component :is="item.icon" :size="16" class="shrink-0" v-if="!item.loading" />
                 <Loader2Icon v-else :size="16" class="animate-spin shrink-0 text-primary" />
-                <span class="truncate whitespace-nowrap font-medium">{{ item.label }}</span>
+                <span class="truncate whitespace-nowrap font-medium">{{ translateLabel(item.label) }}</span>
             </div>
             <span
                 v-if="item.badge"
@@ -46,7 +46,7 @@
             <div class="flex items-center gap-x-2.5 min-w-0">
                 <component :is="item.icon" :size="16" class="shrink-0" v-if="!item.loading" />
                 <Loader2Icon v-else :size="16" class="animate-spin shrink-0 text-primary" />
-                <span class="truncate whitespace-nowrap font-medium">{{ item.label }}</span>
+                <span class="truncate whitespace-nowrap font-medium">{{ translateLabel(item.label) }}</span>
             </div>
             <span
                 v-if="item.badge"
@@ -60,11 +60,31 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { ContextMenuActionType, ContextMenuPropsType, ContextMenuVariantType } from '../../@types/ContextMenu.type';
 import { Loader2Icon } from '@lucide/vue';
 
 const props = defineProps<ContextMenuPropsType>();
 const emit = defineEmits(["update:modelValue"]);
+const { t, te } = useI18n();
+
+const translateLabel = (label?: string) => {
+    if (!label) return '';
+    if (te(label)) return t(label);
+    const map: Record<string, string> = {
+        'Détails': t('common.details'),
+        'Consulter': t('common.details'),
+        'Modifier': t('common.edit'),
+        'Éditer': t('common.edit'),
+        'Supprimer': t('common.delete'),
+        'Exporter': t('common.export'),
+        'Export': t('common.export'),
+        'Actualiser': t('common.refresh'),
+        'Imprimer': 'Print',
+        'Prévisualiser': 'Preview',
+    };
+    return map[label] || label;
+};
 
 const div_ref = ref<HTMLDivElement | null>(null);
 

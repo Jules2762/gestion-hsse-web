@@ -1,16 +1,16 @@
 <template>
     <div>
-        <Header title="Nouvelle formation" :thumbnails="[
+        <Header title="formation.new" :thumbnails="[
             {
-                'label': 'Tableau de bord',
+                'label': 'thumbnails.home',
                 'name': 'DASHBOARD'
             },
             {
-                'label': 'Formation',
+                'label': 'thumbnails.training',
                 'name': 'FORMATION'
             },
             {
-                'label': 'Nouveau',
+                'label': 'thumbnails.new',
                 'name': 'FORMATION_NEW'
             },
         ]" />

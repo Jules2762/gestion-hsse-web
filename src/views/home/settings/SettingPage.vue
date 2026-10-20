@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Header from '../../../components/shared/Header.vue'
 
 import GeneralSection from './sections/GeneralSection.vue'
@@ -78,19 +79,21 @@ const tabs: SettingTab[] = [
 const currentTab = ref<string>('general')
 const searchQuery = ref<string>('')
 
+const { t, te } = useI18n()
+
 const filteredTabs = computed(() => {
   if (!searchQuery.value.trim()) return tabs
   const query = searchQuery.value.toLowerCase().trim()
-  return tabs.filter(t =>
-    t.title.toLowerCase().includes(query) ||
-    t.subtitle.toLowerCase().includes(query)
-  )
+  return tabs.filter(tab => {
+    const title = te('settings.tabs.' + tab.id) ? t('settings.tabs.' + tab.id) : tab.title
+    return title.toLowerCase().includes(query) || tab.subtitle.toLowerCase().includes(query)
+  })
 })
 </script>
 
 <template>
   <div class="min-h-screen bg-background text-text-primary">
-    <Header title="Paramètres" show-search />
+    <Header title="settings.title" show-search />
 
     <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
@@ -109,7 +112,7 @@ const filteredTabs = computed(() => {
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Filtrer les rubriques..."
+                :placeholder="t('common.search') + '...'"
                 class="w-full rounded-xl border border-border bg-surface-alt/40 pl-9 pr-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-[#0F9D58] focus:bg-surface focus:outline-hidden"
               />
             </div>
@@ -117,46 +120,46 @@ const filteredTabs = computed(() => {
             <!-- LISTE DES ONGLETS -->
             <div class="space-y-1">
               <button
-                v-for="t in filteredTabs"
-                :key="t.id"
+                v-for="tab in filteredTabs"
+                :key="tab.id"
                 type="button"
-                @click="currentTab = t.id"
+                @click="currentTab = tab.id"
                 class="group flex w-full items-center justify-between rounded-xl p-3 text-left transition-all duration-200"
-                :class="currentTab === t.id
+                :class="currentTab === tab.id
                   ? 'bg-[#0F9D58]/10 text-[#0F9D58] ring-1 ring-[#0F9D58]/20 font-semibold'
                   : 'text-text-primary hover:bg-surface-alt hover:text-text-primary'"
               >
                 <div class="flex items-center gap-3 min-w-0">
                   <div
                     class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors"
-                    :class="currentTab === t.id
+                    :class="currentTab === tab.id
                       ? 'bg-[#0F9D58] text-white shadow-2xs'
                       : 'bg-surface-alt text-text-secondary group-hover:bg-slate-200'"
                   >
-                    <component :is="t.icon" class="h-4 w-4" />
+                    <component :is="tab.icon" class="h-4 w-4" />
                   </div>
 
                   <div class="min-w-0">
-                    <p class="truncate text-xs font-semibold" :class="currentTab === t.id ? 'text-[#0F9D58]' : 'text-text-primary'">
-                      {{ t.title }}
+                    <p class="truncate text-xs font-semibold" :class="currentTab === tab.id ? 'text-[#0F9D58]' : 'text-text-primary'">
+                      {{ te('settings.tabs.' + tab.id) ? t('settings.tabs.' + tab.id) : tab.title }}
                     </p>
                     <p class="truncate text-[11px] text-text-secondary">
-                      {{ t.subtitle }}
+                      {{ tab.subtitle }}
                     </p>
                   </div>
                 </div>
 
                 <div class="flex items-center gap-1.5 shrink-0 pl-2">
                   <span
-                    v-if="t.tag"
+                    v-if="tab.tag"
                     class="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                    :class="t.tag === 'Prioritaire' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'"
+                    :class="tab.tag === 'Prioritaire' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'"
                   >
-                    {{ t.tag }}
+                    {{ tab.tag }}
                   </span>
                   <div
                     class="h-1.5 w-1.5 rounded-full transition-opacity"
-                    :class="currentTab === t.id ? 'bg-[#0F9D58] opacity-100' : 'opacity-0'"
+                    :class="currentTab === tab.id ? 'bg-[#0F9D58] opacity-100' : 'opacity-0'"
                   />
                 </div>
               </button>

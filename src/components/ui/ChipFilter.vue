@@ -6,7 +6,7 @@
         <div class="px-4 pb-3 flex flex-row flex-wrap items-center gap-2 min-h-9">
             <span class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400 mr-1">
                 <SlidersHorizontalIcon :size="13" />
-                Filtres
+                {{ t('common.filters') }}
             </span>
 
             <!-- Date range filter pill -->
@@ -19,13 +19,13 @@
                 </button>
 
                 <div v-if="openFilter === '__date__'" class="popover w-64 " @click.stop>
-                    <p class="popover-title">Filtrer par {{ dateLabel.toLowerCase() }}</p>
+                    <p class="popover-title">{{ t('common.filters') }} - {{ displayDateLabel }}</p>
                     <div class="flex flex-col gap-2 px-1">
-                        <ChipInputFilter type="date" label="Du" v-model="dateRange.from" />
-                        <ChipInputFilter type="date" label="Au" v-model="dateRange.to" />
+                        <ChipInputFilter type="date" :label="locale === 'en' ? 'From' : 'Du'" v-model="dateRange.from" />
+                        <ChipInputFilter type="date" :label="locale === 'en' ? 'To' : 'Au'" v-model="dateRange.to" />
                     </div>
                     <div class="popover-footer">
-                        <button class="popover-clear" @click="clearDate">Effacer</button>
+                        <button class="popover-clear" @click="clearDate">{{ t('common.clear') }}</button>
                         <button class="popover-ok" @click="openFilter = null">OK</button>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
 
                 <div v-if="openFilter === key" class="popover min-w-56 max-w-120 w-fit" @click.stop>
                     <p class="popover-title">{{ columnLabels[key] }}</p>
-                    <input v-model="filterSearch" type="text" placeholder="Rechercher..." class="popover-input mb-2" />
+                    <input v-model="filterSearch" type="text" :placeholder="t('common.search') + '...'" class="popover-input mb-2" />
                     <div class="max-h-44 overflow-y-auto pr-1 flex flex-col gap-0.5">
                         <label v-for="val in optionsFor(key)" :key="val"
                             class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
@@ -51,11 +51,11 @@
                             <span class="truncate normal-case text-gray-500">{{ val }}</span>
                         </label>
                         <p v-if="optionsFor(key).length === 0" class="px-2 py-2 text-xs text-gray-400">
-                            Aucun résultat
+                            {{ t('common.no_data') }}
                         </p>
                     </div>
                     <div class="popover-footer">
-                        <button class="popover-clear" @click="clearColumn(key)">Effacer</button>
+                        <button class="popover-clear" @click="clearColumn(key)">{{ t('common.clear') }}</button>
                         <button class="popover-ok" @click="openFilter = null">OK</button>
                     </div>
                 </div>
@@ -71,12 +71,12 @@
                     </button>
                 </span>
                 <button class="text-xs font-medium text-primary hover:underline ml-1" @click="$emit('clear-all')">
-                    Réinitialiser
+                    {{ t('common.reset') }}
                 </button>
             </template>
 
             <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">
-                {{ resultsCount }} / {{ resultsTotal }} résultat{{ resultsTotal > 1 ? 's' : '' }}
+                {{ resultsCount }} / {{ resultsTotal }} {{ t('common.results') }}
             </span>
         </div>
     </div>
@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from 'vue'
+    import { useI18n } from 'vue-i18n'
     import { CalendarIcon, ChevronDownIcon, SlidersHorizontalIcon, XIcon } from '@lucide/vue'
     import ChipInputFilter from './ChipInputFilter.vue'
 
@@ -117,6 +118,8 @@
         resultsTotal: 0,
     })
 
+    const { t, locale } = useI18n()
+
     defineEmits<{
         (e: 'clear-all'): void
     }>()
@@ -128,10 +131,12 @@
 
     const hasDateFilter = computed(() => !!(props.dateRange.from || props.dateRange.to))
 
+    const displayDateLabel = computed(() => props.dateLabel === 'Date' ? t('common.date') : props.dateLabel)
+
     const dateFilterLabel = computed(() =>
         hasDateFilter.value
             ? `${props.dateRange.from || '…'} → ${props.dateRange.to || '…'}`
-            : props.dateLabel,
+            : displayDateLabel.value,
     )
 
     type Chip = { key: string; label: string; value: string }

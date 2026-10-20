@@ -3,6 +3,41 @@ import type { LangType } from "./Lang.type";
 export const fr: LangType = {
     "french": "Français",
     "english": "Anglais",
+
+    //============================
+    // common
+    //============================
+    "common": {
+        "add": "Ajouter",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "details": "Détails",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "close": "Fermer",
+        "search": "Rechercher...",
+        "filters": "Filtres",
+        "export": "Exporter",
+        "import": "Importer",
+        "actions": "Actions",
+        "status": "Statut",
+        "date": "Date",
+        "site": "Site",
+        "inspector": "Inspecteur",
+        "conformity": "Conformité",
+        "refresh": "Actualiser",
+        "back": "Retour",
+        "confirm": "Confirmer",
+        "loading": "Chargement...",
+        "no_data": "Aucune donnée disponible",
+        "total": "Total",
+        "yes": "Oui",
+        "no": "Non",
+        "reset": "Réinitialiser",
+        "clear": "Effacer",
+        "results": "résultats",
+    },
+
     //============================
     //login
     //============================
@@ -79,15 +114,27 @@ export const fr: LangType = {
     },
     "thumbnails": {
         "home": "Accueil",
-        "administration": 'Administration',
+        "administration": "Administration",
         "document library": "Bibliothèque documentaire",
         "training": "Formation",
-        "personnels": 'Personnel',
-        "equipment-monitoring": "Equipment monitoring",
+        "personnels": "Personnel",
+        "users": "Utilisateurs",
+        "activity": "Activité",
+        "roles": "Rôles & Permissions",
         "inspection": "Inspection",
+        "inspections": "Inspections",
+        "equipment-monitoring": "Suivi du matériel",
+        "checklists": "Checklists",
+        "actions": "Actions Correctives",
+        "vmc": "VMC",
+        "templates": "Modèles",
+        "emergency": "Contacts d'urgence",
+        "profile": "Profil",
+        "settings": "Paramètres",
         "new": "Nouveau",
         "update": "Modification",
-        "import": "Import"
+        "import": "Import",
+        "details": "Détails",
     },
 
     //============================
@@ -100,6 +147,9 @@ export const fr: LangType = {
             "training plan": "Plan de formation",
             "inspection": "Inspection",
             "administration": "Administration",
+            "equipment": "Suivi matériels",
+            "checklist": "Checklist",
+            "vmc": "VMC",
         }
     },
 
@@ -118,9 +168,12 @@ export const fr: LangType = {
     //============================
     //formation
     //============================
-
     "formation": {
-        title: "Registre de formation",
+        title: "Registre des formations",
+        new: "Nouvelle formation",
+        update: "Modifier la formation",
+        import_title: "Importer des formations",
+        participants: "Participants",
         actions: {
             add: "Ajouter",
             import: "Importer",
@@ -306,10 +359,24 @@ export const fr: LangType = {
         }
     },
     //============================
-    //formation
+    //inspections
     //============================
     "inspections": {
+        "actions": {
+            "title": "Gestion des actions correctives",
+            "subtitle": "Suivi et résolution des écarts constatés sur site",
+            "new": "Nouvelle action corrective",
+        },
+        "checklists": {
+            "title": "Checklists de contrôle",
+            "details": "Fiche checklist",
+            "new": "Nouvelle inspection checklist",
+        },
         "equipment-monitoring": {
+            "title": "Suivi du matériel",
+            "details": "Détails du suivi matériel",
+            "new": "Planifier un suivi des équipements",
+            "update": "Modifier le suivi des équipements",
             "add": {
                 "title": "Ajouter un suivi des équipements",
                 "caption": "Renseignez les informations du suivi des équipements.",
@@ -423,10 +490,71 @@ export const fr: LangType = {
                     }
                 }
             }
+        },
+        "vmc": {
+            "title": "Visible Management Commitment (VMC)",
+            "details": "Fiche VMC Officielle",
+            "new": "Nouvelle VMC",
+        },
+        "templates": {
+            "title": "Modèles d'inspection",
         }
     },
     //============================
+    //emergency
+    //============================
+    "emergency": {
+        "title": "Contacts d'urgence & Secours",
+        "subtitle": "Répertoire des services d'urgence et postes Galana",
+        "add": "Ajouter un contact d'urgence",
+        "search": "Rechercher par nom, ville, type...",
+    },
+    //============================
+    //administration
+    //============================
+    "administration": {
+        "users": {
+            "title": "Gestion des utilisateurs",
+            "new": "Nouveau compte utilisateur",
+            "update": "Mise à jour du compte utilisateur",
+        },
+        "personnels": {
+            "title": "Gestion du personnel",
+            "new": "Nouveau membre du personnel",
+            "update": "Modifier un membre du personnel",
+        },
+        "activity": {
+            "title": "Journal d'activités",
+        },
+        "roles": {
+            "title": "Rôles et permissions",
+        }
+    },
+    //============================
+    //profile
+    //============================
+    "profile": {
+        "title": "Profil utilisateur",
+        "update": "Mettre à jour le profil",
+        "change_password": "Modifier le mot de passe",
+    },
+    //============================
     //settings
+    //============================
+    "settings": {
+        "title": "Paramètres généraux",
+        "subtitle": "Configuration du système et préférences de l'organisation",
+        "tabs": {
+            "general": "Général & Identité",
+            "hsse": "Conformité & HSSE",
+            "display": "Affichage & Police",
+            "email": "Messagerie & E-mail",
+            "security": "Sécurité & Audit",
+            "documents": "Gestion Documentaire",
+        }
+    },
+    //============================
+    //legacy settings tabs
     //============================
     "general": "Général",
     "preferences": "Préférences",

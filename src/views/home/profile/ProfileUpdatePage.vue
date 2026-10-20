@@ -128,10 +128,10 @@ onMounted(() => {
 
 <template>
     <div class="min-h-screen bg-gray-50/50">
-        <Header title="Mettre à jour le profil" :thumbnails="[
-            { label: 'Accueil', name: 'DASHBOARD' },
-            { label: 'Profil', name: 'PROFILE' },
-            { label: 'Modifier', name: 'UPDATE_PROFILE' },
+        <Header title="profile.update" :thumbnails="[
+            { label: 'thumbnails.home', name: 'DASHBOARD' },
+            { label: 'thumbnails.profile', name: 'PROFILE' },
+            { label: 'thumbnails.update', name: 'UPDATE_PROFILE' },
         ]" />
 
         <div class="p-6 max-w-6xl mx-auto">

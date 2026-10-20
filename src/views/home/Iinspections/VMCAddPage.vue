@@ -1,18 +1,18 @@
 <template>
     <div>
-        <Header title="Nouvelle VMC" :thumbnails="[
+        <Header title="inspections.vmc.new" :thumbnails="[
             {
-                'label': 'Tableau de bord',
+                'label': 'thumbnails.home',
                 'name': 'DASHBOARD'
             },
             {
-                'label': 'Inspection',
+                'label': 'thumbnails.inspections',
                 'name': 'INSPECTION'
             }, {
-                'label': 'VMC',
+                'label': 'thumbnails.vmc',
                 'name': 'VMC'
             }, {
-                'label': 'Nouveau',
+                'label': 'thumbnails.new',
                 'name': 'VMC_NEW'
             }
         ]" />

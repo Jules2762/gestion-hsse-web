@@ -1,17 +1,17 @@
 <template>
     <div class="min-h-screen bg-white">
 
-        <Header title="Rôle et permissions" :thumbnails="[
+        <Header title="administration.roles.title" :thumbnails="[
             {
-                label: 'Tableau de bord',
+                label: 'thumbnails.home',
                 name: 'DASHBOARD'
             },
             {
-                label: 'Utilisateurs',
+                label: 'thumbnails.users',
                 name: 'USERS'
             },
             {
-                label: 'Rôle et permissions',
+                label: 'thumbnails.roles',
                 name: 'ROLE_PERMISSION'
             }
         ]" />

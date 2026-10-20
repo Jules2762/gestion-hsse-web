@@ -1,17 +1,17 @@
 <template>
     <div class="flex flex-row w-full">
         <div class="flex flex-col w-full transition-all" :class="selected_user ? 'w-[calc(100%-400px)]' : 'w-full'">
-            <Header title="users" :thumbnails="[
+            <Header title="administration.users.title" :thumbnails="[
                 {
-                    label: 'home',
+                    label: 'thumbnails.home',
                     name: 'DASHBOARD'
                 },
                 {
-                    label: 'administration',
+                    label: 'thumbnails.administration',
                     name: 'ADMINISTRATION'
                 },
                 {
-                    label: 'users',
+                    label: 'thumbnails.users',
                     name: 'USERS'
                 },
             ]" />

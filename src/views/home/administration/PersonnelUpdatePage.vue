@@ -1,11 +1,11 @@
 <template>
     <div class="min-h-screen bg-background">
 
-        <Header title="Modifier un membre du personnel" :thumbnails="[
-            { label: 'Accueil', name: 'DASHBOARD' },
-            { label: 'Administration', name: 'ADMINISTRATION' },
-            { label: 'Personnel', name: 'PERSONNEL' },
-            { label: 'Modifier', name: 'PERSONNEL_UPDATE' }
+        <Header title="administration.personnels.update" :thumbnails="[
+            { label: 'thumbnails.home', name: 'DASHBOARD' },
+            { label: 'thumbnails.administration', name: 'ADMINISTRATION' },
+            { label: 'thumbnails.personnels', name: 'PERSONNEL' },
+            { label: 'thumbnails.update', name: 'PERSONNEL_UPDATE' }
         ]" />
 
         <div class="p-6 pb-0 lg:p-8 lg:pb-0">

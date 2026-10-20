@@ -1,21 +1,21 @@
 <template>
     <div class="min-h-screen bg-background">
 
-        <Header title="Nouveau compte utilisateur" :thumbnails="[
+        <Header title="administration.users.new" :thumbnails="[
             {
-                label: 'Accueil',
+                label: 'thumbnails.home',
                 name: 'DASHBOARD'
             },
             {
-                label: 'Administration',
+                label: 'thumbnails.administration',
                 name: 'ADMINISTRATION'
             },
             {
-                label: 'Utilisateur',
+                label: 'thumbnails.users',
                 name: 'USERS'
             },
             {
-                label: 'Nouveau',
+                label: 'thumbnails.new',
                 name: 'ADD_USER'
             }
         ]" />

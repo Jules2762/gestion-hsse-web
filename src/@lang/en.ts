@@ -5,6 +5,40 @@ export const en: LangType = {
     "english": "English",
 
     //============================
+    // common
+    //============================
+    "common": {
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "details": "Details",
+        "save": "Save",
+        "cancel": "Cancel",
+        "close": "Close",
+        "search": "Search...",
+        "filters": "Filters",
+        "export": "Export",
+        "import": "Import",
+        "actions": "Actions",
+        "status": "Status",
+        "date": "Date",
+        "site": "Site",
+        "inspector": "Inspector",
+        "conformity": "Conformity",
+        "refresh": "Refresh",
+        "back": "Back",
+        "confirm": "Confirm",
+        "loading": "Loading...",
+        "no_data": "No data available",
+        "total": "Total",
+        "yes": "Yes",
+        "no": "No",
+        "reset": "Reset",
+        "clear": "Clear",
+        "results": "results",
+    },
+
+    //============================
     // login
     //============================
     "login": {
@@ -80,15 +114,27 @@ export const en: LangType = {
     },
     "thumbnails": {
         "home": "Home",
-        "administration": 'Administration',
+        "administration": "Administration",
         "document library": "Document Library",
         "training": "Training",
-        "personnels": 'Personnel',
-        "equipment-monitoring": "Equipment monitoring",
+        "personnels": "Personnel",
+        "users": "Users",
+        "activity": "Activity",
+        "roles": "Roles & Permissions",
         "inspection": "Inspection",
+        "inspections": "Inspections",
+        "equipment-monitoring": "Equipment Monitoring",
+        "checklists": "Checklists",
+        "actions": "Corrective Actions",
+        "vmc": "VMC",
+        "templates": "Templates",
+        "emergency": "Emergency Contacts",
+        "profile": "Profile",
+        "settings": "Settings",
         "new": "New",
         "update": "Update",
-        "import": "Import"
+        "import": "Import",
+        "details": "Details",
     },
 
     //============================
@@ -97,13 +143,15 @@ export const en: LangType = {
     "dashboard": {
         "title": "Dashboard",
         "tabs": {
-            "general": 'General',
+            "general": "General",
             "training plan": "Training Plan",
             "inspection": "Inspection",
             "administration": "Administration",
+            "equipment": "Equipment Monitoring",
+            "checklist": "Checklist",
+            "vmc": "VMC",
         }
     },
-
 
     //============================
     //Document Library
@@ -122,6 +170,10 @@ export const en: LangType = {
     //============================
     "formation": {
         title: "Training Register",
+        new: "New Training",
+        update: "Update Training",
+        import_title: "Import Trainings",
+        participants: "Participants",
         actions: {
             add: "Add",
             import: "Import",
@@ -308,7 +360,21 @@ export const en: LangType = {
     //inspections
     //============================
     "inspections": {
+        "actions": {
+            "title": "Corrective Actions Management",
+            "subtitle": "Tracking and resolution of deviations identified on site",
+            "new": "New Corrective Action",
+        },
+        "checklists": {
+            "title": "Control Checklists",
+            "details": "Checklist Details",
+            "new": "New Checklist Inspection",
+        },
         "equipment-monitoring": {
+            "title": "Equipment Monitoring",
+            "details": "Equipment Monitoring Details",
+            "new": "Plan Equipment Monitoring",
+            "update": "Update Equipment Monitoring",
             "add": {
                 "title": "Add equipment monitoring",
                 "caption": "Enter the equipment monitoring information.",
@@ -422,10 +488,71 @@ export const en: LangType = {
                     }
                 }
             }
+        },
+        "vmc": {
+            "title": "Visible Management Commitment (VMC)",
+            "details": "Official VMC Form",
+            "new": "New VMC",
+        },
+        "templates": {
+            "title": "Inspection Templates",
         }
     },
     //============================
-    //setting
+    //emergency
+    //============================
+    "emergency": {
+        "title": "Emergency Contacts & Rescue",
+        "subtitle": "Directory of emergency services and Galana stations",
+        "add": "Add emergency contact",
+        "search": "Search by name, city, type...",
+    },
+    //============================
+    //administration
+    //============================
+    "administration": {
+        "users": {
+            "title": "User Management",
+            "new": "New User Account",
+            "update": "Update User Account",
+        },
+        "personnels": {
+            "title": "Personnel Management",
+            "new": "New Personnel Member",
+            "update": "Update Personnel Member",
+        },
+        "activity": {
+            "title": "Activity Log",
+        },
+        "roles": {
+            "title": "Roles & Permissions",
+        }
+    },
+    //============================
+    //profile
+    //============================
+    "profile": {
+        "title": "User Profile",
+        "update": "Update Profile",
+        "change_password": "Change Password",
+    },
+    //============================
+    //settings
+    //============================
+    "settings": {
+        "title": "General Settings",
+        "subtitle": "System configuration and organization preferences",
+        "tabs": {
+            "general": "General & Identity",
+            "hsse": "Compliance & HSSE",
+            "display": "Display & Font",
+            "email": "Messaging & Email",
+            "security": "Security & Audit",
+            "documents": "Document Management",
+        }
+    },
+    //============================
+    //legacy settings tabs
     //============================
     "general": "General",
     "preferences": "Preferences",

@@ -70,18 +70,15 @@ const ChecklistTypeData: ChecklistTypeJson = [
   },
 
   {
-    label: 'Checklist évaluation réseau (Magasin)',
-    value: 'CHECKLIST EVALUATION RESEAU MAGASIN'
-  },
-  {
     label: 'Checklist évaluation réseau (Station Service)',
     value: 'CHECKLIST EVALUATION RESEAU STATION SERVICE',
-    site:"STATION SERVICE"
+    site: "STATION SERVICE"
   },
 
   {
     label: 'Checklist évaluation des agences et magasin',
-    value: 'CHECKLIST EVALUATION DES AGENCES ET MAGASIN'
+    value: 'CHECKLIST EVALUATION DES AGENCES ET MAGASIN',
+    site: "MAGASIN"
   },
 
   {

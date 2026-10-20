@@ -1,17 +1,17 @@
 <template>
     <div class="flex flex-row w-full">
         <div class="flex flex-col w-full transition-all" :class="selected_checklist ? 'w-[calc(100%-400px)]' : 'w-full'">
-            <Header title="Checklist" :thumbnails="[
+            <Header title="inspections.checklists.title" :thumbnails="[
                 {
-                    label: 'Accueil',
+                    label: 'thumbnails.home',
                     name: 'DASHBOARD'
                 },
                 {
-                    label: 'Inspections',
+                    label: 'thumbnails.inspections',
                     name: 'INSPECTION'
                 },
                 {
-                    label: 'Checklist',
+                    label: 'thumbnails.checklists',
                     name: 'CHECKLIST'
                 },
             ]"></Header>
@@ -387,6 +387,10 @@
                         <p>
                             {{
                                 selected_checklist?.inspector
+                                    ? (typeof selected_checklist.inspector === 'object'
+                                        ? `${selected_checklist.inspector.first_name || ''} ${selected_checklist.inspector.last_name || ''}`.trim() || 'Non assigné'
+                                        : selected_checklist.inspector)
+                                    : 'Non assigné'
                             }}
                         </p>
                     </div>
@@ -512,7 +516,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { ClipboardList, Download, Edit, Eye, LayoutTemplateIcon, Loader2, Plus, Search, Send, Trash2, UploadCloud, X as XIcon } from '@lucide/vue';
+    import { ClipboardList, Download, Edit, Eye, LayoutTemplateIcon, Loader2, Plus, Search, Trash2, UploadCloud, X as XIcon } from '@lucide/vue';
     import Header from '../../../components/shared/Header.vue';
     import Button from '../../../components/ui/Button.vue';
     import { computed, onMounted, ref, watch, type ComputedRef } from 'vue';
@@ -521,6 +525,7 @@
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { router } from '../../../router/index.ts';
+    import { useRoute } from 'vue-router';
     import type { ChecklistFilterType, Checklistype } from '../../../@types/Checklist.type.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
@@ -532,6 +537,7 @@
     import { exportUtils } from '../../../core/utils/export.utils.ts';
     import { toast } from 'vue3-toastify';
 
+    const route = useRoute()
     const data = ref<Checklistype[]>()
     const loading = ref(false)
     const loading_export = ref(false)
@@ -576,16 +582,6 @@
                         params: { id: contextMenu.value.checklist.id }
                     })
                 }
-            }
-        },
-        {
-            label: "Envoyer e-mail",
-            icon: Send,
-            onClick: () => {
-                const chk = contextMenu.value.checklist;
-                const subject = encodeURIComponent(`Rapport Inspection HSSE - ${chk?.title || 'Checklist'}`);
-                const body = encodeURIComponent(`Bonjour,\n\nVeuillez trouver le compte-rendu de l'inspection #${chk?.id} - ${chk?.title}.\nSite : ${chk?.site || '-'}\nStatut : ${chk?.status}\n\nCordialement,\nService HSSE Galana`);
-                window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
             }
         },
         {
@@ -669,8 +665,20 @@
         dateRange.value.to = ''
     }
     onMounted(() => {
+        if (route.query.site) {
+            search.value = String(route.query.site)
+        } else if (route.query.search) {
+            search.value = String(route.query.search)
+        }
         fetchFilters()
-        fetchData()
+        fetchData({
+            search: search.value,
+        })
+    })
+    watch(() => route.query, (newQ) => {
+        if (newQ.site || newQ.search) {
+            search.value = String(newQ.site || newQ.search)
+        }
     })
     watch([
         filters.value, () => search.value, dateRange.value

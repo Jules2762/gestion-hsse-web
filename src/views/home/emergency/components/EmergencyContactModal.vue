@@ -159,6 +159,7 @@
           <div class="lg:col-span-7 space-y-3.5">
 
             <!-- BLOC CARTE INTERACTIVE -->
+            <!-- BLOC CARTE INTERACTIVE -->
             <div class="rounded-xl border border-gray-200 bg-slate-50/50 p-3 space-y-2.5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                 <div>
@@ -167,113 +168,234 @@
                     <span>Emplacement & Sélection sur la Carte</span>
                   </span>
                   <p class="text-[10px] text-gray-500">
-                    Cliquez sur la carte pour positionner le secours et sélectionner les stations proches.
+                    Cliquez sur la carte pour positionner le secours et détecter automatiquement la ville.
                   </p>
                 </div>
 
-                <!-- RACCOURCIS VILLES -->
-                <div class="flex items-center gap-1 overflow-x-auto pb-0.5">
-                  <span class="text-[10px] font-semibold text-gray-400 shrink-0">Zoom :</span>
+                <div class="flex items-center gap-1.5">
+                  <!-- RACCOURCIS VILLES -->
+                  <div class="flex items-center gap-1 overflow-x-auto pb-0.5">
+                    <span class="text-[10px] font-semibold text-gray-400 shrink-0">Zoom :</span>
+                    <button
+                      v-for="city in cityJumpList"
+                      :key="city.name"
+                      type="button"
+                      @click="jumpToCity(city.coords, city.zoom)"
+                      class="px-1.5 py-0.5 rounded border border-gray-200 bg-white hover:bg-primary/10 hover:border-primary/40 hover:text-primary text-[10px] font-medium text-gray-600 transition cursor-pointer shrink-0 shadow-2xs"
+                    >
+                      {{ city.name }}
+                    </button>
+                  </div>
+
+                  <!-- BOUTON PLEIN ÉCRAN CARTE -->
                   <button
-                    v-for="city in cityJumpList"
-                    :key="city.name"
                     type="button"
-                    @click="jumpToCity(city.coords, city.zoom)"
-                    class="px-1.5 py-0.5 rounded border border-gray-200 bg-white hover:bg-primary/10 hover:border-primary/40 hover:text-primary text-[10px] font-medium text-gray-600 transition cursor-pointer shrink-0 shadow-2xs"
+                    @click="toggleMapFullscreen"
+                    class="px-2 py-0.5 rounded-lg border border-gray-200 bg-white hover:bg-primary/10 hover:border-primary/30 hover:text-primary flex items-center gap-1 text-[10px] font-semibold text-gray-700 transition cursor-pointer shrink-0 shadow-2xs"
+                    :title="isMapFullscreen ? 'Réduire la carte (Échap)' : 'Agrandir la carte en plein écran'"
                   >
-                    {{ city.name }}
+                    <component :is="isMapFullscreen ? Minimize2 : Maximize2" :size="12" />
+                    <span class="hidden sm:inline">{{ isMapFullscreen ? 'Réduire' : 'Plein écran' }}</span>
                   </button>
                 </div>
               </div>
 
-              <!-- CONTENEUR LEAFLET -->
-              <div class="h-56 sm:h-64 rounded-xl overflow-hidden border border-gray-300 relative shadow-inner bg-gray-100">
-                <!-- Helper overlay banner -->
-                <div class="absolute top-2 left-2 z-[1000] bg-white/90 backdrop-blur-xs border border-gray-200 px-2.5 py-1 rounded-lg shadow-xs text-[10px] font-semibold text-gray-700 flex items-center gap-1.5 pointer-events-none">
-                  <MapPin :size="12" class="text-primary animate-bounce" />
-                  <span>Cliquez n'importe où pour pointer l'adresse</span>
-                </div>
-
-                <!-- CARTE VUE-LEAFLET -->
-                <LMap
-                  ref="pickerMapRef"
-                  :zoom="pickerZoom"
-                  :center="pickerCenter"
-                  @ready="onPickerMapReady"
-                  @click="onMapClick"
-                  class="w-full h-full z-0 cursor-crosshair"
+              <!-- CONTENEUR LEAFLET (AVEC TÉLÉPORTATION POUR PLEIN ÉCRAN) -->
+              <Teleport to="body" :disabled="!isMapFullscreen">
+                <div
+                  :class="isMapFullscreen
+                    ? 'fixed inset-0 z-[100005] bg-black/75 backdrop-blur-sm p-3 sm:p-5 flex flex-col items-center justify-center'
+                    : 'w-full'"
                 >
-                  <LTileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution="&copy; OpenStreetMap & Galana"
-                  />
-
-                  <!-- STATIONS GALANA EN AMBRE -->
-                  <LCircleMarker
-                    v-for="site in validSitesForMap"
-                    :key="'site-' + site.id"
-                    :lat-lng="[site.latitude!, site.longitude!]"
-                    :radius="selectedSiteIds.includes(site.id) ? 7 : 5"
-                    :color="selectedSiteIds.includes(site.id) ? '#FFFFFF' : '#D97706'"
-                    :fill-color="selectedSiteIds.includes(site.id) ? '#059669' : '#F59E0B'"
-                    :fill-opacity="0.9"
-                    :weight="selectedSiteIds.includes(site.id) ? 2.5 : 1.5"
-                    @click.stop="onSiteMarkerClick(site)"
+                  <div
+                    :class="isMapFullscreen
+                      ? 'w-full h-full max-w-7xl max-h-[94vh] bg-white rounded-2xl shadow-2xl p-4 flex flex-col border border-gray-200 overflow-hidden'
+                      : 'w-full'"
                   >
-                    <LTooltip :options="{ direction: 'top', offset: [0, -6] }">
-                      <div class="text-[11px] p-0.5">
-                        <span class="font-bold text-gray-900 block">⛽ {{ site.name }}</span>
-                        <span class="text-gray-500 font-normal">{{ site.locality || site.code || 'Station Galana' }}</span>
-                        <span
-                          v-if="selectedSiteIds.includes(site.id)"
-                          class="font-bold text-emerald-700 block mt-0.5"
+                    <!-- EN-TÊTE PLEIN ÉCRAN DÉDIÉ -->
+                    <div v-if="isMapFullscreen" class="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-gray-100 shrink-0">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Compass :size="16" />
+                        </div>
+                        <div class="min-w-0">
+                          <h4 class="font-bold text-sm text-gray-900 truncate">
+                            Positionnement précis sur la carte de Madagascar
+                          </h4>
+                          <p class="text-[11px] text-gray-500 truncate flex items-center gap-2">
+                            <span>Cliquez pour placer le repère. La localité est détectée automatiquement.</span>
+                            <span v-if="form.locality" class="font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                              📍 {{ form.locality }}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <!-- Raccourcis villes en plein écran -->
+                        <div class="hidden sm:flex items-center gap-1">
+                          <span class="text-[10px] text-gray-400 font-semibold">Villes :</span>
+                          <button
+                            v-for="city in cityJumpList"
+                            :key="'fs-' + city.name"
+                            type="button"
+                            @click="jumpToCity(city.coords, city.zoom)"
+                            class="px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-[11px] font-medium text-gray-700 transition cursor-pointer"
+                          >
+                            {{ city.name }}
+                          </button>
+                        </div>
+
+                        <!-- Bouton Fermer Plein Écran -->
+                        <button
+                          type="button"
+                          @click="toggleMapFullscreen"
+                          class="px-3 py-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                         >
-                          ✓ Station couverte
+                          <Minimize2 :size="13" />
+                          <span>Valider & Réduire</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- CADRE CARTE -->
+                    <div
+                      :class="isMapFullscreen
+                        ? 'flex-1 w-full min-h-0 rounded-xl overflow-hidden border border-gray-300 relative shadow-inner bg-gray-100'
+                        : 'h-56 sm:h-64 rounded-xl overflow-hidden border border-gray-300 relative shadow-inner bg-gray-100'"
+                    >
+                      <!-- Helper overlay banner -->
+                      <div class="absolute top-2 left-2 z-[1000] bg-white/90 backdrop-blur-xs border border-gray-200 px-2.5 py-1 rounded-lg shadow-xs text-[10px] font-semibold text-gray-700 flex items-center gap-1.5 pointer-events-none">
+                        <MapPin :size="12" class="text-primary animate-bounce" />
+                        <span>Cliquez n'importe où pour pointer l'adresse</span>
+                      </div>
+
+                      <!-- Bouton flottant agrandir / réduire sur la carte -->
+                      <button
+                        type="button"
+                        @click="toggleMapFullscreen"
+                        class="absolute top-2 right-2 z-[1000] h-7 w-7 rounded-lg bg-white/90 hover:bg-white border border-gray-200 text-gray-700 hover:text-primary shadow-xs flex items-center justify-center transition cursor-pointer"
+                        :title="isMapFullscreen ? 'Réduire la carte (Échap)' : 'Agrandir en plein écran'"
+                      >
+                        <component :is="isMapFullscreen ? Minimize2 : Maximize2" :size="13" />
+                      </button>
+
+                      <!-- CARTE VUE-LEAFLET -->
+                      <LMap
+                        ref="pickerMapRef"
+                        :zoom="pickerZoom"
+                        :center="pickerCenter"
+                        @ready="onPickerMapReady"
+                        @click="onMapClick"
+                        class="w-full h-full z-0 cursor-crosshair"
+                      >
+                        <LTileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution="&copy; OpenStreetMap & Galana"
+                        />
+
+                        <!-- STATIONS GALANA EN AMBRE -->
+                        <LCircleMarker
+                          v-for="site in validSitesForMap"
+                          :key="'site-' + site.id"
+                          :lat-lng="[site.latitude!, site.longitude!]"
+                          :radius="selectedSiteIds.includes(site.id) ? 7 : 5"
+                          :color="selectedSiteIds.includes(site.id) ? '#FFFFFF' : '#D97706'"
+                          :fill-color="selectedSiteIds.includes(site.id) ? '#059669' : '#F59E0B'"
+                          :fill-opacity="0.9"
+                          :weight="selectedSiteIds.includes(site.id) ? 2.5 : 1.5"
+                          @click.stop="onSiteMarkerClick(site)"
+                        >
+                          <LTooltip :options="{ direction: 'top', offset: [0, -6] }">
+                            <div class="text-[11px] p-0.5">
+                              <span class="font-bold text-gray-900 block">⛽ {{ site.name }}</span>
+                              <span class="text-gray-500 font-normal">{{ site.locality || site.code || 'Station Galana' }}</span>
+                              <span
+                                v-if="selectedSiteIds.includes(site.id)"
+                                class="font-bold text-emerald-700 block mt-0.5"
+                              >
+                                ✓ Station couverte
+                              </span>
+                            </div>
+                          </LTooltip>
+                        </LCircleMarker>
+
+                        <!-- RAYON DE COUVERTURE 15 KM (TRANSLUCIDE) -->
+                        <LCircle
+                          v-if="form.latitude !== null && form.longitude !== null"
+                          :lat-lng="[form.latitude, form.longitude]"
+                          :radius="15000"
+                          :color="typeColor(form.type)"
+                          :fill-color="typeColor(form.type)"
+                          :fill-opacity="0.07"
+                          :weight="1.5"
+                          :dash-array="'4, 6'"
+                        />
+
+                        <!-- MARQUEUR DU CONTACT D'URGENCE SÉLECTIONNÉ -->
+                        <LCircleMarker
+                          v-if="form.latitude !== null && form.longitude !== null"
+                          :lat-lng="[form.latitude, form.longitude]"
+                          :radius="9"
+                          :color="'#FFFFFF'"
+                          :fill-color="typeColor(form.type)"
+                          :fill-opacity="1"
+                          :weight="3"
+                        >
+                          <LTooltip :options="{ permanent: false, direction: 'top', offset: [0, -8] }">
+                            <div class="text-xs font-bold text-gray-900 p-0.5">
+                              {{ typeEmoji(form.type) }} {{ form.name || 'Emplacement choisi' }}
+                              <span class="block text-[10px] text-gray-500 font-normal">
+                                [{{ form.latitude != null ? form.latitude.toFixed(4) : '' }}, {{ form.longitude != null ? form.longitude.toFixed(4) : '' }}]
+                              </span>
+                            </div>
+                          </LTooltip>
+                        </LCircleMarker>
+                      </LMap>
+                    </div>
+
+                    <!-- PIED DE CARTE EN PLEIN ÉCRAN -->
+                    <div v-if="isMapFullscreen" class="mt-3 pt-2.5 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 shrink-0 text-xs">
+                      <div class="flex items-center gap-3">
+                        <span v-if="form.latitude != null && form.longitude != null" class="font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded-md text-[11px]">
+                          GPS : {{ Number(form.latitude).toFixed(5) }}, {{ Number(form.longitude).toFixed(5) }}
+                        </span>
+                        <span v-if="form.locality" class="font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1">
+                          <CheckCircle2 :size="12" class="text-emerald-600" />
+                          <span>Localité auto : {{ form.locality }}</span>
+                        </span>
+                        <span class="text-gray-500 text-[11px]">
+                          {{ selectedSiteIds.length }} station(s) Galana rattachée(s)
                         </span>
                       </div>
-                    </LTooltip>
-                  </LCircleMarker>
-
-                  <!-- RAYON DE COUVERTURE 15 KM (TRANSLUCIDE) -->
-                  <LCircle
-                    v-if="form.latitude !== null && form.longitude !== null"
-                    :lat-lng="[form.latitude, form.longitude]"
-                    :radius="15000"
-                    :color="typeColor(form.type)"
-                    :fill-color="typeColor(form.type)"
-                    :fill-opacity="0.07"
-                    :weight="1.5"
-                    :dash-array="'4, 6'"
-                  />
-
-                  <!-- MARQUEUR DU CONTACT D'URGENCE SÉLECTIONNÉ -->
-                  <LCircleMarker
-                    v-if="form.latitude !== null && form.longitude !== null"
-                    :lat-lng="[form.latitude, form.longitude]"
-                    :radius="9"
-                    :color="'#FFFFFF'"
-                    :fill-color="typeColor(form.type)"
-                    :fill-opacity="1"
-                    :weight="3"
-                  >
-                    <LTooltip :options="{ permanent: false, direction: 'top', offset: [0, -8] }">
-                      <div class="text-xs font-bold text-gray-900 p-0.5">
-                        {{ typeEmoji(form.type) }} {{ form.name || 'Emplacement choisi' }}
-                        <span class="block text-[10px] text-gray-500 font-normal">
-                          [{{ form.latitude != null ? form.latitude.toFixed(4) : '' }}, {{ form.longitude != null ? form.longitude.toFixed(4) : '' }}]
-                        </span>
-                      </div>
-                    </LTooltip>
-                  </LCircleMarker>
-                </LMap>
-              </div>
+                      <button
+                        type="button"
+                        @click="toggleMapFullscreen"
+                        class="px-4 py-1.5 rounded-xl bg-gray-900 text-white hover:bg-gray-800 font-bold text-xs transition cursor-pointer"
+                      >
+                        Terminer la sélection
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Teleport>
 
               <!-- INPUTS COORDONNÉES GPS & LOCALITÉ -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                 <div>
-                  <label class="block font-semibold text-gray-700 mb-1">
-                    Localité / Ville <span class="text-red-500">*</span>
-                  </label>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="block font-semibold text-gray-700">
+                      Localité / Ville <span class="text-red-500">*</span>
+                    </label>
+                    <span v-if="isResolvingLocality" class="text-[10px] text-primary flex items-center gap-1 font-normal">
+                      <Loader2 :size="10" class="animate-spin" />
+                      <span>Détection...</span>
+                    </span>
+                    <span v-else-if="form.locality" class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                      <CheckCircle2 :size="10" class="text-emerald-600" />
+                      <span>Auto</span>
+                    </span>
+                  </div>
                   <input
                     v-model="form.locality"
                     type="text"
@@ -510,7 +632,7 @@ import {
   Sparkles,
   X,
 } from "@lucide/vue";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { toast } from "vue3-toastify";
 import type {
   EmergencyContactFormType,
@@ -559,6 +681,54 @@ const pickerMapInstance = ref<any>(null);
 const pickerZoom = ref(6);
 const pickerCenter = ref<[number, number]>([-18.8792, 47.5079]);
 const siteSearchQuery = ref("");
+const isMapFullscreen = ref(false);
+const isResolvingLocality = ref(false);
+let reverseGeocodeAbortController: AbortController | null = null;
+
+// Référentiel des principales villes et communes de Madagascar pour auto-détection immédiate
+const MADAGASCAR_LOCALITIES: Array<{ name: string; lat: number; lng: number }> = [
+  { name: "Antananarivo", lat: -18.9055, lng: 47.525 },
+  { name: "Imeritsiatosika", lat: -18.9833, lng: 47.3167 },
+  { name: "Arivonimamo", lat: -19.0167, lng: 47.1833 },
+  { name: "Ambatolampy", lat: -19.3833, lng: 47.4167 },
+  { name: "Antsirabe", lat: -19.8659, lng: 47.0333 },
+  { name: "Toamasina", lat: -18.1492, lng: 49.4023 },
+  { name: "Mahajanga", lat: -15.7188, lng: 46.3272 },
+  { name: "Antsiranana", lat: -12.3088, lng: 49.2938 },
+  { name: "Fianarantsoa", lat: -21.4408, lng: 47.0977 },
+  { name: "Toliara", lat: -23.3508, lng: 43.6686 },
+  { name: "Moramanga", lat: -18.9492, lng: 48.2301 },
+  { name: "Brickaville", lat: -18.82, lng: 49.07 },
+  { name: "Ambositra", lat: -20.53, lng: 47.24 },
+  { name: "Manakara", lat: -22.14, lng: 48.01 },
+  { name: "Farafangana", lat: -22.82, lng: 47.83 },
+  { name: "Tolagnaro", lat: -25.03, lng: 46.99 },
+  { name: "Morondava", lat: -20.29, lng: 44.28 },
+  { name: "Ambanja", lat: -13.68, lng: 48.45 },
+  { name: "Ambilobe", lat: -13.2, lng: 49.05 },
+  { name: "Sambava", lat: -14.27, lng: 50.17 },
+  { name: "Antalaha", lat: -14.9, lng: 50.28 },
+  { name: "Nosy Be", lat: -13.31, lng: 48.26 },
+  { name: "Sainte Marie", lat: -16.9, lng: 49.9 },
+  { name: "Maevatanana", lat: -16.95, lng: 46.83 },
+  { name: "Port-Bergé", lat: -15.57, lng: 47.62 },
+  { name: "Miarinarivo", lat: -18.96, lng: 46.91 },
+  { name: "Tsiroanomandidy", lat: -18.77, lng: 46.05 },
+  { name: "Mandritsara", lat: -15.84, lng: 48.82 },
+  { name: "Mananjary", lat: -21.22, lng: 48.33 },
+  { name: "Ihosy", lat: -22.4, lng: 46.12 },
+  { name: "Sakaraha", lat: -22.9, lng: 44.53 },
+  { name: "Ivato", lat: -18.798, lng: 47.478 },
+  { name: "Talatamaty", lat: -18.835, lng: 47.465 },
+  { name: "Tanjombato", lat: -18.965, lng: 47.53 },
+  { name: "Ilafy", lat: -18.855, lng: 47.555 },
+  { name: "Sabotsy Namehana", lat: -18.825, lng: 47.55 },
+  { name: "Ambohimanambola", lat: -18.935, lng: 47.605 },
+  { name: "Ambohidratrimo", lat: -18.82, lng: 47.44 },
+  { name: "Itaosy", lat: -18.925, lng: 47.48 },
+  { name: "Anosizato", lat: -18.935, lng: 47.495 },
+  { name: "Andoharanofotsy", lat: -18.975, lng: 47.545 },
+];
 
 const cityJumpList: Array<{ name: string; coords: [number, number]; zoom: number }> = [
   { name: "Tana", coords: [-18.9055, 47.525], zoom: 12 },
@@ -729,17 +899,142 @@ function autoSelectNearestSites(maxRadiusKm = 15, notify = false) {
 
   selectedSiteIds.value = nearby.map((s) => s.id);
 
-  // Déduire automatiquement la localité si elle n'est pas encore renseignée
-  if (!form.value.locality?.trim() && nearby.length > 0 && nearby[0].locality) {
-    form.value.locality = nearby[0].locality.toUpperCase();
-  }
-
   if (notify) {
     toast.success(
       `${nearby.length} station(s) Galana proche(s) auto-sélectionnée(s) (≤ ${maxRadiusKm} km).`
     );
   }
 }
+
+// Résolution automatique de la localité / ville depuis les coordonnées cliquées
+async function resolveLocalityFromCoordinates(lat: number, lng: number) {
+  // 1. Détection immédiate locale : commune ou grande ville malgache la plus proche
+  let closestName = "";
+  let minDistance = Infinity;
+
+  for (const city of MADAGASCAR_LOCALITIES) {
+    const d = calculateDistanceKm(lat, lng, city.lat, city.lng);
+    if (d < minDistance) {
+      minDistance = d;
+      closestName = city.name;
+    }
+  }
+
+  // Vérifier également les stations Galana disponibles proches
+  for (const site of props.availableSites) {
+    const coords = getSiteCoordinates(site);
+    const loc = site.locality || site.location?.locality;
+    if (coords && loc) {
+      const d = calculateDistanceKm(lat, lng, coords.lat, coords.lng);
+      if (d < minDistance) {
+        minDistance = d;
+        closestName = loc;
+      }
+    }
+  }
+
+  // Si on est à moins de 25 km d'un repère connu, affecter immédiatement
+  if (closestName && minDistance <= 25) {
+    form.value.locality = closestName.toUpperCase();
+  }
+
+  // 2. Géocodage inverse OpenStreetMap Nominatim pour précision administrative
+  if (reverseGeocodeAbortController) {
+    reverseGeocodeAbortController.abort();
+  }
+  reverseGeocodeAbortController = new AbortController();
+  isResolvingLocality.value = true;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`;
+    const res = await fetch(url, {
+      signal: reverseGeocodeAbortController.signal,
+      headers: { "Accept-Language": "fr" },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const addr = data.address || {};
+      const detectedCity =
+        addr.town ||
+        addr.village ||
+        addr.city ||
+        addr.municipality ||
+        addr.suburb ||
+        addr.hamlet ||
+        addr.county ||
+        addr.state_district ||
+        addr.state;
+      if (detectedCity && typeof detectedCity === "string") {
+        form.value.locality = detectedCity.trim().toUpperCase();
+        if (data.display_name && !form.value.address?.trim()) {
+          const road = addr.road || addr.suburb || addr.neighbourhood;
+          if (road) {
+            form.value.address = road;
+          }
+        }
+      }
+    }
+  } catch (err: any) {
+    if (err.name !== "AbortError") {
+      // Conserver la détection locale
+    }
+  } finally {
+    isResolvingLocality.value = false;
+  }
+}
+
+// Bascule mode plein écran pour la carte
+function toggleMapFullscreen() {
+  isMapFullscreen.value = !isMapFullscreen.value;
+  refreshPickerMapSize();
+}
+
+function refreshPickerMapSize() {
+  nextTick(() => {
+    [30, 80, 180, 350, 600].forEach((delay) => {
+      setTimeout(() => {
+        if (pickerMapInstance.value) {
+          try {
+            if (typeof pickerMapInstance.value.invalidateSize === "function") {
+              pickerMapInstance.value.invalidateSize();
+            } else if (typeof pickerMapInstance.value.leafletObject?.invalidateSize === "function") {
+              pickerMapInstance.value.leafletObject.invalidateSize();
+            }
+          } catch {}
+        }
+        if (pickerMapRef.value) {
+          try {
+            if (typeof pickerMapRef.value.invalidateSize === "function") {
+              pickerMapRef.value.invalidateSize();
+            } else if (typeof pickerMapRef.value.leafletObject?.invalidateSize === "function") {
+              pickerMapRef.value.leafletObject.invalidateSize();
+            }
+          } catch {}
+        }
+      }, delay);
+    });
+  });
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape" && isMapFullscreen.value) {
+    e.stopPropagation();
+    isMapFullscreen.value = false;
+    refreshPickerMapSize();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener("keydown", onKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", onKeydown);
+  if (reverseGeocodeAbortController) {
+    reverseGeocodeAbortController.abort();
+    reverseGeocodeAbortController = null;
+  }
+});
 
 // Clic sur la carte Leaflet
 function onMapClick(e: any) {
@@ -749,6 +1044,9 @@ function onMapClick(e: any) {
 
   form.value.latitude = lat;
   form.value.longitude = lng;
+
+  // Détection automatique immédiate de la localité/ville
+  resolveLocalityFromCoordinates(lat, lng);
 
   // Auto-sélectionner automatiquement les stations les plus proches
   autoSelectNearestSites(15, false);
@@ -762,8 +1060,10 @@ function onSiteMarkerClick(site: EmergencySiteOption) {
   form.value.latitude = coords.lat;
   form.value.longitude = coords.lng;
 
-  if (!form.value.locality?.trim() && site.locality) {
+  if (site.locality) {
     form.value.locality = site.locality.toUpperCase();
+  } else {
+    resolveLocalityFromCoordinates(coords.lat, coords.lng);
   }
 
   autoSelectNearestSites(15, false);
@@ -777,11 +1077,16 @@ function onSiteMarkerClick(site: EmergencySiteOption) {
 
 // Changement manuel des coordonnées dans les champs input
 function onCoordinatesInputChange() {
-  if (form.value.latitude !== null && form.value.longitude !== null) {
-    if (pickerMapInstance.value) {
-      pickerMapInstance.value.setView([form.value.latitude, form.value.longitude], 13);
+  if (form.value.latitude != null && form.value.longitude != null) {
+    const lat = Number(form.value.latitude);
+    const lng = Number(form.value.longitude);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      if (pickerMapInstance.value) {
+        pickerMapInstance.value.setView([lat, lng], 13);
+      }
+      resolveLocalityFromCoordinates(lat, lng);
+      autoSelectNearestSites(15, false);
     }
-    autoSelectNearestSites(15, false);
   }
 }
 

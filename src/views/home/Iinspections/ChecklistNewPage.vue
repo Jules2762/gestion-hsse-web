@@ -1,32 +1,40 @@
 <template>
     <div>
-        <Header title="Nouveau inspection" :thumbnails="[
+        <Header title="inspections.checklists.new" :thumbnails="[
             {
-                'label': 'Tableau de bord',
+                'label': 'thumbnails.home',
                 'name': 'DASHBOARD'
             },
             {
-                'label': 'Inspection',
+                'label': 'thumbnails.inspections',
                 'name': 'INSPECTION'
             }, {
-                'label': 'Checklist',
+                'label': 'thumbnails.checklists',
                 'name': 'CHECKLIST'
             }, {
-                'label': 'Nouveau',
+                'label': 'thumbnails.new',
                 'name': 'CHECKLIST_NEW'
             }
         ]" />
 
         <div class="p-4 grid grid-cols-12 gap-4">
-            <form @submit.prevent.once="onSubmit()" class=" col-span-8 grid grid-cols-2  p-6 bg-white rounded border border-gray-200 gap-4">
+            <form @submit.prevent="onSubmit()" class=" col-span-8 grid grid-cols-2  p-6 bg-white rounded border border-gray-200 gap-4">
                 <div class="col-span-2 flex flex-col gap-y-3">
                     <h4>Informations de l'inspection</h4>
                     <p>Sélectionnez le type d'inspection puis renseignez les informations de planification.</p>
                 </div>
                 <Select required :options="dynamicTypes" v-model="data.type" label="Type d'inspection" class="col-span-2" />
-                <Select required :options="dynamicSites" label="Site" v-model="data.site" class="col-span-2" />
-                <Input label="Date prévue" type="date" v-model="data.date" />
-                <Input label="Heure prévue" type="time" v-model="data.time" />
+                <Select required :options="dynamicSites" label="Catégorie de site" v-model="data.site" class="col-span-2" />
+                <Input
+                    label="Emplacement / Station Galana (Localisation GPS)"
+                    v-model="data.location"
+                    placeholder="Ex: ANKORONDRANO, TAMATAVE, AINA, AMBANJA..."
+                    :lists="stationList"
+                    list_id="checklist_stations_datalist"
+                    class="col-span-2"
+                />
+                <Input label="Date prévue" type="date" v-model="data.date" required />
+                <Input label="Heure prévue" type="time" v-model="data.time" required />
                 <div class="flex flex-row items-center col-span-2 justify-end gap-x-3">
                     <Button variant="outline" @click="router.back()" type="button">Annuler</Button>
                     <Button :left-icon="Save" :loading="loading_submit" :disabled="disabled_submit" type="submit">Créer l'inspection</Button>
@@ -77,11 +85,11 @@
 
                             <div class="min-w-0">
                                 <p class="font-medium truncate">
-                                    {{ data.type }}
+                                    {{ getSelectedTypeLabel() }}
                                 </p>
 
-                                <p class="text-xs text-gray-500">
-                                    Type sélectionné
+                                <p class="text-xs text-gray-500 truncate">
+                                    {{ data.type }}
                                 </p>
                             </div>
                         </div>
@@ -104,7 +112,7 @@
                             <!-- SITE -->
                             <div class="col-span-2">
                                 <p class="text-xs text-gray-500">
-                                    Site
+                                    Catégorie de site
                                 </p>
 
                                 <p v-if="data.site" class="mt-1 font-medium">
@@ -113,6 +121,22 @@
 
                                 <p v-else class="mt-1 text-sm text-gray-400">
                                     Non renseigné
+                                </p>
+                            </div>
+
+                            <!-- LOCALISATION / STATION -->
+                            <div class="col-span-2">
+                                <p class="text-xs text-gray-500">
+                                    Station / Localisation
+                                </p>
+
+                                <p v-if="data.location" class="mt-1 font-medium text-emerald-700 flex items-center gap-1">
+                                    <span>📍</span>
+                                    <span>{{ data.location }}</span>
+                                </p>
+
+                                <p v-else class="mt-1 text-sm text-gray-400">
+                                    Non spécifiée (Optionnel)
                                 </p>
                             </div>
 
@@ -182,6 +206,18 @@
                                 </span>
                             </div>
 
+                            <div v-if="data.location" class="h-px bg-gray-200 my-3" />
+
+                            <div v-if="data.location" class="flex items-center justify-between">
+                                <span class="text-sm text-gray-500">
+                                    Station / GPS
+                                </span>
+
+                                <span class="text-sm font-medium text-emerald-800 text-right max-w-44 truncate">
+                                    📍 {{ data.location }}
+                                </span>
+                            </div>
+
                             <div class="h-px bg-gray-200 my-3" />
 
                             <div class="flex items-center justify-between">
@@ -243,24 +279,41 @@
     import Select from '../../../components/ui/Select.vue';
     import { router } from '../../../router/index.ts';
     import type { ChecklistTemplateType } from '../../../@types/ChecklistTemplate.type.ts';
-    import { onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
     import { useTemplateService } from '../../../core/services/template.service.ts';
     import { useChecklistService } from '../../../core/services/checklist.service.ts';
     import type { CheckllistFormType } from '../../../@types/Checklist.type.ts';
+    import { toast } from 'vue3-toastify';
+
     const templates = ref<ChecklistTemplateType[]>()
     const dynamicTypes = ref<{ label: string; value: string; site?: string }[]>([...ChecklistTypeData])
     const dynamicSites = ref<{ label: string; value: string }[]>([...SiteTypeDataJson])
+    const stationList = ref<string[]>([])
+
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
+    const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
     const data = ref<CheckllistFormType>({
         type: undefined,
         site: undefined,
-        date: undefined,
-        time: undefined
+        location: '',
+        date: todayStr,
+        time: timeStr
     })
+
     const templateService = useTemplateService()
     const checklistService = useChecklistService()
     const loading_submit = ref<boolean>(false)
-    const disabled_submit = ref<boolean>(true)
+
+    const disabled_submit = computed(() => {
+        return !data.value.type || !data.value.site || !data.value.date || !data.value.time
+    })
+
+    function getSelectedTypeLabel(): string {
+        const found = dynamicTypes.value.find(t => t.value === data.value.type)
+        return found?.label || data.value.type || '—'
+    }
 
     function fetchDataTemplate() {
         templateService.index()
@@ -269,7 +322,7 @@
                 if (templates.value && templates.value.length > 0) {
                     const loadedTypes = templates.value.map(tpl => ({
                         label: tpl.title,
-                        value: tpl.title,
+                        value: tpl.type || tpl.title,
                         site: tpl.site
                     }))
                     dynamicTypes.value = loadedTypes
@@ -286,10 +339,25 @@
                         label: t,
                         value: t
                     }))
-                    // Merge unique
                     for (const ft of filterTypes) {
                         if (!dynamicTypes.value.some(dt => dt.value === ft.value)) {
                             dynamicTypes.value.push(ft)
+                        }
+                    }
+                }
+
+                if (res.data?.station && res.data.station.length > 0) {
+                    stationList.value = res.data.station
+                }
+
+                if (res.data?.site && res.data.site.length > 0) {
+                    const serverSites = res.data.site.map((s: string) => ({
+                        label: s,
+                        value: s
+                    }))
+                    for (const ss of serverSites) {
+                        if (!dynamicSites.value.some(ds => ds.value === ss.value)) {
+                            dynamicSites.value.push(ss)
                         }
                     }
                 }
@@ -298,34 +366,46 @@
     }
 
     function onSubmit() {
+        if (disabled_submit.value) return
         loading_submit.value = true
         checklistService.store(data.value)
-        .then(res=>{
-            console.log(res.data)
-            router.push({
-                name:'CHECKLIST'
+            .then(res => {
+                toast.success("Inspection créée avec succès !")
+                const createdId = res.data?.data?.id
+                if (createdId) {
+                    router.push({
+                        name: 'CHECKLIST_DETAILS',
+                        params: { id: createdId }
+                    })
+                } else {
+                    router.push({
+                        name: 'CHECKLIST'
+                    })
+                }
             })
-        })
-        .catch(err=>{
-            console.error(err)
-        })
-        .finally(()=>{
-            loading_submit.value=false
-        })
+            .catch(err => {
+                console.error(err)
+                const errorMsg =
+                    err.response?.data?.message ||
+                    err.response?.data?.errors?.type?.[0] ||
+                    err.response?.data?.errors?.site?.[0] ||
+                    err.response?.data?.errors?.location?.[0] ||
+                    "Erreur lors de la création de l'inspection."
+                toast.error(errorMsg)
+            })
+            .finally(() => {
+                loading_submit.value = false
+            })
     }
 
     onMounted(() => {
         fetchDataTemplate()
     })
 
-    watch(data.value, () => {
-        disabled_submit.value=Object.values(data.value).some(value=>value==undefined||value=='')
-    })
-
-    watch(()=>data.value.type,()=>{
-        const site = dynamicTypes.value.find(item=>data.value.type==item.value)?.site
-        if (site) {
-            data.value.site = site as any
+    watch(() => data.value.type, () => {
+        const found = dynamicTypes.value.find(item => data.value.type == item.value)
+        if (found?.site) {
+            data.value.site = found.site as any
         }
     })
 </script>

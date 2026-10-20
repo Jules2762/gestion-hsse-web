@@ -331,12 +331,13 @@
           <LCircleMarker
             v-for="site in filteredSites"
             :key="'site-' + site.id"
+            :ref="(el) => setSiteMarkerRef(el, site.id)"
             :lat-lng="[site.latitude, site.longitude]"
-            :radius="site.id === selectedStationId ? 11 : 6.5"
-            :color="site.id === selectedStationId ? '#78350F' : '#B45309'"
-            :fill-color="site.id === selectedStationId ? '#F59E0B' : '#FBBF24'"
+            :radius="site.id === (activeStationModal?.id || selectedStationId) ? 12 : 6.5"
+            :color="site.id === (activeStationModal?.id || selectedStationId) ? '#78350F' : '#B45309'"
+            :fill-color="site.id === (activeStationModal?.id || selectedStationId) ? '#F59E0B' : '#FBBF24'"
             :fill-opacity="0.9"
-            :weight="site.id === selectedStationId ? 3.5 : 1.5"
+            :weight="site.id === (activeStationModal?.id || selectedStationId) ? 3.5 : 1.5"
             @click="handleStationMarkerClick(site)"
           >
             <!-- TOOLTIP -->
@@ -432,13 +433,14 @@
           <LCircleMarker
             v-for="contact in filteredContacts"
             :key="'contact-' + contact.id"
+            :ref="(el) => setContactMarkerRef(el, contact.id)"
             :lat-lng="[contact.latitude!, contact.longitude!]"
-            :radius="contact.id === selectedContactId ? 14 : markerRadius(contact.type)"
-            :color="contact.id === selectedContactId ? '#F59E0B' : '#FFFFFF'"
+            :radius="contact.id === (activeContactModal?.id || selectedContactId) ? 14 : markerRadius(contact.type)"
+            :color="contact.id === (activeContactModal?.id || selectedContactId) ? '#F59E0B' : '#FFFFFF'"
             :fill-color="contactColors(contact.type).fill"
             :fill-opacity="1.0"
-            :weight="contact.id === selectedContactId ? 4 : 2.5"
-            @click="$emit('select-contact', contact)"
+            :weight="contact.id === (activeContactModal?.id || selectedContactId) ? 4 : 2.5"
+            @click="handleContactMarkerClick(contact)"
           >
             <!-- TOOLTIP AU SURVOL -->
             <LTooltip :options="{ direction: 'top', offset: [0, -8] }">
@@ -551,7 +553,7 @@ import {
   XIcon,
   MapPin,
 } from "@lucide/vue";
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import type {
   EmergencyContactType,
   EmergencySiteType,
@@ -852,6 +854,56 @@ const mapContainerRef = ref<HTMLElement | null>(null);
 const lMapComponentRef = ref<any>(null);
 let resizeObserver: ResizeObserver | null = null;
 
+const activeStationModal = ref<EmergencySiteType | null>(null);
+const activeContactModal = ref<EmergencyContactType | null>(null);
+
+const siteMarkerRefs = new Map<number, any>();
+const contactMarkerRefs = new Map<number, any>();
+
+function setSiteMarkerRef(el: any, id: number) {
+  if (el) {
+    siteMarkerRefs.set(id, el);
+  } else {
+    siteMarkerRefs.delete(id);
+  }
+}
+
+function setContactMarkerRef(el: any, id: number) {
+  if (el) {
+    contactMarkerRefs.set(id, el);
+  } else {
+    contactMarkerRefs.delete(id);
+  }
+}
+
+function openSitePopup(siteId: number) {
+  setTimeout(() => {
+    const marker = siteMarkerRefs.get(siteId);
+    if (marker) {
+      const obj = marker.leafletObject || marker;
+      if (obj && typeof obj.openPopup === "function") {
+        try {
+          obj.openPopup();
+        } catch {}
+      }
+    }
+  }, 220);
+}
+
+function openContactPopup(contactId: number) {
+  setTimeout(() => {
+    const marker = contactMarkerRefs.get(contactId);
+    if (marker) {
+      const obj = marker.leafletObject || marker;
+      if (obj && typeof obj.openPopup === "function") {
+        try {
+          obj.openPopup();
+        } catch {}
+      }
+    }
+  }, 220);
+}
+
 function getMapInstance(): any {
   if (leafletMap.value) {
     if (typeof leafletMap.value.invalidateSize === "function") return leafletMap.value;
@@ -890,21 +942,62 @@ function jumpTo(coords: number[] | [number, number], targetZoom = 12) {
 }
 
 function selectContact(contact: EmergencyContactType) {
+  activeContactModal.value = contact;
+  activeStationModal.value = null;
+  showContacts.value = true;
   if (contact.latitude && contact.longitude) {
     jumpTo([Number(contact.latitude), Number(contact.longitude)], 15);
+    openContactPopup(contact.id);
   }
 }
 
 function selectStation(station: EmergencySiteType) {
+  activeStationModal.value = station;
+  activeContactModal.value = null;
+  showStations.value = true;
   if (station.latitude && station.longitude) {
     jumpTo([Number(station.latitude), Number(station.longitude)], 14);
+    openSitePopup(station.id);
   }
+}
+
+function handleContactMarkerClick(contact: EmergencyContactType) {
+  emit("select-contact", contact);
+  selectContact(contact);
 }
 
 function handleStationMarkerClick(site: EmergencySiteType) {
   emit("select-station", site);
   selectStation(site);
 }
+
+watch(
+  () => props.selectedContactId,
+  (newId) => {
+    if (newId) {
+      const c = props.contacts.find((x) => x.id === newId);
+      if (c) {
+        selectContact(c);
+      }
+    } else {
+      activeContactModal.value = null;
+    }
+  }
+);
+
+watch(
+  () => props.selectedStationId,
+  (newId) => {
+    if (newId) {
+      const s = props.sites.find((x) => x.id === newId);
+      if (s) {
+        selectStation(s);
+      }
+    } else {
+      activeStationModal.value = null;
+    }
+  }
+);
 
 function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value;

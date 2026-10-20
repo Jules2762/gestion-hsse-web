@@ -1,10 +1,10 @@
 <template>
     <div class="min-h-screen bg-white">
 
-        <Header title="Import Formation" :thumbnails="[
-            { label: 'Tableau de bord', name: 'DASHBOARD' },
-            { label: 'Formation', name: 'FORMATION' },
-            { label: 'Import', name: 'FORMATION_IMPORT' }
+        <Header title="formation.import_title" :thumbnails="[
+            { label: 'thumbnails.home', name: 'DASHBOARD' },
+            { label: 'thumbnails.training', name: 'FORMATION' },
+            { label: 'thumbnails.import', name: 'FORMATION_IMPORT' }
         ]" />
 
         <div class="mx-auto max-w-7xl p-4 md:p-6">

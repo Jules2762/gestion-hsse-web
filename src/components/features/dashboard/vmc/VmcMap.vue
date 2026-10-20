@@ -226,7 +226,7 @@ function goToVmc(site: any) {
     show_fullscreen.value = false;
   }
   router.push({
-    name: 'VMC_PAGE',
+    name: 'VMC',
     query: { site: site.name }
   });
 }

@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-screen bg-background text-text-primary pb-12">
     <!-- HEADER GLOBAL -->
-    <Header title="Contacts d'urgence & Secours" :thumbnails="[
-      { label: 'Accueil', name: 'DASHBOARD' },
-      { label: 'Contacts d\'urgence', name: 'EMERGENCY' }
+    <Header title="emergency.title" :thumbnails="[
+      { label: 'thumbnails.home', name: 'DASHBOARD' },
+      { label: 'thumbnails.emergency', name: 'EMERGENCY' }
     ]" />
 
     <div class="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-5">
@@ -1020,10 +1020,13 @@ const exportFields = [
   { key: "locality", excelName: "Ville / Localité" },
   { key: "province", excelName: "Province / Région" },
   { key: "address", excelName: "Adresse" },
+  { key: "nearest_station", excelName: "Site Galana le plus proche" },
+  { key: "nearest_distance", excelName: "Distance (site le plus proche)" },
+  { key: "nearby_sites", excelName: "Sites / Stations Galana à proximité" },
+  { key: "assigned_sites", excelName: "Sites rattachés (système)" },
+  { key: "reference_station", excelName: "Station sélectionnée (filtre)" },
   { key: "latitude", excelName: "Latitude" },
   { key: "longitude", excelName: "Longitude" },
-  { key: "distance", excelName: "Distance calculée" },
-  { key: "reference_station", excelName: "Station Galana de référence" },
   { key: "notes", excelName: "Observations / Notes" },
 ];
 
@@ -1043,27 +1046,63 @@ function exportData() {
       GENDARMERIE: "Gendarmerie Nationale",
     };
 
-    const rows = filteredDirectoryContacts.value.map((c) => ({
-      type_label: typeLabelMap[c.type] || c.type,
-      name: c.name || "—",
-      contact_1: c.contact_1 || c.phone || "—",
-      contact_2: c.contact_2 || "—",
-      contact_3: c.contact_3 || "—",
-      email: c.email || "—",
-      locality: c.locality || c.location?.locality || "—",
-      province: resolveContactProvince(c) || "—",
-      address: c.address || "—",
-      latitude: c.latitude !== undefined && c.latitude !== null ? String(c.latitude) : "—",
-      longitude: c.longitude !== undefined && c.longitude !== null ? String(c.longitude) : "—",
-      distance: c.distance_km !== undefined && c.distance_km !== 99999 ? formatDistance(c.distance_km) : "—",
-      reference_station: selectedStation.value
-        ? `${selectedStation.value.name} (${selectedStation.value.locality || ''})`
-        : (() => {
-            const nearest = getNearestSitesForContact(c, 1);
-            return nearest.length > 0 ? `${nearest[0].name} (${formatDistance(nearest[0].distance_km)})` : "—";
-          })(),
-      notes: c.notes || "—",
-    }));
+    const rows = filteredDirectoryContacts.value.map((c) => {
+      const nearest = getNearestSitesForContact(c, 5);
+      const nearestSite = nearest.length > 0 ? nearest[0] : null;
+
+      // Stations proches avec distance calculée ou fallback par même localité
+      let nearbySitesText = "—";
+      if (nearest.length > 0) {
+        nearbySitesText = nearest
+          .map((st) => `${st.name}${st.locality ? ' [' + st.locality + ']' : ''} (${formatDistance(st.distance_km)})`)
+          .join(" ; ");
+      } else {
+        const cLoc = (c.locality || c.location?.locality || "").toLowerCase().trim();
+        if (cLoc) {
+          const sameLocSites = sites.value.filter(
+            (s) => (s.locality || "").toLowerCase().trim() === cLoc
+          );
+          if (sameLocSites.length > 0) {
+            nearbySitesText = sameLocSites
+              .map((s) => `${s.name} [${s.locality || cLoc}]`)
+              .join(" ; ");
+          }
+        }
+      }
+
+      // Sites rattachés enregistrés en base
+      const assignedSitesText =
+        Array.isArray(c.sites) && c.sites.length > 0
+          ? c.sites.map((s: any) => `${s.name}${s.locality ? ' (' + s.locality + ')' : ''}`).join(" ; ")
+          : "—";
+
+      // Station de référence si activement sélectionnée
+      const refStationText = selectedStation.value
+        ? `${selectedStation.value.name}${selectedStation.value.locality ? ' (' + selectedStation.value.locality + ')' : ''} : ${c.distance_km !== undefined && c.distance_km !== 99999 ? formatDistance(c.distance_km) : 'N/A'}`
+        : "—";
+
+      return {
+        type_label: typeLabelMap[c.type] || c.type,
+        name: c.name || "—",
+        contact_1: c.contact_1 || c.phone || "—",
+        contact_2: c.contact_2 || "—",
+        contact_3: c.contact_3 || "—",
+        email: c.email || "—",
+        locality: c.locality || c.location?.locality || "—",
+        province: resolveContactProvince(c) || "—",
+        address: c.address || "—",
+        nearest_station: nearestSite
+          ? `${nearestSite.name}${nearestSite.locality ? ' (' + nearestSite.locality + ')' : ''}`
+          : "—",
+        nearest_distance: nearestSite ? formatDistance(nearestSite.distance_km) : "—",
+        nearby_sites: nearbySitesText,
+        assigned_sites: assignedSitesText,
+        reference_station: refStationText,
+        latitude: c.latitude !== undefined && c.latitude !== null ? String(c.latitude) : "—",
+        longitude: c.longitude !== undefined && c.longitude !== null ? String(c.longitude) : "—",
+        notes: c.notes || "—",
+      };
+    });
 
     exportUtils(
       rows,

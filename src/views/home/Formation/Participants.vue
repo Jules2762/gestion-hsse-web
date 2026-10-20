@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-row" @click="context_menu.is_open = false">
         <div class="flex flex-col w-full">
-            <Header title="Participants" :thumbnails="[
+            <Header title="formation.participants" :thumbnails="[
                 {
                     'label': 'thumbnails.home',
                     'name': 'DASHBOARD'
@@ -10,7 +10,7 @@
                     'name': 'FORMATION'
                 },
                 {
-                    'label': 'Participants',
+                    'label': 'formation.participants',
                     'name': 'PARTICIPANT'
                 },
             ]" />

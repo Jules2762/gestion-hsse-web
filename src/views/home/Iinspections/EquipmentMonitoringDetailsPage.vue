@@ -2,11 +2,11 @@
     <div class="min-h-screen bg-slate-100/80 py-4 print:bg-white print:p-0 print:min-h-0 print:m-0">
         <!-- HEADER ET ACTIONS EN LIGNE (MASQUÉ À L'IMPRESSION) -->
         <div class="max-w-5xl mx-auto mb-4 px-4 sm:px-0 print:hidden">
-            <Header title="Détails du suivi matériel" :thumbnails="[
-                { label: 'Accueil', name: 'DASHBOARD' },
-                { label: 'Inspections', name: 'INSPECTION' },
-                { label: 'Suivi du matériel', name: 'EQUIPMENT_MONITORING' },
-                { label: 'Fiche détaillée', name: 'EQUIPMENT_MONITORING_DETAILS' }
+            <Header title="inspections.equipment-monitoring.details" :thumbnails="[
+                { label: 'thumbnails.home', name: 'DASHBOARD' },
+                { label: 'thumbnails.inspections', name: 'INSPECTION' },
+                { label: 'thumbnails.equipment-monitoring', name: 'EQUIPMENT_MONITORING' },
+                { label: 'thumbnails.details', name: 'EQUIPMENT_MONITORING_DETAILS' }
             ]" />
 
             <div class="mt-3 bg-white border border-gray-200 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">

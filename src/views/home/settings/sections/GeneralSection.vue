@@ -151,6 +151,7 @@ import {
     Save
 } from '@lucide/vue'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Input from '../../../../components/ui/Input.vue'
 import Select from '../../../../components/ui/Select.vue'
 import settingService from '../../../../core/services/setting.service'
@@ -283,6 +284,8 @@ function resetForm() {
     removeLogo()
 }
 
+const { locale } = useI18n()
+
 function save() {
     isSaving.value = true
     settingService.update({
@@ -297,6 +300,10 @@ function save() {
     .then(() => {
         initialSnapshot.value = JSON.stringify(form)
         logoFile.value = null
+        if (form.language) {
+            locale.value = form.language
+            localStorage.setItem('language', form.language)
+        }
         toast.success("Paramètres généraux enregistrés avec succès !")
     })
     .catch(() => {

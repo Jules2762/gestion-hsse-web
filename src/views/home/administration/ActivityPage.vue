@@ -1,9 +1,9 @@
 <template>
     <div class="flex flex-col w-full">
-        <Header title="Activités" :thumbnails="[
-            { label: 'Accueil', name: 'DASHBOARD' },
-            { label: 'Administration', name: 'ADMINISTRATION' },
-            { label: 'Activités', name: 'ACTIVITY' }
+        <Header title="administration.activity.title" :thumbnails="[
+            { label: 'thumbnails.home', name: 'DASHBOARD' },
+            { label: 'thumbnails.administration', name: 'ADMINISTRATION' },
+            { label: 'thumbnails.activity', name: 'ACTIVITY' }
         ]" />
 
         <!-- SECTION FILTRES IDENTIQUE AU DESIGN STANDARD (VMC / USERS) -->

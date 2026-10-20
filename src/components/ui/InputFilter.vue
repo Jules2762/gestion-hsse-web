@@ -5,7 +5,7 @@
             <component :is="icon" v-if="icon" :size="15" class="absolute left-2.5 top-1/2
                        -translate-y-1/2 text-gray-400" />
 
-            <input v-model="inputValue" type="text" autocomplete="off" :placeholder="placeholder || 'Rechercher ...'"
+            <input v-model="inputValue" type="text" autocomplete="off" :placeholder="displayPlaceholder"
                 @focus="openDropdown" class="h-9 w-full rounded-lg border
                        border-gray-300 bg-white pl-8 pr-16
                        text-xs text-gray-700
@@ -47,7 +47,7 @@
                 </button>
 
                 <div v-if="filteredLists.length === 0" class="px-3 py-3 text-xs text-gray-400">
-                    Aucun résultat
+                    {{ t('common.no_data') }}
                 </div>
             </div>
         </div>
@@ -61,10 +61,13 @@
         onMounted,
         ref
     } from 'vue'
+    import { useI18n } from 'vue-i18n'
     import {
         ChevronDown,
         X as XIcon
     } from '@lucide/vue'
+
+    const { t, te, locale } = useI18n()
 
     type ListItem = {
         label: string
@@ -86,6 +89,15 @@
     const emit = defineEmits<{
         'update:modelValue': [value: string | number | null]
     }>()
+
+    const displayPlaceholder = computed(() => {
+        if (!props.placeholder) return t('common.search') + '...'
+        if (te(props.placeholder)) return t(props.placeholder)
+        if (locale.value === 'en' && props.placeholder.startsWith('Rechercher')) {
+            return props.placeholder.replace(/^Rechercher\s*(une|un|des)?\s*/i, 'Search ').replace(/\.\.\.$/, '...')
+        }
+        return props.placeholder
+    })
 
     const container = ref<HTMLElement | null>(null)
     const isOpen = ref(false)

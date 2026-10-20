@@ -1,24 +1,23 @@
 <template>
     <div class="flex flex-row">
         <div class="flex flex-col transition-all" :class="right_sidebar.isOpen && right_sidebar.template ? 'w-[calc(100%-400px)]' : 'w-full'">
-            <Header title="Templates"  :thumbnails="[
+            <Header title="inspections.templates.title" :thumbnails="[
                 {
-                    label: 'Accueil',
+                    label: 'thumbnails.home',
                     name: 'DASHBOARD'
                 },
                 {
-                    label: 'Inspections',
+                    label: 'thumbnails.inspections',
                     name: 'INSPECTION'
                 },
                 {
-                    label: 'Checklist',
+                    label: 'thumbnails.checklists',
                     name: 'CHECKLIST'
                 },
                 {
-                    label: 'Template',
+                    label: 'thumbnails.templates',
                     name: 'TEMPLATE'
                 },
-
             ]" />
             <div class="p-4 bg-white border-b border-gray-200">
                 <ChipFilter :show-date-filter="false" :filterable-keys="filterableKeys" :column-labels="columnLabels"

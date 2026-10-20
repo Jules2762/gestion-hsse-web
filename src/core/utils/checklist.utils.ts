@@ -22,6 +22,8 @@ export type ActionVM = {
 
 export type ChecklistItemVM = {
     id: number | string
+    number?: number | string
+    displayCode?: string
     question: string
     answer: string
     status: ItemStatus
@@ -32,6 +34,7 @@ export type ChecklistItemVM = {
 
 export type ChecklistSectionVM<Icon = unknown> = {
     id: number | string
+    number?: number | string
     title: string
     description: string
     icon: Icon
@@ -375,10 +378,10 @@ export function sectionsToCsv(sections: ChecklistSectionVM<unknown>[]): string {
         'Statut action',
     ]
 
-    const rows = sections.flatMap(section =>
-        section.items.map(item => [
+    const rows = sections.flatMap((section, sIdx) =>
+        section.items.map((item, iIdx) => [
             section.title,
-            `${section.id}.${item.id}`,
+            item.displayCode || `${section.number ?? sIdx + 1}.${item.number ?? iIdx + 1}`,
             item.question,
             item.answer,
             STATUS_CONFIG[item.status].label,
@@ -430,15 +433,16 @@ export function buildTextSummary(
         '',
     ]
 
-    for (const section of sections) {
+    for (let sIdx = 0; sIdx < sections.length; sIdx++) {
+        const section = sections[sIdx]
         const issues = section.items.filter(
             item => item.status === 'NON_CONFORME',
         )
         if (issues.length === 0) continue
 
-        lines.push(`${section.title}`)
+        lines.push(`${section.number ?? sIdx + 1}. ${section.title}`)
         for (const item of issues) {
-            lines.push(`  - ${item.question}`)
+            lines.push(`  - ${item.displayCode ? `[${item.displayCode}] ` : ''}${item.question}`)
             if (item.action) {
                 lines.push(
                     `    → ${item.action.title} (${item.action.responsible}, ${formatDate(

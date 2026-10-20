@@ -1,6 +1,6 @@
 <template>
     <div class="flex w-full flex-col">
-        <Header title="dashboard" v-model="search" />
+        <Header title="dashboard.title" v-model="search" />
         <TabUI v-model="tab_index" :tab-data="tab_data" />
 
         <!-- Pas de KeepAlive : ApexCharts mesure son conteneur au montage, un graphique
@@ -30,9 +30,9 @@
         { key: 'general', label: 'dashboard.tabs.general', component: GeneralSection },
         { key: 'admin', label: 'dashboard.tabs.administration', component: AdminSection },
         { key: 'training-plan', label: 'dashboard.tabs.training plan', component: PlanFormationSection },
-        { key: 'equipment', label: 'Suivi matériels', component: EquipmentSection },
-        { key: 'checklist', label: 'Checklist', component: InspectionSection },
-        { key: 'vmc', label: 'VMC', component: VmcSection },
+        { key: 'equipment', label: 'dashboard.tabs.equipment', component: EquipmentSection },
+        { key: 'checklist', label: 'dashboard.tabs.checklist', component: InspectionSection },
+        { key: 'vmc', label: 'dashboard.tabs.vmc', component: VmcSection },
     ]
 
     const tab_data = tabs.map((tab) => tab.label)

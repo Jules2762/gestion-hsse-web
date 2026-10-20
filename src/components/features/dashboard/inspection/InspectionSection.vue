@@ -96,14 +96,83 @@ const seriesConf = ref<any[]>([
 const optionsConf = ref({
     chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
     plotOptions: {
-        bar: { borderRadius: 6, columnWidth: '40%', distributed: true }
+        bar: {
+            borderRadius: 6,
+            columnWidth: '42%',
+            distributed: true
+        }
     },
-    colors: ['#0F9D58', '#3B82F6', '#F59E0B', '#6366F1', '#EC4899'],
+    colors: ['#0F9D58', '#3B82F6', '#F59E0B', '#6366F1', '#EC4899', '#06B6D4', '#8B5CF6'],
     legend: { show: false },
-    xaxis: { categories: ['Sécurité', 'Santé', 'Environnement', 'Qualité'] },
-    yaxis: { max: 100 },
+    dataLabels: {
+        enabled: true,
+        formatter: (val: number) => `${val}%`,
+        style: {
+            fontSize: '12px',
+            fontWeight: 'bold',
+            colors: ['#FFFFFF']
+        }
+    },
+    xaxis: {
+        categories: ['Sécurité', 'Santé', 'Environnement', 'Qualité'],
+        labels: {
+            show: true,
+            rotate: 0,
+            rotateAlways: false,
+            hideOverlappingLabels: false,
+            trim: false,
+            style: {
+                fontSize: '11px',
+                fontWeight: 600,
+                colors: ['#475569', '#475569', '#475569', '#475569', '#475569', '#475569']
+            }
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false }
+    },
+    yaxis: {
+        max: 100,
+        labels: {
+            formatter: (val: number) => `${val}%`,
+            style: {
+                fontSize: '11px',
+                colors: ['#94A3B8']
+            }
+        }
+    },
+    tooltip: {
+        y: {
+            formatter: (val: number) => `${val}% de conformité`,
+        }
+    },
     grid: { borderColor: '#f1f5f9' },
 });
+
+function formatCategoryLabel(label: string): string | string[] {
+    const map: Record<string, string[]> = {
+        'CHECKLIST HSSE SURETE': ['Checklist HSSE', 'Sûreté'],
+        'Checklist HSSE Sûreté': ['Checklist HSSE', 'Sûreté'],
+        "FICHE D'INSPECTION DE CAMION CITERNE": ['Inspection', 'Camion Citerne'],
+        "Inspection Camion Citerne": ['Inspection', 'Camion Citerne'],
+        'INSPECTION DES VEHICULES': ['Inspection', 'Véhicules'],
+        'Inspection Véhicules': ['Inspection', 'Véhicules'],
+        'CHECKLIST EVALUATION RESEAU STATION SERVICE': ['Évaluation Réseau', 'Station-Service'],
+        'Évaluation Réseau Stations': ['Évaluation Réseau', 'Station-Service'],
+        'CHECKLIST EVALUATION DES AGENCES ET MAGASIN': ['Évaluation', 'Agences & Magasins'],
+        'Évaluation Agences & Magasins': ['Évaluation', 'Agences & Magasins'],
+        'CHECKLIST EVALUATION CONSO': ['Évaluation', 'Conso'],
+        'Évaluation Conso': ['Évaluation', 'Conso'],
+    };
+
+    if (map[label]) return map[label];
+
+    if (label.length > 18) {
+        const words = label.split(' ');
+        const mid = Math.ceil(words.length / 2);
+        return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+    }
+    return label;
+}
 
 async function loadData() {
     loading.value = true;
@@ -120,9 +189,13 @@ async function loadData() {
             }
             if (res.data.categories_compliance) {
                 seriesConf.value = res.data.categories_compliance.series;
+                const formattedCats = (res.data.categories_compliance.categories || []).map((c: string) => formatCategoryLabel(c));
                 optionsConf.value = {
                     ...optionsConf.value,
-                    xaxis: { categories: res.data.categories_compliance.categories }
+                    xaxis: {
+                        ...optionsConf.value.xaxis,
+                        categories: formattedCats
+                    }
                 };
             }
         }

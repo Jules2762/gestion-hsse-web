@@ -224,7 +224,7 @@ function goToChecklists(site: any) {
     show_fullscreen.value = false;
   }
   router.push({
-    name: 'CHECKLIST_PAGE',
+    name: 'CHECKLIST',
     query: { site: site.name }
   });
 }

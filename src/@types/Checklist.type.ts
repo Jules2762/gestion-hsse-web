@@ -15,7 +15,7 @@ type Checklistype = {
     location?: string,
     date?: string,
     time?: string,
-    inspector?: string,
+    inspector?: string | { id?: string | number; first_name?: string; last_name?: string; email?: string } | null,
     accompanying_person?: string,
     comment?: string,
     status: ChecklistStatusType,
@@ -32,11 +32,13 @@ type Checklistype = {
     } | null,
     sections:ChecklistSectionType[]
 }
-type CheckllistFormType={
-    type?:ChecklistType,
-    site?:SiteType,
-    date?:string,
-    time?:string
+type CheckllistFormType = {
+    type?: ChecklistType | string,
+    site?: SiteType | string,
+    location?: string,
+    inspector_id?: number | string,
+    date?: string,
+    time?: string
 }
 type ChecklistSectionType={
     id?:string|number,
@@ -64,7 +66,7 @@ type ChecklistFilterType={
     page?:string|number
 
 }
-type ChecklistType = "CHECKLIST HSSE SURETE" | "FICHE D'INSPECTION DE CAMION CITERNE" | "INSPECTION DES VEHICULES" | "CHECKLIST EVALUATION RESEAU MAGASIN" | "CHECKLIST EVALUATION RESEAU STATION SERVICE" | "CHECKLIST EVALUATION DES AGENCES ET MAGASIN" | "CHECKLIST EVALUATION CONSO"
+type ChecklistType = "CHECKLIST HSSE SURETE" | "FICHE D'INSPECTION DE CAMION CITERNE" | "INSPECTION DES VEHICULES" | "CHECKLIST EVALUATION RESEAU STATION SERVICE" | "CHECKLIST EVALUATION DES AGENCES ET MAGASIN" | "CHECKLIST EVALUATION CONSO"
 type ChecklistTypeJson = {
     label: string,
     value: ChecklistType,

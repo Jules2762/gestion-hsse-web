@@ -32,6 +32,22 @@
 
       <!-- ACTIONS D'EN-TÊTE : GOOGLE MAPS, PLEIN ÉCRAN, REPLIER -->
       <div class="flex items-center gap-1 shrink-0">
+        <!-- Bouton Secours d'urgence rapide -->
+        <button
+          v-if="showEmergency && allNearbyEmergencyContacts.length > 0"
+          type="button"
+          @click="toggleStationEmergencyModal"
+          class="px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition cursor-pointer border shadow-2xs"
+          :class="activeStationEmergencyModal || activeContactModal
+            ? 'bg-red-600 text-white border-red-700'
+            : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'"
+          :title="activeStationEmergencyModal || activeContactModal ? 'Fermer le volet des secours' : 'Afficher les secours d\'urgence'"
+        >
+          <span>🚨</span>
+          <span class="hidden sm:inline">Secours</span>
+          <span>({{ allNearbyEmergencyContacts.length }})</span>
+        </button>
+
         <!-- Lien Google Maps externe -->
         <a
           v-if="hasExactCoords"
@@ -97,6 +113,19 @@
           </div>
 
           <div class="flex items-center gap-2">
+            <!-- Bouton Secours en plein écran -->
+            <button
+              v-if="showEmergency && allNearbyEmergencyContacts.length > 0"
+              type="button"
+              @click="toggleStationEmergencyModal"
+              class="px-2.5 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition"
+              :class="activeStationEmergencyModal || activeContactModal
+                ? 'bg-red-600 text-white border-red-700'
+                : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'"
+            >
+              <span>🚨</span>
+              <span>Secours d'urgence ({{ allNearbyEmergencyContacts.length }})</span>
+            </button>
             <button
               type="button"
               @click="recenterMap"
@@ -119,8 +148,10 @@
         <!-- CONTENEUR DU WIDGET LEAFLET -->
         <div
           ref="mapContainerRef"
-          class="relative w-full overflow-hidden transition-all"
-          :class="isFullscreen ? 'flex-1 min-h-0 rounded-2xl border border-gray-200' : 'h-[175px] bg-slate-100'"
+          class="relative w-full overflow-hidden transition-all duration-300"
+          :class="isFullscreen
+            ? 'flex-1 min-h-0 rounded-2xl border border-gray-200'
+            : ((activeContactModal || activeStationEmergencyModal) ? 'h-[340px] bg-slate-100' : `${mapHeight} bg-slate-100`)"
         >
           <!-- SPINNER DE CHARGEMENT -->
           <div
@@ -186,7 +217,7 @@
                 </LTooltip>
 
                 <!-- Popup détaillée au clic sur le marker -->
-                <LPopup :options="{ maxWidth: 280, minWidth: 220 }">
+                <LPopup :options="{ maxWidth: 280, minWidth: 220, autoPan: true, autoPanPadding: [15, 15] }">
                   <div class="flex flex-col gap-2 p-1 text-xs">
                     <div class="border-b border-gray-100 pb-1.5">
                       <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700">
@@ -212,6 +243,17 @@
                       </span>
                     </div>
 
+                    <!-- Bouton Voir secours d'urgence -->
+                    <button
+                      v-if="showEmergency && allNearbyEmergencyContacts.length > 0"
+                      type="button"
+                      @click="openStationEmergencyModal"
+                      class="mt-1.5 w-full py-1.5 px-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 text-center shadow-xs cursor-pointer transition"
+                    >
+                      <span>🚨</span>
+                      <span>Voir les secours d'urgence ({{ allNearbyEmergencyContacts.length }})</span>
+                    </button>
+
                     <!-- Lien externe direct Google Maps -->
                     <a
                       :href="googleMapsUrl"
@@ -233,81 +275,326 @@
                 v-for="contact in nearbyEmergencyContacts"
                 :key="'c-' + contact.id"
                 :lat-lng="[contact.latitude!, contact.longitude!]"
-                :radius="6.5"
-                :color="contactColors(contact.type).stroke"
+                :radius="contact.id === activeContactModal?.id ? 10 : 7"
+                :color="contact.id === activeContactModal?.id ? '#F59E0B' : contactColors(contact.type).stroke"
                 :fill-color="contactColors(contact.type).fill"
-                :fill-opacity="0.9"
-                :weight="1.5"
+                :fill-opacity="0.95"
+                :weight="contact.id === activeContactModal?.id ? 3 : 1.5"
+                @click="selectContact(contact)"
               >
                 <LTooltip :options="{ permanent: false, direction: 'top', offset: [0, -6] }">
                   <div class="text-[10px] font-bold text-gray-900">
                     {{ contactEmoji(contact.type) }} {{ contact.name }}
+                    <span v-if="contact.distance_km !== undefined" class="font-normal text-emerald-700">
+                      ({{ formatDistance(contact.distance_km) }})
+                    </span>
                   </div>
                 </LTooltip>
 
-                <LPopup :options="{ maxWidth: 240 }">
+                <LPopup :options="{ maxWidth: 260 }">
                   <div class="p-1 space-y-1.5 text-xs">
-                    <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" :style="{ color: contactColors(contact.type).fill }">
-                      <span>{{ contactEmoji(contact.type) }}</span>
-                      <span>{{ contactLabel(contact.type) }}</span>
+                    <div class="flex items-center justify-between gap-1 text-[10px] font-bold uppercase tracking-wider" :style="{ color: contactColors(contact.type).fill }">
+                      <span>{{ contactEmoji(contact.type) }} {{ contactLabel(contact.type) }}</span>
+                      <span v-if="contact.distance_km !== undefined" class="text-emerald-700 font-mono font-bold">
+                        {{ formatDistance(contact.distance_km) }}
+                      </span>
                     </div>
                     <div class="font-bold text-gray-900">{{ contact.name }}</div>
                     <div class="text-[11px] text-gray-500">{{ contact.locality }}</div>
-                    <div v-if="contact.distance_km !== undefined" class="text-[10px] font-semibold text-emerald-700">
-                      📍 À env. {{ contact.distance_km.toFixed(1) }} km de la station
-                    </div>
-                    <div v-if="contact.contact_1 || contact.phone" class="pt-1 border-t border-gray-100">
+                    <div v-if="contact.contact_1 || contact.phone" class="pt-1 border-t border-gray-100 flex flex-col gap-1">
                       <a
                         :href="`tel:${contact.contact_1 || contact.phone}`"
-                        class="w-full inline-flex items-center justify-center gap-1 px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold font-mono text-[11px]"
+                        class="phone-action-btn w-full justify-center"
                       >
                         <Phone :size="11" />
                         <span>{{ contact.contact_1 || contact.phone }}</span>
                       </a>
                     </div>
+                    <button
+                      type="button"
+                      @click="selectContact(contact)"
+                      class="w-full mt-1 py-1 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer transition"
+                    >
+                      <span>Afficher dans le panneau</span>
+                    </button>
                   </div>
                 </LPopup>
               </LCircleMarker>
             </template>
           </LMap>
+
+          <!-- ======================================================== -->
+          <!-- MODAL 1 FLOTTANT SUR LA CARTE : LISTE DES SECOURS PROCHES -->
+          <!-- ======================================================== -->
+          <div
+            v-if="activeStationEmergencyModal"
+            class="z-[1010] bg-white/95 backdrop-blur-md transition-all shadow-xl flex flex-col"
+            :class="isFullscreen
+              ? 'absolute top-3 right-3 w-88 sm:w-96 max-w-[calc(100%-24px)] max-h-[calc(100%-24px)] rounded-2xl border border-red-200/90 p-3.5 space-y-2.5 animate-in fade-in slide-in-from-top-2'
+              : 'absolute inset-1.5 rounded-xl border border-red-200 p-2.5 space-y-2 overflow-hidden'"
+          >
+            <!-- En-tête modal liste secours -->
+            <div class="flex items-start justify-between gap-2 border-b border-gray-100 pb-2 shrink-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="h-7 w-7 rounded-lg bg-red-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
+                  🚨
+                </div>
+                <div class="min-w-0">
+                  <h4 class="font-bold text-gray-900 text-xs sm:text-sm truncate leading-tight">
+                    Secours d'urgence proches
+                  </h4>
+                  <p class="text-[10px] text-gray-500 truncate mt-0.5">
+                    {{ displaySiteName }} ({{ displayLocality }})
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                @click="activeStationEmergencyModal = false"
+                class="h-6 w-6 rounded-md border border-gray-200 bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition shrink-0 cursor-pointer shadow-2xs"
+                title="Fermer ce volet"
+              >
+                <XIcon :size="13" />
+              </button>
+            </div>
+
+            <!-- Liste des contacts d'urgence -->
+            <div class="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-0.5">
+              <div
+                v-for="c in allNearbyEmergencyContacts"
+                :key="'list-em-' + c.id"
+                class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 transition flex items-center justify-between gap-1.5 cursor-pointer"
+                @click="selectContact(c)"
+              >
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs">{{ contactEmoji(c.type) }}</span>
+                    <span class="font-bold text-gray-900 text-xs truncate">{{ c.name }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 mt-0.5 text-[10px]">
+                    <span
+                      class="px-1.5 py-0.2 rounded font-bold text-white text-[9px]"
+                      :style="{ backgroundColor: contactColors(c.type).fill }"
+                    >
+                      {{ contactLabel(c.type) }}
+                    </span>
+                    <span v-if="c.distance_km !== undefined" class="font-bold text-emerald-700 font-mono">
+                      📍 {{ formatDistance(c.distance_km) }}
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  v-if="c.contact_1 || c.phone"
+                  :href="'tel:' + (c.contact_1 || c.phone)"
+                  @click.stop
+                  class="phone-action-btn shrink-0"
+                  :title="'Appeler ' + (c.contact_1 || c.phone)"
+                >
+                  <Phone :size="11" />
+                  <span>{{ c.contact_1 || c.phone }}</span>
+                </a>
+              </div>
+
+              <div
+                v-if="allNearbyEmergencyContacts.length === 0"
+                class="text-[10px] text-gray-400 italic py-3 text-center bg-gray-50 rounded-lg"
+              >
+                Aucun secours d'urgence répertorié à proximité.
+              </div>
+            </div>
+
+            <!-- Pied du modal -->
+            <div class="pt-1 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500 shrink-0">
+              <span>{{ allNearbyEmergencyContacts.length }} service(s) trouvé(s)</span>
+              <button
+                type="button"
+                @click="recenterMap"
+                class="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+              >
+                <Compass :size="11" />
+                <span>Recentrer station</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- MODAL 2 FLOTTANT SUR LA CARTE : DÉTAIL D'UN CONTACT      -->
+          <!-- ======================================================== -->
+          <div
+            v-if="activeContactModal"
+            class="z-[1010] bg-white/95 backdrop-blur-md transition-all shadow-xl flex flex-col"
+            :class="isFullscreen
+              ? 'absolute top-3 right-3 w-88 sm:w-96 max-w-[calc(100%-24px)] max-h-[calc(100%-24px)] rounded-2xl border border-gray-200 p-3.5 space-y-2.5 animate-in fade-in slide-in-from-top-2'
+              : 'absolute inset-1.5 rounded-xl border border-gray-200 p-2.5 space-y-2 overflow-y-auto'"
+          >
+            <!-- En-tête contact sélectionné -->
+            <div class="flex items-start justify-between gap-2 border-b border-gray-100 pb-2 shrink-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <div
+                  class="h-8 w-8 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-xs shrink-0"
+                  :style="{ backgroundColor: contactColors(activeContactModal.type).fill }"
+                >
+                  {{ contactEmoji(activeContactModal.type) }}
+                </div>
+                <div class="min-w-0">
+                  <span
+                    class="inline-block px-1.5 py-0.2 rounded-full text-[9px] font-bold uppercase tracking-wider text-white"
+                    :style="{ backgroundColor: contactColors(activeContactModal.type).fill }"
+                  >
+                    {{ contactLabel(activeContactModal.type) }}
+                  </span>
+                  <h4 class="font-bold text-gray-900 text-xs sm:text-sm truncate leading-snug mt-0.5">
+                    {{ activeContactModal.name }}
+                  </h4>
+                  <p class="text-[10px] text-gray-500 truncate flex items-center gap-1 mt-0.5">
+                    <MapPin :size="10" class="text-gray-400 shrink-0" />
+                    <span>{{ activeContactModal.locality || displayLocality }}</span>
+                    <span v-if="activeContactModal.province" class="text-gray-400">({{ activeContactModal.province }})</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                @click="activeContactModal = null"
+                class="h-6 w-6 rounded-md border border-gray-200 bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition shrink-0 cursor-pointer shadow-2xs"
+                title="Fermer ce volet"
+              >
+                <XIcon :size="13" />
+              </button>
+            </div>
+
+            <!-- Distance par rapport à la station -->
+            <div
+              v-if="activeContactModal.distance_km !== undefined"
+              class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1 text-[11px] text-emerald-800 font-bold shrink-0"
+            >
+              <span>📍 Distance du site :</span>
+              <span class="font-mono">{{ formatDistance(activeContactModal.distance_km) }}</span>
+            </div>
+
+            <!-- Numéros d'appel direct -->
+            <div class="space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-200 shrink-0">
+              <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                Appel d'urgence immédiat
+              </span>
+              <div class="flex flex-col gap-1">
+                <!-- Ligne 1 -->
+                <a
+                  v-if="activeContactModal.contact_1 || activeContactModal.phone"
+                  :href="'tel:' + (activeContactModal.contact_1 || activeContactModal.phone)"
+                  class="phone-action-btn w-full justify-between"
+                  :title="'Appeler ' + (activeContactModal.contact_1 || activeContactModal.phone)"
+                >
+                  <span class="flex items-center gap-1.5">
+                    <Phone :size="11" />
+                    <span>{{ activeContactModal.contact_1 || activeContactModal.phone }}</span>
+                  </span>
+                  <span class="text-[9px] uppercase font-bold opacity-90">Appeler</span>
+                </a>
+
+                <!-- Ligne 2 -->
+                <a
+                  v-if="activeContactModal.contact_2"
+                  :href="'tel:' + activeContactModal.contact_2"
+                  class="inline-flex items-center justify-between px-2 py-1 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold text-[11px] hover:bg-gray-100 transition !no-underline"
+                  style="color: #1f2937 !important;"
+                >
+                  <span class="text-[10px] font-mono">📞 Ligne 2 : {{ activeContactModal.contact_2 }}</span>
+                  <span class="text-[9px] text-gray-500 font-semibold">Appeler</span>
+                </a>
+
+                <!-- Ligne 3 -->
+                <a
+                  v-if="activeContactModal.contact_3"
+                  :href="'tel:' + activeContactModal.contact_3"
+                  class="inline-flex items-center justify-between px-2 py-1 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold text-[11px] hover:bg-gray-100 transition !no-underline"
+                  style="color: #1f2937 !important;"
+                >
+                  <span class="text-[10px] font-mono">📞 Ligne 3 : {{ activeContactModal.contact_3 }}</span>
+                  <span class="text-[9px] text-gray-500 font-semibold">Appeler</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Adresse et Notes éventuelles -->
+            <div v-if="activeContactModal.address || activeContactModal.notes" class="text-[10px] space-y-1 text-gray-600 shrink-0">
+              <p v-if="activeContactModal.address" class="flex items-center gap-1 truncate">
+                <MapPin :size="10" class="text-gray-400 shrink-0" />
+                <span class="truncate">{{ activeContactModal.address }}</span>
+              </p>
+              <p v-if="activeContactModal.notes" class="italic bg-amber-50/60 p-1 rounded border border-amber-100">
+                📝 {{ activeContactModal.notes }}
+              </p>
+            </div>
+
+            <!-- Actions de navigation : Voir tous les secours ou recentrer -->
+            <div class="pt-1 border-t border-gray-100 flex items-center justify-between gap-1 text-[10px] shrink-0">
+              <button
+                type="button"
+                @click="openStationEmergencyModal"
+                class="text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <span>&larr; Tous les secours</span>
+              </button>
+
+              <button
+                type="button"
+                @click="recenterMap"
+                class="text-gray-600 hover:text-gray-900 font-semibold flex items-center gap-1 cursor-pointer"
+              >
+                <Compass :size="11" />
+                <span>Recentrer station</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- PIED DE CARTE COMPACT AVEC SECOURS LES PLUS PROCHES -->
         <div
-          v-if="!isCollapsed && showEmergency && nearbyEmergencyContacts.length > 0"
+          v-if="!isCollapsed && showEmergency && allNearbyEmergencyContacts.length > 0"
           class="p-2.5 bg-slate-50 border-t border-gray-100 flex flex-col gap-1.5 text-[11px]"
         >
           <div class="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider">
             <span class="flex items-center gap-1">
               <span>🚨</span>
-              <span>Secours à proximité de la station</span>
+              <span>Secours à proximité</span>
             </span>
-            <span class="text-[9px] text-gray-400 font-normal">
-              {{ nearbyEmergencyContacts.length }} service(s)
-            </span>
+            <button
+              type="button"
+              @click="toggleStationEmergencyModal"
+              class="text-[10px] text-primary hover:underline font-bold flex items-center gap-0.5 cursor-pointer"
+            >
+              <span>{{ activeStationEmergencyModal ? 'Masquer' : 'Voir tout (' + allNearbyEmergencyContacts.length + ')' }}</span>
+              <ArrowRight :size="10" />
+            </button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             <div
               v-for="c in nearbyEmergencyContacts.slice(0, 2)"
               :key="'badge-' + c.id"
-              class="p-1.5 bg-white rounded-lg border border-gray-200/80 flex items-center justify-between gap-1 shadow-2xs"
+              @click="selectContact(c)"
+              class="p-1.5 bg-white rounded-lg border border-gray-200/80 flex items-center justify-between gap-1 shadow-2xs hover:border-red-300 hover:bg-red-50/20 transition cursor-pointer"
+              :class="activeContactModal?.id === c.id ? 'border-red-400 bg-red-50/40 ring-1 ring-red-400' : ''"
             >
               <div class="min-w-0 truncate">
                 <span class="font-bold text-gray-800 truncate block text-[10px]">
                   {{ contactEmoji(c.type) }} {{ c.name }}
                 </span>
                 <span v-if="c.distance_km !== undefined" class="text-[9px] text-emerald-700 font-semibold block">
-                  {{ c.distance_km < 1 ? '< 1 km' : c.distance_km.toFixed(1) + ' km' }}
+                  {{ formatDistance(c.distance_km) }}
                 </span>
               </div>
               <a
                 v-if="c.contact_1 || c.phone"
                 :href="`tel:${c.contact_1 || c.phone}`"
-                class="shrink-0 p-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition cursor-pointer font-bold text-[10px]"
+                @click.stop
+                class="phone-action-btn shrink-0"
                 :title="`Appeler ${c.name} (${c.contact_1 || c.phone})`"
               >
-                📞 {{ c.contact_1 || c.phone }}
+                <Phone :size="10" />
+                <span>{{ c.contact_1 || c.phone }}</span>
               </a>
             </div>
           </div>
@@ -336,6 +623,7 @@ import {
   LTooltip,
 } from "@vue-leaflet/vue-leaflet";
 import {
+  ArrowRight,
   ChevronDown,
   ChevronUp,
   Compass,
@@ -345,6 +633,7 @@ import {
   Maximize2,
   Minimize2,
   Phone,
+  X as XIcon,
 } from "@lucide/vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import emergencyContactService from "../../core/services/emergencyContact.service";
@@ -365,6 +654,7 @@ interface Props {
   conformityRate?: number | string | null;
   initiallyCollapsed?: boolean;
   showEmergency?: boolean;
+  mapHeight?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -378,12 +668,15 @@ const props = withDefaults(defineProps<Props>(), {
   conformityRate: null,
   initiallyCollapsed: false,
   showEmergency: true,
+  mapHeight: 'h-[250px]',
 });
 
 // ÉTAT DU WIDGET
 const isCollapsed = ref(props.initiallyCollapsed);
 const isFullscreen = ref(false);
 const loadingSites = ref(false);
+const activeContactModal = ref<EmergencyContactType | null>(null);
+const activeStationEmergencyModal = ref(false);
 const mapContainerRef = ref<HTMLElement | null>(null);
 const lMapRef = ref<any>(null);
 const mapZoom = ref(13);
@@ -443,10 +736,25 @@ function cleanText(str?: string | null): string {
 
 // RÉSOLUTION DU SITE GALANA ET DES COORDONNÉES GPS
 const matchedSite = computed<EmergencySiteType | null>(() => {
-  const queryName = cleanText(props.siteName);
-  const queryLoc = cleanText(props.locationName);
+  let queryName = cleanText(props.siteName);
+  let queryLoc = cleanText(props.locationName);
 
   if (!queryName && !queryLoc) return null;
+
+  const aliasMap: Record<string, string> = {
+    tamatave: "toamasina",
+    majunga: "mahajanga",
+    diego: "antsiranana",
+    diegosuarez: "antsiranana",
+    tulear: "toliara",
+    fortdauphin: "tolagnaro",
+    ivato: "aeroportivato",
+  };
+
+  for (const [alias, target] of Object.entries(aliasMap)) {
+    if (queryName.includes(alias)) queryName = target;
+    if (queryLoc.includes(alias)) queryLoc = target;
+  }
 
   // 1. Recherche par nom exact ou nom contenant
   let found = allSites.value.find((s) => {
@@ -543,24 +851,81 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-// CONTACTS D'URGENCE LES PLUS PROCHES
-const nearbyEmergencyContacts = computed<EmergencyContactType[]>(() => {
-  if (!hasExactCoords.value || allContacts.value.length === 0) return [];
+// TOUS LES CONTACTS D'URGENCE PROCHES DU SITE
+const allNearbyEmergencyContacts = computed<EmergencyContactType[]>(() => {
+  if (allContacts.value.length === 0) return [];
 
   const sLat = currentLat.value;
   const sLng = currentLng.value;
 
-  const withDist = allContacts.value
-    .filter((c) => c.latitude && c.longitude)
-    .map((c) => ({
-      ...c,
-      distance_km: haversineDistance(sLat, sLng, Number(c.latitude!), Number(c.longitude!)),
-    }))
-    .sort((a, b) => a.distance_km - b.distance_km);
+  if (hasExactCoords.value) {
+    return allContacts.value
+      .filter((c) => c.latitude && c.longitude)
+      .map((c) => ({
+        ...c,
+        distance_km: haversineDistance(sLat, sLng, Number(c.latitude!), Number(c.longitude!)),
+      }))
+      .sort((a, b) => (a.distance_km ?? 99999) - (b.distance_km ?? 99999));
+  }
 
-  // Sélectionner les secours pertinents les plus proches (jusqu'à 4 max)
-  return withDist.slice(0, 4);
+  // Fallback si pas de coordonnées exactes : filtrer par localité
+  const targetLoc = cleanText(displayLocality.value);
+  if (targetLoc) {
+    return allContacts.value.filter((c) => {
+      const cLoc = cleanText(c.locality);
+      return cLoc && (cLoc === targetLoc || cLoc.includes(targetLoc) || targetLoc.includes(cLoc));
+    });
+  }
+
+  return [];
 });
+
+// SÉLECTION DES CONTACTS AFFICHÉS SUR LA CARTE (TOP 6)
+const nearbyEmergencyContacts = computed<EmergencyContactType[]>(() => {
+  if (!props.showEmergency || allNearbyEmergencyContacts.value.length === 0) return [];
+  return allNearbyEmergencyContacts.value.slice(0, 6);
+});
+
+// ACTIONS SUR LES MODALS D'URGENCE
+function selectContact(contact: EmergencyContactType) {
+  activeContactModal.value = contact;
+  activeStationEmergencyModal.value = false;
+  if (contact.latitude && contact.longitude) {
+    const coords: [number, number] = [Number(contact.latitude), Number(contact.longitude)];
+    const map = getMapInstance();
+    if (map) {
+      try {
+        map.setView(coords, Math.max(mapZoom.value, 15), { animate: true });
+      } catch {}
+    }
+  }
+  triggerStaggeredRefresh();
+}
+
+function openStationEmergencyModal() {
+  activeStationEmergencyModal.value = true;
+  activeContactModal.value = null;
+  updateMapCenterAndZoom();
+  triggerStaggeredRefresh();
+}
+
+function toggleStationEmergencyModal() {
+  if (activeStationEmergencyModal.value || activeContactModal.value) {
+    activeStationEmergencyModal.value = false;
+    activeContactModal.value = null;
+  } else {
+    activeStationEmergencyModal.value = true;
+  }
+  triggerStaggeredRefresh();
+}
+
+function formatDistance(dist?: number): string {
+  if (dist === undefined || dist === null || isNaN(dist)) return "N/A";
+  if (dist < 1) {
+    return `${Math.round(dist * 1000)} m`;
+  }
+  return `${dist.toFixed(1)} km`;
+}
 
 // COULEUR & THEME SELON CONFORMITÉ OU STATUT
 const statusTheme = computed(() => {
@@ -706,8 +1071,18 @@ function toggleFullscreen() {
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === "Escape" && isFullscreen.value) {
-    toggleFullscreen();
+  if (e.key === "Escape") {
+    if (activeContactModal.value) {
+      activeContactModal.value = null;
+      return;
+    }
+    if (activeStationEmergencyModal.value) {
+      activeStationEmergencyModal.value = false;
+      return;
+    }
+    if (isFullscreen.value) {
+      toggleFullscreen();
+    }
   }
 }
 
@@ -754,5 +1129,34 @@ onUnmounted(() => {
 .leaflet-popup-content-wrapper {
   border-radius: 0.85rem !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Bouton d'action téléphonique ultra-visible et cliquable */
+.phone-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 0.5rem !important;
+  background-color: #059669 !important; /* emerald-600 */
+  color: #ffffff !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-weight: 700 !important;
+  font-size: 0.6875rem !important; /* 11px */
+  line-height: 1rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.phone-action-btn:hover {
+  background-color: #047857 !important; /* emerald-700 */
+  color: #ffffff !important;
+}
+
+.phone-action-btn * {
+  color: #ffffff !important;
 }
 </style>

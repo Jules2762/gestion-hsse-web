@@ -51,6 +51,13 @@ export type ActionType = {
     item_answer?: string
     item_observation?: string
     checklist_item_id?: string | number
+    site_location?: {
+        site_name?: string
+        locality?: string
+        province?: string
+        latitude?: number | null
+        longitude?: number | null
+    } | null
     attachments?: ActionAttachmentType[]
     assigned_to?: ActionResponsibleType | UserDataType | any
 }

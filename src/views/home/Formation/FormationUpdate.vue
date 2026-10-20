@@ -1,17 +1,17 @@
 <template>
     <div>
-        <Header title="Nouvelle formation" :thumbnails="[
+        <Header title="formation.update" :thumbnails="[
             {
-                'label': 'Tableau de bord',
+                'label': 'thumbnails.home',
                 'name': 'DASHBOARD'
             },
             {
-                'label': 'Formation',
+                'label': 'thumbnails.training',
                 'name': 'FORMATION'
             },
             {
-                'label': 'Nouveau',
-                'name': 'FORMATION_NEW'
+                'label': 'thumbnails.update',
+                'name': 'FORMATION_UPDATE'
             },
         ]" />
         <div class="p-4">

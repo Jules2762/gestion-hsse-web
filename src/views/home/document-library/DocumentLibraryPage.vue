@@ -7,10 +7,10 @@
 
         <!-- HEADER GÉNÉRAL DE L'APPLICATION -->
         <Header
-            title="Explorateur de documents"
+            title="document library.title"
             :thumbnails="[
-                { label: 'Accueil', name: 'DASHBOARD' },
-                { label: 'Bibliothèque de documents', name: 'DOCUMENT_LIBRARY' }
+                { label: 'thumbnails.home', name: 'DASHBOARD' },
+                { label: 'thumbnails.document library', name: 'DOCUMENT_LIBRARY' }
             ]" />
 
         <!-- ========================================================================= -->
@@ -707,6 +707,15 @@
                             controls
                             class="max-h-56 w-full bg-black" />
 
+                        <div
+                            v-else-if="previewKind === 'audio' && previewUrl"
+                            class="p-4 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-50 to-slate-100">
+                            <div class="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 shadow-2xs">
+                                <FileAudio :size="24" />
+                            </div>
+                            <audio :src="previewUrl" controls class="w-full" />
+                        </div>
+
                         <iframe
                             v-else-if="previewKind === 'pdf' && previewUrl"
                             :src="previewUrl"
@@ -1059,6 +1068,7 @@
         UploadCloud,
         FileText as FileTextIcon,
         FileVideo,
+        FileAudio,
         FileImage,
         FileSpreadsheet,
         Presentation,
@@ -1838,6 +1848,7 @@
             mime === 'application/pdf' ||
             mime === 'text/plain' ||
             mime.startsWith('video/') ||
+            mime.startsWith('audio/') ||
             (mime.startsWith('image/') && mime !== 'image/svg+xml')
 
         if (!previewable) {
@@ -1863,11 +1874,12 @@
     const previewLoading = ref(false)
     let previewToken = 0
 
-    const previewKind = computed<'image' | 'video' | 'pdf' | 'text' | 'none'>(() => {
+    const previewKind = computed<'image' | 'video' | 'audio' | 'pdf' | 'text' | 'none'>(() => {
         const mime = selectedDocument.value?.mime_type ?? ''
         if (mime === 'application/pdf') return 'pdf'
         if (mime.startsWith('image/') && mime !== 'image/svg+xml') return 'image'
         if (mime.startsWith('video/')) return 'video'
+        if (mime.startsWith('audio/')) return 'audio'
         if (mime === 'text/plain' || mime === 'text/csv') return 'text'
         return 'none'
     })
@@ -1926,7 +1938,14 @@
     let uploadId = 0
     let dragCounter = 0
 
-    const ALLOWED_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov', 'avi']
+    const ALLOWED_EXT = [
+        'pdf', 'doc', 'docx', 'odt', 'rtf', 'txt',
+        'xls', 'xlsx', 'ods', 'csv',
+        'ppt', 'pptx', 'odp',
+        'jpg', 'jpeg', 'png', 'webp', 'gif', 'svg',
+        'mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv', '3gp',
+        'mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'
+    ]
     const ACCEPT_ATTR = ALLOWED_EXT.map(e => `.${e}`).join(',')
 
     function openFilePicker(folderId: string | number | undefined) {
@@ -2031,7 +2050,8 @@
         if (['docx', 'doc'].includes(ext)) return 'Document Microsoft Word'
         if (['pptx', 'ppt'].includes(ext)) return 'Présentation PowerPoint'
         if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) return `Fichier image ${ext.toUpperCase()}`
-        if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) return `Fichier vidéo ${ext.toUpperCase()}`
+        if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv', '3gp'].includes(ext)) return `Fichier vidéo ${ext.toUpperCase()}`
+        if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'].includes(ext)) return `Fichier audio ${ext.toUpperCase()}`
         if (['txt'].includes(ext)) return 'Document texte'
         return doc.mime_type || 'Fichier'
     }
@@ -2041,8 +2061,11 @@
         if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) {
             return { icon: FileImage, color: 'text-emerald-600' }
         }
-        if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) {
+        if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv', '3gp'].includes(ext)) {
             return { icon: FileVideo, color: 'text-rose-500' }
+        }
+        if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'].includes(ext)) {
+            return { icon: FileAudio, color: 'text-indigo-500' }
         }
         if (['xlsx', 'xls', 'csv'].includes(ext)) {
             return { icon: FileSpreadsheet, color: 'text-[#0F9D58]' }

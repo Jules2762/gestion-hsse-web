@@ -2,10 +2,10 @@
     <div class="flex flex-row w-full">
         <div class="flex flex-col w-full transition-all" :class="selected_action ? 'w-[calc(100%-400px)] min-w-[calc(100%-400px)] max-w-[calc(100%-400px)]' : 'w-full'">
             <!-- HEADER -->
-            <Header title="Gestion des actions correctives" :thumbnails="[
-                { label: 'Accueil', name: 'DASHBOARD' },
-                { label: 'Inspection', name: 'INSPECTION' },
-                { label: 'Actions correctives', name: 'ACTION' }
+            <Header title="inspections.actions.title" :thumbnails="[
+                { label: 'thumbnails.home', name: 'DASHBOARD' },
+                { label: 'thumbnails.inspection', name: 'INSPECTION' },
+                { label: 'thumbnails.actions', name: 'ACTION' }
             ]" />
 
             <!-- ======================= RIBBON TOOLBAR ======================= -->
@@ -306,6 +306,18 @@
                     </div>
                 </div>
 
+                <!-- CARTOGRAPHIE DE L'EMPLACEMENT DU SITE DE L'ACTION -->
+                <SidebarLocationMap
+                    class="mt-4"
+                    :site-name="selected_action.parent_site"
+                    :location-name="selected_action.parent_site"
+                    :latitude="selected_action.site_location?.latitude"
+                    :longitude="selected_action.site_location?.longitude"
+                    :locality="selected_action.site_location?.locality"
+                    :province="selected_action.site_location?.province"
+                    :status="selected_action.status"
+                />
+
                 <!-- RESPONSABLE -->
                 <div class="mt-4 border-t border-gray-200 pt-3">
                     <span class="text-[10px] uppercase tracking-wide font-bold text-gray-400 block mb-2">
@@ -590,6 +602,7 @@ import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
 import ChipFilter from '../../../components/ui/ChipFilter.vue'
 import ActionStatus from '../../../components/features/action/ActionStatus.vue'
 import ActionEmailStatus from '../../../components/features/action/ActionEmailStatus.vue'
+import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue'
 import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue'
 import { router } from '../../../router/index.ts'
 import { useActionService } from '../../../core/services/action.service.ts'

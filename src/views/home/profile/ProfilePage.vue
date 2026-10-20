@@ -336,14 +336,14 @@ function submitPasswordModal() {
   <div class="min-h-screen bg-slate-50/50 pb-12">
     <!-- ENTETE PRINCIPALE -->
     <Header
-      title="Mon Profil"
+      title="profile.title"
       :thumbnails="[
         {
-          label: 'Accueil',
+          label: 'thumbnails.home',
           name: 'DASHBOARD'
         },
         {
-          label: 'Compte & Profil',
+          label: 'thumbnails.profile',
           name: 'PROFILE'
         }
       ]"

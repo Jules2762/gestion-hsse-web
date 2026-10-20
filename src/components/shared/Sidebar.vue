@@ -70,15 +70,15 @@
 
         <!-- Footer -->
         <div class="flex flex-col gap-y-2 px-3 py-4 border-t border-gray-100 shrink-0">
-            <button type="button" :title="!sidebar.isShow ? t('help center') : undefined"
+            <button type="button" :title="!sidebar.isShow ? t('sidebar.help center') : undefined"
                 class="w-full h-10 flex items-center gap-x-3 px-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
                 <HelpCircleIcon :size="20" class="shrink-0" />
-                <span class="text-nowrap" v-if="sidebar.isShow">{{ t('help center') }}</span>
+                <span class="text-nowrap" v-if="sidebar.isShow">{{ t('sidebar.help center') }}</span>
             </button>
-            <button type="button" @click="logout_modal = true" :title="!sidebar.isShow ? t('logout') : undefined"
+            <button type="button" @click="logout_modal = true" :title="!sidebar.isShow ? t('sidebar.logout') : undefined"
                 class="w-full h-10 flex items-center gap-x-3 px-2.5 rounded-lg text-sm font-medium text-orange-600 bg-orange-600/10 hover:bg-orange-600 hover:text-white transition-colors">
                 <LogOutIcon :size="20" class="shrink-0" />
-                <span class="text-nowrap" v-if="sidebar.isShow">{{ t('logout') }}</span>
+                <span class="text-nowrap" v-if="sidebar.isShow">{{ t('sidebar.logout') }}</span>
             </button>
         </div>
 

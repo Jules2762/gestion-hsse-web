@@ -3,10 +3,10 @@
 
         <div class="flex min-w-0 flex-1 flex-col transition-all">
 
-            <Header title="Visible Management Commitment" :thumbnails="[
-                { label: 'Accueil', name: 'DASHBOARD' },
-                { label: 'Inspection', name: 'INSPECTION' },
-                { label: 'VMC', name: 'VMC' }
+            <Header title="inspections.vmc.title" :thumbnails="[
+                { label: 'thumbnails.home', name: 'DASHBOARD' },
+                { label: 'thumbnails.inspections', name: 'INSPECTION' },
+                { label: 'thumbnails.vmc', name: 'VMC' }
             ]" />
 
             <div class="border-b border-gray-200 bg-white sticky top-0 z-10">
@@ -132,13 +132,14 @@
 
                 <!-- CARTOGRAPHIE DE L'EMPLACEMENT DU SITE VMC -->
                 <SidebarLocationMap
-                    :site-name="selected.site || selected.inspection?.site"
-                    :location-name="selected.site"
+                    :site-name="selected.site || selected.inspection?.site || selected.title"
+                    :location-name="selected.site_location?.locality || selected.site"
                     :latitude="selected.site_location?.latitude"
                     :longitude="selected.site_location?.longitude"
                     :locality="selected.site_location?.locality"
                     :province="selected.site_location?.province"
                     :status="selected.status"
+                    :conformity-rate="selectedStats.conformityRate"
                 />
 
                 <!-- RÉSUMÉ DE LA VISITE CLÔTURÉE / ÉVALUÉE -->
@@ -309,6 +310,9 @@
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
     import { router } from '../../../router/index.ts';
+    import { useRoute } from 'vue-router';
+
+    const route = useRoute()
 
     const filterableKeys: string[] = ['type', 'site', 'inspector']
     const columnLabels: Record<string, string> = {
@@ -645,6 +649,9 @@
                 data.value = res.data.data
                 pagination.value.to = res.data.meta.to ?? 0
                 pagination.value.total = res.data.meta.total ?? 0
+                if ((route.query.site || route.query.id) && !right_sidebar.value.selected_vmc && data.value.length > 0) {
+                    openPreview(data.value[0])
+                }
             })
             .catch(err => {
                 console.error(err)
@@ -667,9 +674,20 @@
     }
 
     onMounted(() => {
+        if (route.query.site) {
+            searchQuery.value = String(route.query.site)
+        } else if (route.query.search) {
+            searchQuery.value = String(route.query.search)
+        }
         fetchData()
         fetchFilters()
         window.addEventListener('keydown', onKeydown)
+    })
+
+    watch(() => route.query, (newQ) => {
+        if (newQ.site || newQ.search) {
+            searchQuery.value = String(newQ.site || newQ.search)
+        }
     })
 
     onUnmounted(() => {

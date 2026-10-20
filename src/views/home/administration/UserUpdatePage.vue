@@ -1,21 +1,21 @@
 <template>
     <div class="min-h-screen bg-background">
 
-        <Header title="Mise à jour du compte utilisateur" :thumbnails="[
+        <Header title="administration.users.update" :thumbnails="[
             {
-                label: 'Accueil',
+                label: 'thumbnails.home',
                 name: 'DASHBOARD'
             },
             {
-                label: 'Administration',
+                label: 'thumbnails.administration',
                 name: 'ADMINISTRATION'
             },
             {
-                label: 'Utilisateur',
+                label: 'thumbnails.users',
                 name: 'USERS'
             },
             {
-                label: 'Modifier',
+                label: 'thumbnails.update',
                 name: 'UPDATE_USER'
             }
         ]" />
