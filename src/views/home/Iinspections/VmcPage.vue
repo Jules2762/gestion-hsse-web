@@ -12,10 +12,9 @@
             <div class="border-b border-gray-200 bg-white sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter text="Ajout" :icon="PlusSquare" is-primary @click="router.push({
-                            name:'VMC_NEW'
-                        })" />
+                        <ButtonFilter text="Ajout" :icon="PlusSquare" is-primary @click="openAddModal" />
                         <ButtonFilter text="Export" :icon="Download" :badge="String(pagination.total)" @click="handleExport" />
+                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
                     </div>
                     <div class="flex flex-row items-center gap-2">
                         <InputFilter :icon="Search" placeholder="Rechercher une VMC..." v-model="searchQuery" />
@@ -29,7 +28,7 @@
             <!-- LOADING SPINNER -->
             <div v-if="loading" class="p-16 flex flex-col items-center justify-center gap-3 text-gray-500">
                 <Loader :size="32" class="animate-spin text-primary" />
-                <span class="text-sm">Chargement des VMC...</span>
+                <span class="text-sm">{{ locale === 'en' ? 'Loading VMC visits...' : 'Chargement des VMC...' }}</span>
             </div>
 
             <!-- EMPTY STATE -->
@@ -37,21 +36,21 @@
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
                     <ClipboardList :size="28" />
                 </div>
-                <h5 class="text-gray-700 font-semibold mb-1">Aucune VMC enregistrée</h5>
+                <h5 class="text-gray-700 font-semibold mb-1">{{ locale === 'en' ? 'No VMC recorded' : 'Aucune VMC enregistrée' }}</h5>
                 <p class="text-sm text-gray-500 max-w-sm">
-                    Aucune visite ne correspond aux critères de filtre sélectionnés.
+                    {{ locale === 'en' ? 'No visit matches the selected filter criteria.' : 'Aucune visite ne correspond aux critères de filtre sélectionnés.' }}
                 </p>
                 <div class="flex gap-2 mt-4">
                     <button
                         v-if="searchQuery || filters.type.length || filters.site.length || filters.inspector.length || dataRange.from || dataRange.to"
                         @click="clearFilters"
                         class="px-4 py-2 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition">
-                        Réinitialiser les filtres
+                        {{ t('common.reset_filters') }}
                     </button>
                     <button
-                        @click="router.push({ name: 'VMC_NEW' })"
+                        @click="openAddModal"
                         class="px-4 py-2 text-xs font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition">
-                        Créer une VMC
+                        {{ locale === 'en' ? 'Create a VMC' : 'Créer une VMC' }}
                     </button>
                 </div>
             </div>
@@ -60,12 +59,12 @@
             <table v-else>
                 <thead>
                     <tr>
-                        <th class="w-16 text-center">REF</th>
-                        <th>DATE</th>
-                        <th>TYPE</th>
-                        <th>SITE</th>
-                        <th>INSPECTEUR</th>
-                        <th>STATUT</th>
+                        <th class="w-16 text-center">{{ t('table.ref') }}</th>
+                        <th>{{ t('table.date') }}</th>
+                        <th>{{ t('table.type') }}</th>
+                        <th>{{ t('table.site') }}</th>
+                        <th>{{ t('table.inspector') }}</th>
+                        <th>{{ t('table.status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,7 +86,7 @@
                         <td colspan="6" class="w-full p-4 border-t border-gray-200">
                             <div class="flex flex-row items-center justify-between text-sm">
                                 <span class="text-xs text-gray-500 font-medium">
-                                    Affichage de {{ pagination.to }} sur {{ pagination.total }} visites VMC
+                                    {{ t('common.displaying') }} {{ pagination.to }} {{ t('common.of') }} {{ pagination.total }} {{ locale === 'en' ? 'VMC visits' : 'visites VMC' }}
                                 </span>
                                 <vue-awesome-paginate v-model="pagination.current_page" :total-items="pagination.total"
                                     :items-per-page="15" :max-pages-shown="4" :hide-prev-next-when-ends="true"
@@ -274,6 +273,160 @@
         <ContextMenuUI v-model="contextMenu.isOpen" :context-menu="contextMenu.contextMenu"
             :actions="contextMenuActions" :bottom_actions="contextMenuBottomActions"/>
 
+
+        <!-- MODAL D'AJOUT DE VMC -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="modal_add"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="modal_add = false"
+                >
+                    <div
+                        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                        <!-- En-tête Modal -->
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-emerald-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                    <ShieldCheck :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'New VMC Visit' : 'Planifier une nouvelle VMC' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        {{ locale === 'en' ? 'Select visit type, site and assign an inspector.' : "Sélectionnez le type de visite, le site et l'inspecteur en charge." }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="modal_add = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <XIcon :size="18" />
+                            </button>
+                        </div>
+
+                        <!-- Formulaire Modal -->
+                        <form @submit.prevent="submitAddVmc" class="flex flex-col flex-1 overflow-y-auto">
+                            <div class="p-5 space-y-4">
+                                <!-- Type de VMC -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'VMC Type' : 'Type de visite VMC' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="newVmcForm.type"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                    >
+                                        <option v-for="t in VMCTypeData" :key="t.value" :value="t.value">{{ t.label }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- Titre optionnel -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Title (Optional)' : 'Titre de la VMC (Optionnel)' }}
+                                    </label>
+                                    <input
+                                        v-model="newVmcForm.title"
+                                        type="text"
+                                        :placeholder="locale === 'en' ? 'Ex: VMC Station-Service Ankorondrano' : 'Ex: VMC Station-Service Ankorondrano'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Date -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Visit Date' : 'Date de la visite' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newVmcForm.date"
+                                            type="date"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Site avec input / datalist -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Galana Site / Station' : 'Site / Station Galana' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newVmcForm.site"
+                                            list="vmc_modal_sites_datalist"
+                                            required
+                                            :placeholder="locale === 'en' ? 'Select or type a site...' : 'Sélectionner ou saisir un site...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                        <datalist id="vmc_modal_sites_datalist">
+                                            <option v-for="(s, sIdx) in siteList" :key="sIdx" :value="s">{{ s }}</option>
+                                        </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Inspecteur -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Inspector / In charge' : 'Inspecteur / Responsable' }}
+                                        </label>
+                                        <input
+                                            v-model="newVmcForm.inspector"
+                                            list="vmc_modal_inspectors_datalist"
+                                            :placeholder="locale === 'en' ? 'Select or type inspector...' : 'Sélectionner ou saisir un inspecteur...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                        <datalist id="vmc_modal_inspectors_datalist">
+                                            <option v-for="(p, pIdx) in personnelList" :key="pIdx" :value="p">{{ p }}</option>
+                                        </datalist>
+                                    </div>
+
+                                    <!-- Accompagnant -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Accompanying person' : 'Personne accompagnante' }}
+                                        </label>
+                                        <input
+                                            v-model="newVmcForm.accompanying_person"
+                                            type="text"
+                                            :placeholder="locale === 'en' ? 'Name of accompanying person...' : 'Nom de l’accompagnant...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer d'actions -->
+                            <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="modal_add = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="loading_add || !newVmcForm.type || !newVmcForm.site || !newVmcForm.date"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                >
+                                    <Loader v-if="loading_add" :size="14" class="animate-spin" />
+                                    <span>{{ locale === 'en' ? 'Create VMC' : 'Créer la VMC' }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
+
     </div>
 </template>
 <script setup lang="ts">
@@ -281,7 +434,7 @@
         Ban,
         CalendarDays,
         CheckCircle2,
-        ClipboardList,
+        ClipboardCheck, ClipboardList, ShieldCheck,
         Download,
         Eye,
         FileDown,
@@ -289,6 +442,7 @@
         MapPin,
         Play,
         PlusSquare,
+        RefreshCw,
         Search,
         Trash2,
         UserCheck,
@@ -309,10 +463,134 @@
     import type { UserDataType } from '../../../@types/User.type.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
+    import personnelService from '../../../core/services/personnel.service.ts';
+    import siteService from '../../../core/services/site.service.ts';
+    import { toast } from 'vue3-toastify';
+    import type { VMCFormType } from '../../../@types/VMC.type.ts';
     import { router } from '../../../router/index.ts';
     import { useRoute } from 'vue-router';
+    import { useI18n } from 'vue-i18n';
 
+    const { t, locale } = useI18n()
     const route = useRoute()
+
+
+    
+    const VMCTypeData: { label: string, value: string }[] = [
+        { label: 'Station-Service', value: 'Station-Service' },
+        { label: 'Inspection camion', value: 'Inspection camion' },
+        { label: 'Visite Magasins & Agences', value: 'Visite Magasins & Agences' },
+        { label: 'Safety Report', value: 'SAFETY REPORT' },
+        { label: 'Safety Moment', value: 'SAFETY MOMENT' },
+        { label: 'Safety Awareness', value: 'SAFETY AWARENESS' },
+    ]
+
+    const modal_add = ref(false)
+    const loading_add = ref(false)
+    const newVmcForm = ref<VMCFormType>({
+        type: 'Station-Service',
+        title: '',
+        date: new Date().toISOString().slice(0, 10),
+        site: '',
+        inspector: '',
+        accompanying_person: '',
+    })
+
+    const personnelsListRaw = ref<any[]>([])
+    const siteList = ref<string[]>([])
+
+    const personnelList = computed(() => {
+        return personnelsListRaw.value.map(p => {
+            const fullName = `${p.first_name} ${p.last_name || ''}`.trim()
+            const details = [p.direction, p.fonction].filter(Boolean).join(' - ')
+            return details ? `${fullName} - ${details}` : fullName
+        }).filter(Boolean)
+    })
+
+    function openAddModal() {
+        newVmcForm.value = {
+            type: 'Station-Service',
+            title: '',
+            date: new Date().toISOString().slice(0, 10),
+            site: '',
+            inspector: '',
+            accompanying_person: '',
+        }
+        modal_add.value = true
+        loadVmcSuggestions()
+    }
+
+    function loadVmcSuggestions() {
+        if (personnelsListRaw.value.length === 0) {
+            personnelService.indexAll()
+                .then(res => {
+                    personnelsListRaw.value = res.data?.data || res.data || []
+                })
+                .catch(err => console.error(err))
+        }
+
+        if (siteList.value.length === 0) {
+            siteService.all()
+                .then(res => {
+                    const sites = res.data?.data || res.data || []
+                    if (Array.isArray(sites) && sites.length > 0) {
+                        siteList.value = sites.map((s: any) => s.name).filter(Boolean)
+                    } else {
+                        throw new Error('Fallback')
+                    }
+                })
+                .catch(() => {
+                    vmcService.getFilters()
+                        .then(res => {
+                            siteList.value = res.data?.site || []
+                        })
+                        .catch(err => console.error(err))
+                })
+        }
+    }
+
+    async function submitAddVmc() {
+        if (!newVmcForm.value.type || !newVmcForm.value.site || !newVmcForm.value.date) return
+        loading_add.value = true
+        try {
+            const rawInspector = (newVmcForm.value.inspector || '').trim()
+            let assignedId: any = undefined
+            let cleanInspector = rawInspector
+
+            if (rawInspector) {
+                const matched = personnelsListRaw.value.find(p => {
+                    const full = `${p.first_name} ${p.last_name || ''}`.trim().toLowerCase()
+                    const formatted = `${full} - ${[p.direction, p.fonction].filter(Boolean).join(' - ')}`.toLowerCase()
+                    return rawInspector.toLowerCase() === formatted || rawInspector.toLowerCase() === full
+                })
+
+                if (matched) {
+                    assignedId = matched.id
+                    cleanInspector = `${matched.first_name} ${matched.last_name || ''}`.trim()
+                } else if (rawInspector.includes(' - ')) {
+                    cleanInspector = rawInspector.split(' - ')[0].trim()
+                }
+            }
+
+            const payload: any = {
+                ...newVmcForm.value,
+                inspector: cleanInspector,
+            }
+            if (assignedId !== undefined) {
+                payload.assigned_to = assignedId
+            }
+
+            await vmcService.store(payload)
+            toast.success(locale.value === 'en' ? 'VMC created successfully!' : 'VMC créée avec succès !')
+            modal_add.value = false
+            fetchData()
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to create VMC.' : 'Erreur lors de la création de la VMC.')
+            toast.error(errorMsg)
+        } finally {
+            loading_add.value = false
+        }
+    }
 
     const filterableKeys: string[] = ['type', 'site', 'inspector']
     const columnLabels: Record<string, string> = {

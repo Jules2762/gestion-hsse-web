@@ -729,7 +729,7 @@ function cleanText(str?: string | null): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/^(station service|station-service|station|ss|depot|dépôt|agence)\s+/gi, "")
+    .replace(/^(station service|station-service|station|ss|depot|dépôt|agence|magasin|siege|siège)\s+/gi, "")
     .replace(/[^a-z0-9]/g, "")
     .trim();
 }

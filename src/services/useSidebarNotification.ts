@@ -5,6 +5,7 @@ type SidebarCountsType = {
     DASHBOARD?: number;
     USERS?: number;
     ACTIVITY?: number;
+    SITES?: number;
     TEMPLATE?: number;
     CHECKLIST?: number;
     ACTION?: number;
@@ -22,6 +23,7 @@ const useSidebarNotification = defineStore("sidebar-notification", {
             DASHBOARD: 0,
             USERS: 0,
             ACTIVITY: 0,
+            SITES: 0,
             TEMPLATE: 0,
             CHECKLIST: 0,
             ACTION: 0,
@@ -42,7 +44,10 @@ const useSidebarNotification = defineStore("sidebar-notification", {
         },
         async fetchCounts() {
             try {
-                const res = await api.get("/home/sidebar-counts");
+                const lastSeen = typeof window !== "undefined" ? localStorage.getItem("hsse_last_viewed_activity_at") : null;
+                const res = await api.get("/home/sidebar-counts", {
+                    params: lastSeen ? { last_activity_seen_at: lastSeen } : {}
+                });
                 if (res?.data) {
                     this.counts = {
                         ...this.counts,

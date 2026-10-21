@@ -17,10 +17,10 @@
           </div>
           <div class="min-w-0">
             <h3 class="text-base font-bold text-gray-900 truncate">
-              {{ isEditing ? 'Modifier le service de secours' : 'Nouveau service de secours' }}
+              {{ isEditing ? (locale === 'en' ? 'Edit emergency service' : 'Modifier le service de secours') : (locale === 'en' ? 'New emergency service' : 'Nouveau service de secours') }}
             </h3>
             <p class="text-xs text-gray-500 truncate">
-              Sélectionnez l'emplacement sur la carte pour associer automatiquement les stations Galana proches.
+              {{ locale === 'en' ? 'Select location on the map to automatically link nearby Galana sites & stations.' : 'Sélectionnez l\'emplacement sur la carte pour associer automatiquement les sites & stations Galana proches.' }}
             </p>
           </div>
         </div>
@@ -40,18 +40,18 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block font-semibold text-gray-700 mb-1">
-              Type de secours <span class="text-red-500">*</span>
+              {{ locale === 'en' ? 'Emergency Type' : 'Type de secours' }} <span class="text-red-500">*</span>
             </label>
             <select
               v-model="form.type"
               required
               class="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2 text-xs font-semibold text-gray-800 outline-none focus:border-primary focus:bg-white cursor-pointer"
             >
-              <option value="POMPIER">🚒 Sapeurs-Pompiers</option>
-              <option value="HOPITAL">🏥 Hôpital / Clinique</option>
-              <option value="AMBULANCE">🚑 Ambulance / SAMU</option>
-              <option value="POLICE">👮 Police Nationale</option>
-              <option value="GENDARMERIE">🛡️ Gendarmerie</option>
+              <option value="POMPIER">{{ locale === 'en' ? '🚒 Firefighters' : '🚒 Sapeurs-Pompiers' }}</option>
+              <option value="HOPITAL">{{ locale === 'en' ? '🏥 Hospital / Clinic' : '🏥 Hôpital / Clinique' }}</option>
+              <option value="AMBULANCE">{{ locale === 'en' ? '🚑 Ambulance / SAMU' : '🚑 Ambulance / SAMU' }}</option>
+              <option value="POLICE">{{ locale === 'en' ? '👮 National Police' : '👮 Police Nationale' }}</option>
+              <option value="GENDARMERIE">{{ locale === 'en' ? '🛡️ Gendarmerie' : '🛡️ Gendarmerie' }}</option>
             </select>
           </div>
 
@@ -120,39 +120,7 @@
                 </div>
               </div>
 
-              <div>
-                <label class="block font-semibold text-gray-700 mb-1">Adresse e-mail</label>
-                <input
-                  v-model="form.email"
-                  type="email"
-                  placeholder="ex: secours.tana@galana.mg"
-                  class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 outline-none focus:border-primary"
-                />
               </div>
-
-              <div>
-                <label class="block font-semibold text-gray-700 mb-1">Adresse postale / Quartier</label>
-                <input
-                  v-model="form.address"
-                  type="text"
-                  placeholder="ex: Tsaralalana, Analakely, Route des Hydrocarbures..."
-                  class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 outline-none focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <!-- CONSIGNES & NOTES -->
-            <div>
-              <label class="block font-semibold text-gray-700 mb-1">
-                Consignes d'urgence & Notes opérationnelles
-              </label>
-              <textarea
-                v-model="form.notes"
-                rows="3"
-                placeholder="ex: Contacter en priorité pour tout départ de feu sur piste, hydrocarbures ou incident médical majeur..."
-                class="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-800 outline-none focus:border-primary resize-none"
-              ></textarea>
-            </div>
           </div>
 
           <!-- COLONNE DROITE (7 cols) : SÉLECTION SUR LA CARTE & STATIONS COUVERTES -->
@@ -314,7 +282,7 @@
                                 v-if="selectedSiteIds.includes(site.id)"
                                 class="font-bold text-emerald-700 block mt-0.5"
                               >
-                                ✓ Station couverte
+                                ✓ Site couvert
                               </span>
                             </div>
                           </LTooltip>
@@ -475,7 +443,7 @@
                     type="button"
                     @click="autoSelectNearestSites(15, true)"
                     class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500 text-white font-bold text-[10px] hover:bg-amber-600 shadow-2xs transition cursor-pointer"
-                    title="Auto-sélectionner les stations à 15 km max"
+                    title="Auto-sélectionner les sites à 15 km max"
                   >
                     <Sparkles :size="11" />
                     <span>Auto-sélection (≤ 15 km)</span>
@@ -583,7 +551,7 @@
       <!-- PIED DE MODAL AVEC ACTIONS -->
       <div class="flex items-center justify-between p-4 border-t border-gray-100 bg-slate-50 shrink-0">
         <span class="text-xs text-gray-500">
-          <span class="text-red-500 font-bold">*</span> Champs obligatoires
+          <span class="text-red-500 font-bold">*</span> {{ locale === 'en' ? 'Required fields' : 'Champs obligatoires' }}
         </span>
 
         <div class="flex items-center gap-2">
@@ -592,7 +560,7 @@
             @click="onClose"
             class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition cursor-pointer"
           >
-            Annuler
+            {{ t('common.cancel', 'Annuler') }}
           </button>
 
           <button
@@ -602,7 +570,7 @@
             class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-primary/90 transition disabled:opacity-50 cursor-pointer"
           >
             <Loader2 v-if="isSubmitting" :size="14" class="animate-spin" />
-            <span>{{ isEditing ? 'Enregistrer les modifications' : 'Créer le contact d’urgence' }}</span>
+            <span>{{ isEditing ? (locale === 'en' ? 'Save changes' : 'Enregistrer les modifications') : (locale === 'en' ? 'Create emergency contact' : 'Créer le contact d’urgence') }}</span>
           </button>
         </div>
       </div>
@@ -633,12 +601,48 @@ import {
   X,
 } from "@lucide/vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { toast } from "vue3-toastify";
 import type {
   EmergencyContactFormType,
   EmergencyContactType,
   EmergencyType,
 } from "../../../../@types/EmergencyContact.type";
+
+const { t, locale } = useI18n();
+
+const modalSiteTypeFilter = ref<string>('ALL');
+
+function formatSiteType(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return locale.value === 'en' ? 'Shop' : 'Magasin';
+    case 'AGENCE': return locale.value === 'en' ? 'Agency' : 'Agence';
+    case 'SIEGE': return locale.value === 'en' ? 'Headquarters' : 'Siège';
+    case 'STATION_SERVICE':
+    default: return locale.value === 'en' ? 'Service Station' : 'Station-Service';
+  }
+}
+
+function siteEmoji(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return '🏪';
+    case 'AGENCE': return '🏢';
+    case 'SIEGE': return '🏛️';
+    case 'STATION_SERVICE':
+    default: return '⛽';
+  }
+}
+
+function siteTypeBadgeClass(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'AGENCE': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'SIEGE': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'STATION_SERVICE':
+    default: return 'bg-amber-50 text-amber-700 border-amber-200';
+  }
+}
+
 
 export interface EmergencySiteOption {
   id: number;

@@ -16,12 +16,14 @@ import {
   FileText
 } from '@lucide/vue'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { ProfileUser } from '../../../views/home/profile/ProfilePage.vue'
 import { UserRoleDataJson } from '../../../@data/User.data.ts'
 
 const props = defineProps<{ user: ProfileUser }>()
 const emit = defineEmits<{ (e: 'go-to-tab', index: number): void; (e: 'open-edit'): void }>()
 
+const { t, locale } = useI18n()
 const copiedField = ref<string | null>(null)
 
 function copyToClipboard(text: string | undefined, fieldName: string) {
@@ -37,16 +39,20 @@ function copyToClipboard(text: string | undefined, fieldName: string) {
 }
 
 const roleLabel = computed(() => {
+  const isEn = locale.value === 'en'
+  const r = (props.user.role || '').toUpperCase()
+  if (r === 'ADMIN') return isEn ? 'Administrator' : 'Administrateur'
+  if (r === 'USER') return isEn ? 'User' : 'Utilisateur'
   const match = (UserRoleDataJson as { value: string; label: string }[])?.find(
     (item) => item.value === props.user.role
   )
-  return match?.label ?? props.user.role ?? 'Utilisateur'
+  return match?.label ?? props.user.role ?? (isEn ? 'User' : 'Utilisateur')
 })
 
 const memberSinceFormatted = computed(() => {
-  if (!props.user.created_at) return 'Date non spécifiée'
+  if (!props.user.created_at) return locale.value === 'en' ? 'Date not specified' : 'Date non spécifiée'
   try {
-    return new Intl.DateTimeFormat('fr-FR', {
+    return new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
@@ -66,14 +72,14 @@ const memberSinceFormatted = computed(() => {
           <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-[#0F9D58]">
             <Sparkles class="h-4 w-4" />
           </div>
-          <h4 class="text-sm font-semibold text-slate-800">À propos & Présentation</h4>
+          <h4 class="text-sm font-semibold text-slate-800">{{ locale === 'en' ? 'About & Presentation' : 'À propos & Présentation' }}</h4>
         </div>
         <button
           type="button"
           @click="emit('open-edit')"
           class="text-xs font-medium text-[#0F9D58] hover:underline"
         >
-          Modifier
+          {{ locale === 'en' ? 'Edit' : 'Modifier' }}
         </button>
       </div>
 
@@ -87,7 +93,7 @@ const memberSinceFormatted = computed(() => {
         v-else
         class="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center text-xs text-slate-500"
       >
-        Aucune présentation rédigée. Cliquez sur « Modifier le profil » pour ajouter une biographie ou une description de votre poste.
+        {{ locale === 'en' ? 'No presentation written yet. Click "Edit profile" to add a bio or job description.' : 'Aucune présentation rédigée. Cliquez sur « Modifier le profil » pour ajouter une biographie ou une description de votre poste.' }}
       </div>
     </div>
 
@@ -97,7 +103,7 @@ const memberSinceFormatted = computed(() => {
         <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
           <Building2 class="h-4 w-4" />
         </div>
-        <h4 class="text-sm font-semibold text-slate-800">Organisation & Affectation</h4>
+        <h4 class="text-sm font-semibold text-slate-800">{{ locale === 'en' ? 'Organization & Assignment' : 'Organisation & Affectation' }}</h4>
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -107,11 +113,11 @@ const memberSinceFormatted = computed(() => {
             <Building2 class="h-4 w-4 text-emerald-600" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-slate-500">Direction / Département</p>
+            <p class="text-xs font-medium text-slate-500">{{ locale === 'en' ? 'Direction / Department' : 'Direction / Département' }}</p>
             <p class="truncate text-sm font-semibold text-slate-800">
-              {{ user.department || 'Direction HSSE' }}
+              {{ user.department || (locale === 'en' ? 'HSSE Department' : 'Direction HSSE') }}
             </p>
-            <span class="mt-0.5 inline-block text-[11px] text-slate-500">Pôle Opérationnel & Sécurité</span>
+            <span class="mt-0.5 inline-block text-[11px] text-slate-500">{{ locale === 'en' ? 'Operational & Safety Division' : 'Pôle Opérationnel & Sécurité' }}</span>
           </div>
         </div>
 
@@ -121,11 +127,11 @@ const memberSinceFormatted = computed(() => {
             <Briefcase class="h-4 w-4 text-blue-600" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-slate-500">Fonction / Poste</p>
+            <p class="text-xs font-medium text-slate-500">{{ locale === 'en' ? 'Function / Position' : 'Fonction / Poste' }}</p>
             <p class="truncate text-sm font-semibold text-slate-800">
-              {{ user.job || 'Responsable HSSE' }}
+              {{ user.job || (locale === 'en' ? 'HSSE Manager' : 'Responsable HSSE') }}
             </p>
-            <span class="mt-0.5 inline-block text-[11px] text-slate-500">Poste actif validé</span>
+            <span class="mt-0.5 inline-block text-[11px] text-slate-500">{{ locale === 'en' ? 'Active validated position' : 'Poste actif validé' }}</span>
           </div>
         </div>
 
@@ -135,7 +141,7 @@ const memberSinceFormatted = computed(() => {
             <ShieldCheck class="h-4 w-4 text-indigo-600" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-slate-500">Rôle d'accréditation</p>
+            <p class="text-xs font-medium text-slate-500">{{ locale === 'en' ? 'Accreditation Role' : 'Rôle d\'accréditation' }}</p>
             <p class="truncate text-sm font-semibold text-slate-800">
               {{ roleLabel }}
             </p>
@@ -144,7 +150,7 @@ const memberSinceFormatted = computed(() => {
               @click="emit('go-to-tab', 1)"
               class="mt-0.5 inline-flex items-center text-[11px] font-medium text-indigo-600 hover:underline"
             >
-              Consulter les {{ user.permissions?.length ?? 0 }} habilitations →
+              {{ locale === 'en' ? `View ${user.permissions?.length ?? 0} permissions →` : `Consulter les ${user.permissions?.length ?? 0} habilitations →` }}
             </button>
           </div>
         </div>
@@ -155,7 +161,7 @@ const memberSinceFormatted = computed(() => {
             <MapPin class="h-4 w-4 text-rose-600" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-slate-500">Site d'attachement</p>
+            <p class="text-xs font-medium text-slate-500">{{ locale === 'en' ? 'Assigned Facility / Site' : 'Site d\'attachement' }}</p>
             <p class="truncate text-sm font-semibold text-slate-800">
               Galana Terminal & Raffinerie
             </p>
@@ -171,7 +177,7 @@ const memberSinceFormatted = computed(() => {
         <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
           <Phone class="h-4 w-4" />
         </div>
-        <h4 class="text-sm font-semibold text-slate-800">Coordonnées & Communication</h4>
+        <h4 class="text-sm font-semibold text-slate-800">{{ locale === 'en' ? 'Contact & Communications' : 'Coordonnées & Communication' }}</h4>
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -182,7 +188,7 @@ const memberSinceFormatted = computed(() => {
               <Mail class="h-4 w-4 text-emerald-600" />
             </div>
             <div class="min-w-0">
-              <p class="text-xs font-medium text-slate-500">E-mail professionnel</p>
+              <p class="text-xs font-medium text-slate-500">{{ locale === 'en' ? 'Professional Email' : 'E-mail professionnel' }}</p>
               <a
                 v-if="user.email"
                 :href="`mailto:${user.email}`"
@@ -190,14 +196,14 @@ const memberSinceFormatted = computed(() => {
               >
                 {{ user.email }}
               </a>
-              <p v-else class="text-sm text-slate-400 italic">Non renseigné</p>
+              <p v-else class="text-sm text-slate-400 italic">{{ locale === 'en' ? 'Not specified' : 'Non renseigné' }}</p>
             </div>
           </div>
           <button
             v-if="user.email"
             type="button"
             @click="copyToClipboard(user.email, 'email')"
-            title="Copier l'adresse e-mail"
+            :title="locale === 'en' ? 'Copy email address' : 'Copier l\'adresse e-mail'"
             class="ml-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             <Check v-if="copiedField === 'email'" class="h-3.5 w-3.5 text-emerald-600" />
@@ -212,7 +218,7 @@ const memberSinceFormatted = computed(() => {
               <Phone class="h-4 w-4 text-blue-600" />
             </div>
             <div class="min-w-0">
-              <p class="text-xs font-medium text-slate-500">Téléphone de service</p>
+              <p class="text-xs font-medium text-slate-500">{{ locale === 'en' ? 'Service Phone' : 'Téléphone de service' }}</p>
               <a
                 v-if="user.phone_number"
                 :href="`tel:${user.phone_number}`"
@@ -220,14 +226,14 @@ const memberSinceFormatted = computed(() => {
               >
                 {{ user.phone_number }}
               </a>
-              <p v-else class="text-sm text-slate-400 italic">Non renseigné</p>
+              <p v-else class="text-sm text-slate-400 italic">{{ locale === 'en' ? 'Not specified' : 'Non renseigné' }}</p>
             </div>
           </div>
           <button
             v-if="user.phone_number"
             type="button"
             @click="copyToClipboard(user.phone_number, 'phone')"
-            title="Copier le numéro"
+            :title="locale === 'en' ? 'Copy phone number' : 'Copier le numéro'"
             class="ml-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             <Check v-if="copiedField === 'phone'" class="h-3.5 w-3.5 text-emerald-600" />
@@ -243,7 +249,7 @@ const memberSinceFormatted = computed(() => {
         <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
           <UserCheck class="h-4 w-4" />
         </div>
-        <h4 class="text-sm font-semibold text-slate-800">Compte & Métadonnées</h4>
+        <h4 class="text-sm font-semibold text-slate-800">{{ locale === 'en' ? 'Account & Metadata' : 'Compte & Métadonnées' }}</h4>
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -251,7 +257,7 @@ const memberSinceFormatted = computed(() => {
         <div class="rounded-lg border border-slate-100 bg-slate-50/60 p-3.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-medium text-slate-500 flex items-center gap-1">
-              <Hash class="h-3.5 w-3.5 text-slate-400" /> ID Compte
+              <Hash class="h-3.5 w-3.5 text-slate-400" /> {{ locale === 'en' ? 'Account ID' : 'ID Compte' }}
             </span>
             <button
               v-if="user.id"
@@ -259,7 +265,7 @@ const memberSinceFormatted = computed(() => {
               @click="copyToClipboard(String(user.id), 'id')"
               class="text-[11px] text-slate-500 hover:text-slate-800"
             >
-              {{ copiedField === 'id' ? 'Copié !' : 'Copier' }}
+              {{ copiedField === 'id' ? (locale === 'en' ? 'Copied!' : 'Copié !') : (locale === 'en' ? 'Copy' : 'Copier') }}
             </button>
           </div>
           <p class="mt-1 font-mono text-xs font-semibold text-slate-800 truncate">
@@ -270,7 +276,7 @@ const memberSinceFormatted = computed(() => {
         <!-- Date creation -->
         <div class="rounded-lg border border-slate-100 bg-slate-50/60 p-3.5">
           <span class="text-xs font-medium text-slate-500 flex items-center gap-1">
-            <Calendar class="h-3.5 w-3.5 text-slate-400" /> Inscription
+            <Calendar class="h-3.5 w-3.5 text-slate-400" /> {{ locale === 'en' ? 'Registration' : 'Inscription' }}
           </span>
           <p class="mt-1 text-xs font-semibold text-slate-800 truncate">
             {{ memberSinceFormatted }}
@@ -280,11 +286,11 @@ const memberSinceFormatted = computed(() => {
         <!-- Etat de verification -->
         <div class="rounded-lg border border-slate-100 bg-slate-50/60 p-3.5">
           <span class="text-xs font-medium text-slate-500 flex items-center gap-1">
-            <FileText class="h-3.5 w-3.5 text-slate-400" /> Statut d'accès
+            <FileText class="h-3.5 w-3.5 text-slate-400" /> {{ locale === 'en' ? 'Access Status' : 'Statut d\'accès' }}
           </span>
           <p class="mt-1 flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
             <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-            Actif & Conforme HSSE
+            {{ locale === 'en' ? 'Active & HSSE Compliant' : 'Actif & Conforme HSSE' }}
           </p>
         </div>
       </div>

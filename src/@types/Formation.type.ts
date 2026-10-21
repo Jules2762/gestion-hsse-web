@@ -1,5 +1,5 @@
 type VoletType="Environnement"|"Santé"|"Sécurité"|"Sûreté"
-type FormationType="Atelier"|"Exercice d'urgence"|"Formation"|"Induction"|"Sensibilisation"
+type FormationType="Atelier"|"Exercice d'urgence"|"Formation"|"Induction"|"Réunion"|"Sensibilisation"
 type FormationStatusType="SCHEDULED"|"COMPLETED"|"CANCELLED"|"POSTPONED"
 type FormationStatusJsonType={
     label:string,

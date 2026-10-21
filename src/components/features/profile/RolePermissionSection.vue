@@ -17,19 +17,25 @@ import {
   Filter
 } from '@lucide/vue'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { ProfileUser } from '../../../views/home/profile/ProfilePage.vue'
 import { UserRoleDataJson } from '../../../@data/User.data.ts'
 
 const props = defineProps<{ user: ProfileUser }>()
 
+const { t, locale } = useI18n()
 const searchQuery = ref('')
 const selectedModuleFilter = ref('ALL')
 
 const roleLabel = computed(() => {
+  const isEn = locale.value === 'en'
+  const r = (props.user.role || '').toUpperCase()
+  if (r === 'ADMIN') return isEn ? 'Administrator' : 'Administrateur'
+  if (r === 'USER') return isEn ? 'User' : 'Utilisateur'
   const match = (UserRoleDataJson as { value: string; label: string }[])?.find(
     (item) => item.value === props.user.role
   )
-  return match?.label ?? props.user.role ?? 'Utilisateur'
+  return match?.label ?? props.user.role ?? (isEn ? 'User' : 'Utilisateur')
 })
 
 type ActionBadge = {
@@ -39,106 +45,108 @@ type ActionBadge = {
 }
 
 function parseAction(actionRaw: string): ActionBadge {
+  const isEn = locale.value === 'en'
   const upper = actionRaw.toUpperCase()
   if (['CREATE', 'UPLOAD'].includes(upper)) {
     return {
       raw: upper,
-      label: upper === 'UPLOAD' ? 'Téléverser' : 'Créer',
+      label: upper === 'UPLOAD' ? (isEn ? 'Upload' : 'Téléverser') : (isEn ? 'Create' : 'Créer'),
       variant: 'green'
     }
   }
   if (['READ', 'VIEW', 'SHOW'].includes(upper)) {
     return {
       raw: upper,
-      label: 'Consulter',
+      label: isEn ? 'View' : 'Consulter',
       variant: 'blue'
     }
   }
   if (['UPDATE', 'RENAME', 'ANSWER', 'ASSIGN', 'CHANGE_STATUS'].includes(upper)) {
-    let label = 'Modifier'
-    if (upper === 'RENAME') label = 'Renommer'
-    if (upper === 'ANSWER') label = 'Remplir / Répondre'
-    if (upper === 'ASSIGN') label = 'Assigner'
-    if (upper === 'CHANGE_STATUS') label = 'Changer statut'
+    let label = isEn ? 'Edit' : 'Modifier'
+    if (upper === 'RENAME') label = isEn ? 'Rename' : 'Renommer'
+    if (upper === 'ANSWER') label = isEn ? 'Fill / Answer' : 'Remplir / Répondre'
+    if (upper === 'ASSIGN') label = isEn ? 'Assign' : 'Assigner'
+    if (upper === 'CHANGE_STATUS') label = isEn ? 'Change status' : 'Changer statut'
     return { raw: upper, label, variant: 'amber' }
   }
   if (['DELETE', 'DISABLE'].includes(upper)) {
     return {
       raw: upper,
-      label: upper === 'DISABLE' ? 'Désactiver' : 'Supprimer',
+      label: upper === 'DISABLE' ? (isEn ? 'Disable' : 'Désactiver') : (isEn ? 'Delete' : 'Supprimer'),
       variant: 'rose'
     }
   }
   if (['ENABLE'].includes(upper)) {
-    return { raw: upper, label: 'Activer', variant: 'green' }
+    return { raw: upper, label: isEn ? 'Enable' : 'Activer', variant: 'green' }
   }
   if (['DOWNLOAD'].includes(upper)) {
-    return { raw: upper, label: 'Télécharger', variant: 'indigo' }
+    return { raw: upper, label: isEn ? 'Download' : 'Télécharger', variant: 'indigo' }
   }
   return { raw: upper, label: actionRaw.toLowerCase(), variant: 'gray' }
 }
 
 function resolveModuleCategory(permission: string) {
+  const isEn = locale.value === 'en'
   if (permission.startsWith('USER_ROLE') || permission.startsWith('USER_PERMISSION') || permission.startsWith('PERMISSION')) {
     return {
       key: 'SECURITY',
-      title: 'Habilitations & Sécurité',
-      desc: 'Gestion des rôles, permissions et droits d’accès utilisateurs',
+      title: isEn ? 'Permissions & Security' : 'Habilitations & Sécurité',
+      desc: isEn ? 'User roles, permissions and access rights management' : 'Gestion des rôles, permissions et droits d’accès utilisateurs',
       icon: KeyRound
     }
   }
   if (permission.startsWith('USER')) {
     return {
       key: 'USER',
-      title: 'Gestion des Utilisateurs',
-      desc: 'Comptes collaborateurs, fiches de profil et annuaire',
+      title: isEn ? 'User Management' : 'Gestion des Utilisateurs',
+      desc: isEn ? 'Staff accounts, profile cards and directory' : 'Comptes collaborateurs, fiches de profil et annuaire',
       icon: UserRound
     }
   }
   if (permission.startsWith('DOCUMENT')) {
     return {
       key: 'DOCUMENT',
-      title: 'Gestion Documentaire (GED)',
-      desc: 'Dossiers, procédures HSSE, fiches techniques et uploads',
+      title: isEn ? 'Document Management (EDMS)' : 'Gestion Documentaire (GED)',
+      desc: isEn ? 'Folders, HSSE procedures, technical sheets and uploads' : 'Dossiers, procédures HSSE, fiches techniques et uploads',
       icon: FolderArchive
     }
   }
   if (permission.startsWith('CHECKLIST_TEMPLATE')) {
     return {
       key: 'CHECKLIST_TEMPLATE',
-      title: 'Modèles d’Inspections & VMC',
-      desc: 'Création et configuration des grilles de contrôle',
+      title: isEn ? 'Inspection & VMC Templates' : 'Modèles d’Inspections & VMC',
+      desc: isEn ? 'Check sheet templates and configuration' : 'Création et configuration des grilles de contrôle',
       icon: ClipboardList
     }
   }
   if (permission.startsWith('CHECKLIST')) {
     return {
       key: 'CHECKLIST',
-      title: 'Réalisation des Checklists',
-      desc: 'Passage des inspections terrain, contrôles et rapports',
+      title: isEn ? 'Checklist Execution' : 'Réalisation des Checklists',
+      desc: isEn ? 'Field inspections execution, checks and reports' : 'Passage des inspections terrain, contrôles et rapports',
       icon: CheckSquare
     }
   }
   if (permission.startsWith('ACTION')) {
     return {
       key: 'ACTION',
-      title: 'Plans d’Actions Correctives',
-      desc: 'Suivi des écarts, résolutions et assignations d’actions',
+      title: isEn ? 'Corrective Action Plans' : 'Plans d’Actions Correctives',
+      desc: isEn ? 'Tracking deviations, resolutions and action assignments' : 'Suivi des écarts, résolutions et assignations d’actions',
       icon: AlertCircle
     }
   }
   if (permission.startsWith('LOG')) {
     return {
       key: 'LOG',
-      title: 'Journaux d’Audit & Logs',
-      desc: 'Traçabilité des opérations et historique de conformité',
+      title: isEn ? 'Audit Trails & Logs' : 'Journaux d’Audit & Logs',
+      desc: isEn ? 'Operation traceability and compliance audit history' : 'Traçabilité des opérations et historique de conformité',
       icon: ScrollText
     }
   }
   return {
     key: 'OTHER',
-    title: 'Autres Habilitations',
-    desc: 'Droits divers du système HSSE',
+    title: isEn ? 'Other Permissions' : 'Autres Habilitations',
+    desc: isEn ? 'Miscellaneous HSSE system rights' : 'Droits divers du système HSSE',
     icon: LayoutGrid
   }
 }
@@ -184,7 +192,7 @@ const categorizedPermissions = computed(() => {
 
 const availableModuleFilters = computed(() => {
   const list = [
-    { key: 'ALL', label: 'Tous les modules', count: props.user.permissions?.length ?? 0 }
+    { key: 'ALL', label: locale.value === 'en' ? 'All modules' : 'Tous les modules', count: props.user.permissions?.length ?? 0 }
   ]
   for (const group of categorizedPermissions.value) {
     list.push({
@@ -237,14 +245,14 @@ const badgeClasses: Record<ActionBadge['variant'], string> = {
               <span
                 class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800"
               >
-                Habilité HSSE
+                {{ locale === 'en' ? 'HSSE Authorized' : 'Habilité HSSE' }}
               </span>
             </div>
             <p class="text-xs text-slate-500 mt-0.5">
               {{
                 props.user.role === 'ADMIN'
-                  ? 'Accès administrateur étendu : supervision globale, gestion des habilitations et paramétrage du portail.'
-                  : 'Accès utilisateur standard : exécution des inspections terrain, consultation documentaire et suivi d’actions.'
+                  ? (locale === 'en' ? 'Extended administrator access: global supervision, permission management and portal configuration.' : 'Accès administrateur étendu : supervision globale, gestion des habilitations et paramétrage du portail.')
+                  : (locale === 'en' ? 'Standard user access: executing field inspections, viewing documents and tracking actions.' : 'Accès utilisateur standard : exécution des inspections terrain, consultation documentaire et suivi d’actions.')
               }}
             </p>
           </div>
@@ -254,9 +262,9 @@ const badgeClasses: Record<ActionBadge['variant'], string> = {
           <KeyRound class="h-4 w-4 text-[#0F9D58]" />
           <div class="text-left">
             <span class="block text-xs font-bold text-slate-800 tabular-nums">
-              {{ props.user.permissions?.length ?? 0 }} permissions
+              {{ props.user.permissions?.length ?? 0 }} {{ locale === 'en' ? 'permissions' : 'permissions' }}
             </span>
-            <span class="block text-[11px] text-slate-500">actives dans le profil</span>
+            <span class="block text-[11px] text-slate-500">{{ locale === 'en' ? 'active in profile' : 'actives dans le profil' }}</span>
           </div>
         </div>
       </div>
@@ -271,7 +279,7 @@ const badgeClasses: Record<ActionBadge['variant'], string> = {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Filtrer les permissions (ex: consulter, créer, document, checklist...)"
+            :placeholder="locale === 'en' ? 'Filter permissions (e.g. view, create, document, checklist...)' : 'Filtrer les permissions (ex: consulter, créer, document, checklist...)'"
             class="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-2 pl-9 pr-3 text-xs text-slate-800 placeholder-slate-400 transition focus:border-[#0F9D58] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#0F9D58]"
           />
         </div>
@@ -279,16 +287,16 @@ const badgeClasses: Record<ActionBadge['variant'], string> = {
         <!-- Legende couleurs -->
         <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
           <span class="flex items-center gap-1 font-medium text-slate-600">
-            <span class="h-2 w-2 rounded-full bg-blue-500"></span> Consultation
+            <span class="h-2 w-2 rounded-full bg-blue-500"></span> {{ locale === 'en' ? 'View' : 'Consultation' }}
           </span>
           <span class="flex items-center gap-1 font-medium text-slate-600">
-            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Création
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> {{ locale === 'en' ? 'Create' : 'Création' }}
           </span>
           <span class="flex items-center gap-1 font-medium text-slate-600">
-            <span class="h-2 w-2 rounded-full bg-amber-500"></span> Modification
+            <span class="h-2 w-2 rounded-full bg-amber-500"></span> {{ locale === 'en' ? 'Edit' : 'Modification' }}
           </span>
           <span class="flex items-center gap-1 font-medium text-slate-600">
-            <span class="h-2 w-2 rounded-full bg-rose-500"></span> Suppression
+            <span class="h-2 w-2 rounded-full bg-rose-500"></span> {{ locale === 'en' ? 'Delete' : 'Suppression' }}
           </span>
         </div>
       </div>
@@ -317,12 +325,12 @@ const badgeClasses: Record<ActionBadge['variant'], string> = {
       <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400">
         <Lock class="h-5 w-5" />
       </div>
-      <p class="mt-2 text-sm font-semibold text-slate-700">Aucune habilitation correspondante</p>
+      <p class="mt-2 text-sm font-semibold text-slate-700">{{ locale === 'en' ? 'No matching permissions' : 'Aucune habilitation correspondante' }}</p>
       <p class="text-xs text-slate-500">
         {{
           searchQuery
-            ? 'Aucune permission ne correspond à votre recherche.'
-            : 'Aucune permission spécifique n’est assignée à cet utilisateur.'
+            ? (locale === 'en' ? 'No permissions match your search.' : 'Aucune permission ne correspond à votre recherche.')
+            : (locale === 'en' ? 'No specific permissions are assigned to this user.' : 'Aucune permission spécifique n’est assignée à cet utilisateur.')
         }}
       </p>
     </div>
@@ -364,9 +372,9 @@ const badgeClasses: Record<ActionBadge['variant'], string> = {
         </div>
 
         <div class="mt-3 pt-2 text-[11px] text-slate-400 border-t border-slate-50 flex items-center justify-between">
-          <span>Module activé</span>
+          <span>{{ locale === 'en' ? 'Module enabled' : 'Module activé' }}</span>
           <span class="text-emerald-700 font-medium flex items-center gap-1">
-            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Conforme
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> {{ locale === 'en' ? 'Compliant' : 'Conforme' }}
           </span>
         </div>
       </div>

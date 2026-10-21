@@ -35,14 +35,15 @@
             <div v-for="key in filterableKeys" :key="key" class="relative">
                 <button class="filter-pill" :class="{ 'filter-pill-active': (filters[key] ?? []).length }"
                     @click.stop="toggleFilter(key)">
-                    <span>{{ columnLabels[key] }}</span>
+                    <span>{{ translateColumn(columnLabels[key]) }}</span>
                     <span v-if="(filters[key] ?? []).length" class="filter-pill-count">{{ filters[key].length }}</span>
                     <ChevronDownIcon :size="13" />
                 </button>
 
                 <div v-if="openFilter === key" class="popover min-w-56 max-w-120 w-fit" @click.stop>
-                    <p class="popover-title">{{ columnLabels[key] }}</p>
+                    <p class="popover-title">{{ translateColumn(columnLabels[key]) }}</p>
                     <input v-model="filterSearch" type="text" :placeholder="t('common.search') + '...'" class="popover-input mb-2" />
+
                     <div class="max-h-44 overflow-y-auto pr-1 flex flex-col gap-0.5">
                         <label v-for="val in optionsFor(key)" :key="val"
                             class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
@@ -120,6 +121,32 @@
 
     const { t, locale } = useI18n()
 
+    const columnLabelMap: Record<string, { fr: string; en: string }> = {
+        'Inspecteur': { fr: 'Inspecteur', en: 'Inspector' },
+        'Statut': { fr: 'Statut', en: 'Status' },
+        'Status': { fr: 'Statut', en: 'Status' },
+        'Volet': { fr: 'Volet', en: 'Section' },
+        'Formateur': { fr: 'Formateur', en: 'Trainer' },
+        'Cible': { fr: 'Cible', en: 'Target' },
+        'Observateur': { fr: 'Observateur', en: 'Observer' },
+        'Rôle': { fr: 'Rôle', en: 'Role' },
+        'Département': { fr: 'Département', en: 'Department' },
+        'Direction': { fr: 'Direction', en: 'Division' },
+        'Entité': { fr: 'Entité', en: 'Entity' },
+        'Fonction': { fr: 'Fonction', en: 'Position' },
+        'Site': { fr: 'Site', en: 'Site' },
+        'Type': { fr: 'Type', en: 'Type' },
+    }
+
+    const translateColumn = (label?: string) => {
+        if (!label) return ''
+        const mapped = columnLabelMap[label]
+        if (mapped) {
+            return locale.value === 'en' ? mapped.en : mapped.fr
+        }
+        return label
+    }
+
     defineEmits<{
         (e: 'clear-all'): void
     }>()
@@ -128,6 +155,7 @@
     const openFilter = ref<string | null>(null)
     // Local search text used to filter the checkbox list inside an open column popover
     const filterSearch = ref('')
+
 
     const hasDateFilter = computed(() => !!(props.dateRange.from || props.dateRange.to))
 

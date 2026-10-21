@@ -15,38 +15,37 @@
             },
         ]" />
         <div class="p-4">
-            <p>Créez une nouvelle session de formation et définissez les informations nécessaires au suivi des
-                participants.</p>
+            <p class="text-xs text-gray-500">{{ locale === 'en' ? 'Create a new training session and specify required details for participant tracking.' : 'Créez une nouvelle session de formation et définissez les informations nécessaires au suivi des participants.' }}</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 items-start">
             <!-- FORM -->
             <form @submit.prevent.once="onSubmit()"
                 class="lg:col-span-2 bg-white p-6 rounded border border-gray-200 grid grid-cols-2 gap-4">
-                <Input required label="Titre" class="col-span-2" :icon="BookOpen" v-model="data.forms.title"
-                    placeholder="Entrez le titre" :error="data.errors.title?.[0]" />
-                <Select required v-model="data.forms.type" label="Type de formation" :icon="GraduationCap"
+                <Input required :label="locale === 'en' ? 'Title' : 'Titre'" class="col-span-2" :icon="BookOpen" v-model="data.forms.title"
+                    :placeholder="locale === 'en' ? 'Enter title' : 'Entrez le titre'" :error="data.errors.title?.[0]" />
+                <Select required v-model="data.forms.type" :label="locale === 'en' ? 'Training type' : 'Type de formation'" :icon="GraduationCap"
                     :options="FormationTypeJsonData" :error="data.errors.type?.[0]" />
-                <Select required v-model="data.forms.volet" label="Volet" :options="VoletJsonData" :icon="ShieldCheck"
+                <Select required v-model="data.forms.volet" :label="locale === 'en' ? 'Pillar' : 'Volet'" :options="VoletJsonData" :icon="ShieldCheck"
                     :error="data.errors.volet?.[0]" />
-                <Input  label="Formateur" class="col-span-2" :icon="UserRound" v-model="data.forms.trainer"
-                    placeholder="Entrez le nom du formateur" :error="data.errors.trainer?.[0]" />
-                <Input label="Cible" :icon="CrosshairIcon" v-model="data.forms.target" placeholder="Entrez la cible"
+                <Input :label="locale === 'en' ? 'Trainer' : 'Formateur'" class="col-span-2" :icon="UserRound" v-model="data.forms.trainer"
+                    :placeholder="locale === 'en' ? 'Enter trainer name' : 'Entrez le nom du formateur'" :error="data.errors.trainer?.[0]" />
+                <Input :label="locale === 'en' ? 'Target' : 'Cible'" :icon="CrosshairIcon" v-model="data.forms.target" :placeholder="locale === 'en' ? 'Enter target' : 'Entrez la cible'"
                     :error="data.errors.target?.[0]" />
-                <Input label="Type cible" :icon="Users" v-model="data.forms.target_type"
-                    placeholder="Entrez le type de cible" :error="data.errors.target_type?.[0]" />
-                <Input label="Nombre de participants" class="col-span-2" type="number" :icon="UsersRound"
-                    v-model="data.forms.participant" placeholder="Entrez le nombre de participants"
+                <Input :label="locale === 'en' ? 'Target type' : 'Type cible'" :icon="Users" v-model="data.forms.target_type"
+                    :placeholder="locale === 'en' ? 'Enter target type' : 'Entrez le type de cible'" :error="data.errors.target_type?.[0]" />
+                <Input :label="locale === 'en' ? 'Number of participants' : 'Nombre de participants'" class="col-span-2" type="number" :icon="UsersRound"
+                    v-model="data.forms.participant" :placeholder="locale === 'en' ? 'Enter number of participants' : 'Entrez le nombre de participants'"
                     :error="data.errors.participant?.[0]" :min="0" />
-                <Input label="Date" type="date" :icon="CalendarDays" v-model="data.forms.date"
-                    placeholder="Sélectionnez la date" :error="data.errors.date?.[0]" />
-                <Input  label="Durée (heures)" type="time" :icon="Clock3"
-                    v-model="data.forms.duration"  :error="data.errors.duration?.[0]" />
+                <Input :label="locale === 'en' ? 'Date' : 'Date'" type="date" :icon="CalendarDays" v-model="data.forms.date"
+                    :placeholder="locale === 'en' ? 'Select date' : 'Sélectionnez la date'" :error="data.errors.date?.[0]" />
+                <Input :label="locale === 'en' ? 'Duration (hours)' : 'Durée (heures)'" type="time" :icon="Clock3"
+                    v-model="data.forms.duration" :error="data.errors.duration?.[0]" />
 
                 <div class="col-span-2 flex flex-row items-center justify-end gap-3 pt-2 border-t border-gray-100 mt-2">
-                    <Button :variant="'outline'" type="button" @click="router.back()">Annuler</Button>
+                    <Button :variant="'outline'" type="button" @click="router.back()">{{ locale === 'en' ? 'Cancel' : 'Annuler' }}</Button>
                     <Button :left-icon="CheckCircle" type="submit" :disabled="disabled"
-                        :loading="data.options.loading">Confirmer</Button>
+                        :loading="data.options.loading">{{ locale === 'en' ? 'Confirm' : 'Confirmer' }}</Button>
                 </div>
             </form>
 
@@ -57,7 +56,7 @@
                     <div class="flex items-start gap-3">
                         <UserRound class="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                         <div>
-                            <p class="text-xs text-gray-400">Formateur</p>
+                            <p class="text-xs text-gray-400">{{ locale === 'en' ? 'Trainer' : 'Formateur' }}</p>
                             <p class="text-sm text-gray-800">{{ data.forms.trainer || '—' }}</p>
                         </div>
                     </div>
@@ -65,7 +64,7 @@
                     <div class="flex items-start gap-3">
                         <CrosshairIcon class="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                         <div>
-                            <p class="text-xs text-gray-400">Cible</p>
+                            <p class="text-xs text-gray-400">{{ locale === 'en' ? 'Target' : 'Cible' }}</p>
                             <p class="text-sm text-gray-800">
                                 {{ data.forms.target || '—' }}
                                 <span v-if="data.forms.target_type" class="text-gray-400">
@@ -79,14 +78,14 @@
                         <div class="flex items-start gap-3">
                             <UsersRound class="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                             <div>
-                                <p class="text-xs text-gray-400">Participants</p>
+                                <p class="text-xs text-gray-400">{{ locale === 'en' ? 'Participants' : 'Participants' }}</p>
                                 <p class="text-sm text-gray-800">{{ data.forms.participant || 0 }}</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <Clock3 class="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                             <div>
-                                <p class="text-xs text-gray-400">Durée</p>
+                                <p class="text-xs text-gray-400">{{ locale === 'en' ? 'Duration' : 'Durée' }}</p>
                                 <p class="text-sm text-gray-800">{{ formattedDuration }}</p>
                             </div>
                         </div>
@@ -95,7 +94,7 @@
                     <div class="flex items-start gap-3 pt-3 border-t border-gray-100">
                         <CalendarDays class="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                         <div>
-                            <p class="text-xs text-gray-400">Date</p>
+                            <p class="text-xs text-gray-400">{{ locale === 'en' ? 'Date' : 'Date' }}</p>
                             <p class="text-sm text-gray-800">{{ formattedDate }}</p>
                         </div>
                     </div>
@@ -159,7 +158,7 @@ import PerviewSectionUI from '../../../components/ui/PerviewSectionUI.vue';
         }
     });
 
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
     const formation = useFormationService();
 
     // Volet -> header color for the preview panel
@@ -177,7 +176,7 @@ import PerviewSectionUI from '../../../components/ui/PerviewSectionUI.vue';
         if (!data.value.forms.date) return '—';
         const d = new Date(data.value.forms.date);
         if (isNaN(d.getTime())) return '—';
-        return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(d);
+        return new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(d);
     });
 
     const formattedDuration = computed(() => {

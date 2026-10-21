@@ -15,63 +15,63 @@
         <!-- Total Secours -->
         <div class="rounded-2xl border border-border bg-surface p-3.5 shadow-2xs flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-text-secondary">Secours Répertoriés</span>
+            <span class="text-[11px] font-semibold text-text-secondary">{{ locale === 'en' ? 'Listed Emergency Services' : 'Secours Répertoriés' }}</span>
             <div class="h-7 w-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
               <PhoneCall :size="14" />
             </div>
           </div>
           <div class="mt-1.5">
             <span class="text-xl font-black text-gray-900">{{ mapStats.total_contacts || contacts.length }}</span>
-            <span class="text-[10px] text-gray-500 block">Services d'intervention</span>
+            <span class="text-[10px] text-gray-500 block">{{ locale === 'en' ? 'Intervention units' : 'Services d\'intervention' }}</span>
           </div>
         </div>
 
         <!-- Pompiers -->
         <div class="rounded-2xl border border-red-200/60 bg-red-50/40 p-3.5 shadow-2xs flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-red-900">Sapeurs-Pompiers</span>
+            <span class="text-[11px] font-bold text-red-900">{{ locale === 'en' ? 'Firefighters' : 'Sapeurs-Pompiers' }}</span>
             <div class="h-7 w-7 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold shadow-xs">
               🚒
             </div>
           </div>
           <div class="mt-1.5">
             <span class="text-xl font-black text-red-700">{{ countByType('POMPIER') }}</span>
-            <span class="text-[10px] text-red-600 block">Centres de secours (118)</span>
+            <span class="text-[10px] text-red-600 block">{{ locale === 'en' ? 'Rescue centers (118)' : 'Centres de secours (118)' }}</span>
           </div>
         </div>
 
         <!-- Hôpitaux -->
         <div class="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-3.5 shadow-2xs flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-emerald-900">Hôpitaux & CHU</span>
+            <span class="text-[11px] font-bold text-emerald-900">{{ locale === 'en' ? 'Hospitals & Clinics' : 'Hôpitaux & CHU' }}</span>
             <div class="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
               🏥
             </div>
           </div>
           <div class="mt-1.5">
             <span class="text-xl font-black text-emerald-700">{{ countByType('HOPITAL') }}</span>
-            <span class="text-[10px] text-emerald-600 block">Urgences médicales</span>
+            <span class="text-[10px] text-emerald-600 block">{{ locale === 'en' ? 'Medical Emergencies' : 'Urgences médicales' }}</span>
           </div>
         </div>
 
         <!-- Ambulances -->
         <div class="rounded-2xl border border-sky-200/60 bg-sky-50/40 p-3.5 shadow-2xs flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-sky-900">Ambulances SAMU</span>
+            <span class="text-[11px] font-bold text-sky-900">{{ locale === 'en' ? 'Ambulances & SAMU' : 'Ambulances SAMU' }}</span>
             <div class="h-7 w-7 rounded-lg bg-sky-500 text-white flex items-center justify-center font-bold shadow-xs">
               🚑
             </div>
           </div>
           <div class="mt-1.5">
             <span class="text-xl font-black text-sky-700">{{ countByType('AMBULANCE') }}</span>
-            <span class="text-[10px] text-sky-600 block">Unités d'intervention</span>
+            <span class="text-[10px] text-sky-600 block">{{ locale === 'en' ? 'Intervention units' : 'Unités d\'intervention' }}</span>
           </div>
         </div>
 
         <!-- Forces de l'ordre -->
         <div class="rounded-2xl border border-indigo-200/60 bg-indigo-50/40 p-3.5 shadow-2xs flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-indigo-900">Forces de l'Ordre</span>
+            <span class="text-[11px] font-bold text-indigo-900">{{ locale === 'en' ? 'Law Enforcement' : 'Forces de l\'Ordre' }}</span>
             <div class="h-7 w-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
               👮
             </div>
@@ -80,21 +80,21 @@
             <span class="text-xl font-black text-indigo-700">
               {{ countByType('POLICE') + countByType('GENDARMERIE') }}
             </span>
-            <span class="text-[10px] text-indigo-600 block">Police & Gendarmerie</span>
+            <span class="text-[10px] text-indigo-600 block">{{ locale === 'en' ? 'Police & Gendarmerie' : 'Police & Gendarmerie' }}</span>
           </div>
         </div>
 
         <!-- Stations Galana (SS) -->
         <div class="rounded-2xl border border-amber-200/60 bg-amber-50/40 p-3.5 shadow-2xs flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-amber-900">Stations Galana</span>
+            <span class="text-[11px] font-bold text-amber-900">{{ locale === 'en' ? 'Galana Stations' : 'Stations Galana' }}</span>
             <div class="h-7 w-7 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs">
               ⛽
             </div>
           </div>
           <div class="mt-1.5">
             <span class="text-xl font-black text-amber-700">{{ sites.length }}</span>
-            <span class="text-[10px] text-amber-600 block">Stations-Services (SS)</span>
+            <span class="text-[10px] text-amber-600 block">{{ locale === 'en' ? 'Service Stations (SS)' : 'Stations-Services (SS)' }}</span>
           </div>
         </div>
       </div>
@@ -115,12 +115,13 @@
               <div>
                 <h3 class="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
                   <BookOpen :size="17" class="text-primary" />
-                  <span>Annuaire Opérationnel des Secours</span>
+                  <span>{{ locale === 'en' ? 'Operational Emergency Directory' : 'Annuaire Opérationnel des Secours' }}</span>
                 </h3>
                 <p class="text-xs text-gray-500">
-                  Cliquez sur un secours pour le localiser sur la carte.
+                  {{ locale === 'en' ? 'Click on an emergency service to locate it on the map.' : 'Cliquez sur un secours pour le localiser sur la carte.' }}
                 </p>
               </div>
+
 
               <!-- Actions : Exporter, Actualiser, Nouveau secours -->
               <div class="flex items-center gap-2 flex-wrap">
@@ -156,8 +157,8 @@
                     <Fuel :size="14" class="text-amber-700" />
                   </div>
                   <div>
-                    <span class="text-xs font-bold text-amber-950 block">Proximité d'une Station-Service (SS) Galana</span>
-                    <span class="text-[10px] text-amber-700">Calcul automatique des secours les plus proches</span>
+                    <span class="text-xs font-bold text-amber-950 block">Proximité d'un Site ou Station Galana</span>
+                    <span class="text-[10px] text-amber-700">Calcul automatique des secours les plus proches du site (Station, Magasin, Agence, Siège)</span>
                   </div>
                 </div>
                 <button
@@ -181,18 +182,18 @@
                   :class="isStationDropdownOpen ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-amber-300'"
                 >
                   <div class="flex items-center gap-2 min-w-0">
-                    <span class="text-base shrink-0">{{ selectedStation ? '⛽' : '🔍' }}</span>
+                    <span class="text-base shrink-0">{{ selectedStation ? siteEmoji(selectedStation.type) : '🔍' }}</span>
                     <div v-if="selectedStation" class="min-w-0 truncate">
                       <span class="font-bold text-gray-900">{{ selectedStation.name }}</span>
                       <span class="text-gray-500 text-[11px] ml-1.5">— {{ selectedStation.locality || 'Madagascar' }} ({{ selectedStation.province || 'National' }})</span>
                     </div>
                     <span v-else class="text-gray-400 font-normal truncate">
-                      Rechercher ou choisir une station Galana (ou cliquer sur un repère ⛽ de la carte)...
+                      Rechercher ou choisir un site Galana (Station, Magasin, Agence, Siège)...
                     </span>
                   </div>
                   <div class="flex items-center gap-1 shrink-0 text-gray-400">
                     <span v-if="sites.length" class="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-md">
-                      {{ sites.length }} SS
+                      {{ sites.length }} sites
                     </span>
                     <ChevronDown :size="14" class="transition-transform duration-200" :class="{ 'rotate-180': isStationDropdownOpen }" />
                   </div>
@@ -510,10 +511,10 @@
                       <div class="flex items-center justify-between text-[10px] font-bold text-amber-950">
                         <span class="flex items-center gap-1">
                           <Fuel :size="12" class="text-amber-600 shrink-0" />
-                          <span>Stations Galana les plus proches :</span>
+                          <span>Sites & Stations Galana les plus proches :</span>
                         </span>
                         <span class="text-[9px] text-amber-700 font-semibold">
-                          {{ getNearestSitesForContact(contact).length }} SS
+                          {{ getNearestSitesForContact(contact).length }} sites
                         </span>
                       </div>
 
@@ -529,7 +530,7 @@
                             : 'bg-amber-50/80 hover:bg-amber-100 text-amber-950 border-amber-200 hover:border-amber-300'"
                           :title="'Centrer sur la station ' + st.name + ' (' + formatDistance(st.distance_km) + ') sur la carte'"
                         >
-                          <span class="font-bold text-amber-900" :class="{ '!text-white': selectedStation?.id === st.id }">⛽ {{ st.name }}</span>
+                          <span class="font-bold text-amber-900" :class="{ '!text-white': selectedStation?.id === st.id }">{{ siteEmoji(st.type) }} {{ st.name }}</span>
                           <span
                             class="font-mono text-[9px] px-1 py-0.2 rounded font-semibold"
                             :class="selectedStation?.id === st.id
@@ -680,6 +681,7 @@ import {
   XIcon,
 } from "@lucide/vue";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { toast } from "vue3-toastify";
 import Header from "../../../components/shared/Header.vue";
 import ButtonFilter from "../../../components/ui/ButtonFilter.vue";
@@ -694,7 +696,9 @@ import type {
 import EmergencyMap from "./components/EmergencyMap.vue";
 import EmergencyContactModal from "./components/EmergencyContactModal.vue";
 
+const { t, locale } = useI18n();
 const contacts = ref<EmergencyContactType[]>([]);
+
 const sites = ref<EmergencySiteType[]>([]);
 const availableSites = ref<any[]>([]);
 const mapLoading = ref(true);
@@ -744,6 +748,46 @@ const selectedStation = ref<EmergencySiteType | null>(null);
 // Filtre de proximité station amélioré (combobox avec recherche)
 const isStationDropdownOpen = ref(false);
 const stationSearchQuery = ref("");
+
+const stationTypeFilter = ref<string>('ALL');
+
+function formatSiteType(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return locale.value === 'en' ? 'Shop' : 'Magasin';
+    case 'AGENCE': return locale.value === 'en' ? 'Agency' : 'Agence';
+    case 'SIEGE': return locale.value === 'en' ? 'Headquarters' : 'Siège';
+    case 'STATION_SERVICE':
+    default: return locale.value === 'en' ? 'Service Station' : 'Station-Service';
+  }
+}
+
+function siteEmoji(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return '🏪';
+    case 'AGENCE': return '🏢';
+    case 'SIEGE': return '🏛️';
+    case 'STATION_SERVICE':
+    default: return '⛽';
+  }
+}
+
+function siteTypeBadgeClass(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'AGENCE': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'SIEGE': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'STATION_SERVICE':
+    default: return 'bg-amber-50 text-amber-700 border-amber-200';
+  }
+}
+
+function countSitesByType(type: string): number {
+  if (type === 'STATION_SERVICE') {
+    return sites.value.filter(s => s.type === 'STATION_SERVICE' || (!s.type && s.name.startsWith('SS'))).length;
+  }
+  return sites.value.filter(s => s.type === type).length;
+}
+
 const stationProvinceFilter = ref("ALL");
 
 // Provinces uniques des stations Galana
@@ -818,6 +862,7 @@ function formatDistance(dist?: number): string {
 interface NearbyStation {
   id: number;
   name: string;
+  type?: string;
   locality?: string;
   province?: string;
   latitude?: number;
@@ -841,6 +886,7 @@ function getNearestSitesForContact(contact: EmergencyContactType, limit = 2): Ne
       list.push({
         id: s.id,
         name: s.name,
+        type: s.type,
         locality: s.locality,
         province: s.province,
         latitude: sLat,

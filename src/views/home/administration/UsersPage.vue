@@ -19,11 +19,10 @@
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter text="Ajouter" :icon="Plus" is-primary @click="router.push({
-                            name: 'ADD_USER'
-                        })" />
+                        <ButtonFilter text="Ajouter" :icon="Plus" is-primary @click="openAddModal" />
                         <ButtonFilter text="Exporter" :icon="Download" :loading="loading_export"
                             :badge="pagination.total.toString()" @click="exportData()" />
+                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
                     </div>
                     <div class="flex flex-row items-center gap-2">
                         <InputFilter :icon="Search" placeholder="Rechercher un utilisateur..." v-model="filters.search[0]" />
@@ -38,14 +37,14 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="w-16 text-center">REF</th>
-                            <th>NOM ET PRÉNOM</th>
-                            <th>E-MAIL</th>
-                            <th>TÉLÉPHONE</th>
-                            <th>DÉPARTEMENT</th>
-                            <th>FONCTION</th>
-                            <th>RÔLE</th>
-                            <th>STATUT</th>
+                            <th class="w-16 text-center">{{ t('table.ref') }}</th>
+                            <th>{{ t('table.first_and_last_name') }}</th>
+                            <th>{{ t('table.email') }}</th>
+                            <th>{{ t('table.phone') }}</th>
+                            <th>{{ t('table.department') }}</th>
+                            <th>{{ t('table.function') }}</th>
+                            <th>{{ t('table.role') }}</th>
+                            <th>{{ t('table.status') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,7 +80,7 @@
                             <td colspan="8" class="w-full p-4 border-t border-gray-200">
                                 <div class="flex flex-row items-center justify-between text-sm">
                                     <span class="text-xs text-gray-500 font-medium">
-                                        Affichage de {{ pagination.to }} sur {{ pagination.total }} utilisateurs
+                                        {{ t('common.displaying') }} {{ pagination.to }} {{ t('common.of') }} {{ pagination.total }} {{ locale === 'en' ? 'users' : 'utilisateurs' }}
                                     </span>
                                     <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total"
                                         :items-per-page="15" :max-pages-shown="4" v-model="pagination.current_page"
@@ -403,14 +402,232 @@
 
 
         </aside>
+
+        <!-- ========================================================= -->
+        <!-- MODAL NOUVEL UTILISATEUR (IN-PAGE MODAL)                  -->
+        <!-- ========================================================= -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="modal_add"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="modal_add = false"
+                >
+                    <div
+                        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                        <!-- En-tête Modal -->
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                    <UserCog2 :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'Add New User' : 'Créer un nouvel utilisateur' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        {{ locale === 'en' ? 'Define credentials, role, department and account status.' : 'Définissez les identifiants, le rôle, le département et le statut du compte.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="modal_add = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <XIcon :size="18" />
+                            </button>
+                        </div>
+
+                        <!-- Formulaire Modal -->
+                        <form @submit.prevent="submitAddUser" class="flex flex-col flex-1 overflow-y-auto">
+                            <div class="p-5 space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Prénom -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'First Name' : 'Prénom' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.first_name"
+                                            type="text"
+                                            required
+                                            :placeholder="locale === 'en' ? 'First name' : 'Prénom'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Nom -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Last Name' : 'Nom' }}
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.last_name"
+                                            type="text"
+                                            :placeholder="locale === 'en' ? 'Last name' : 'Nom de famille'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Email -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Email' : 'Adresse e-mail' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.email"
+                                            type="email"
+                                            required
+                                            placeholder="nom.prenom@galana.mg"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Téléphone -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Phone' : 'Téléphone' }}
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.phone_number"
+                                            type="text"
+                                            placeholder="+261 34 00 000 00"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Poste / Fonction -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Job Title / Position' : 'Poste / Fonction' }}
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.job"
+                                            type="text"
+                                            :placeholder="locale === 'en' ? 'Ex: Responsable HSSE' : 'Ex: Responsable HSSE, Inspecteur...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Département -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Department' : 'Département' }}
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.department"
+                                            type="text"
+                                            :placeholder="locale === 'en' ? 'Ex: Opérations, HSSE...' : 'Ex: Opérations, HSSE, Logistique...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Rôle -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'System Role' : 'Rôle système' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            v-model="newUserForm.role"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer font-medium"
+                                        >
+                                            <option v-for="r in UserRoleDataJson" :key="r.value" :value="r.value">{{ r.label }}</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Statut -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Account Status' : 'Statut du compte' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            v-model="newUserForm.status"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer font-medium"
+                                        >
+                                            <option value="ENABLED">{{ locale === 'en' ? 'Active / Enabled' : 'Actif' }}</option>
+                                            <option value="DISABLED">{{ locale === 'en' ? 'Disabled' : 'Désactivé' }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Mot de passe -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Password' : 'Mot de passe' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.password"
+                                            type="password"
+                                            required
+                                            minlength="6"
+                                            placeholder="••••••••"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Confirmation mot de passe -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Confirm Password' : 'Confirmer mot de passe' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newUserForm.confirmation_password"
+                                            type="password"
+                                            required
+                                            minlength="6"
+                                            placeholder="••••••••"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer d'actions -->
+                            <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="modal_add = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="loading_add || !newUserForm.first_name || !newUserForm.email || !newUserForm.password || (newUserForm.password !== newUserForm.confirmation_password)"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                >
+                                    <Loader2 v-if="loading_add" :size="13" class="animate-spin" />
+                                    <span>{{ locale === 'en' ? 'Create User' : 'Créer l\'utilisateur' }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
     </div>
 </template>
 <script setup lang="ts">
-    import { onMounted, ref, watch } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
+    import { useI18n } from 'vue-i18n';
     import Header from '../../../components/shared/Header.vue';
 
+    const { t, locale } = useI18n();
+
+
     import Button from '../../../components/ui/Button.vue';
-    import { Activity, Ban, CircleCheck, Download, Edit, Plus, Search, User, UserCog2, XIcon } from '@lucide/vue';
+    import { Activity, Ban, CircleCheck, Download, Edit, Plus, RefreshCw, Search, User, UserCog2, XIcon } from '@lucide/vue';
     import { toast } from 'vue3-toastify';
 
     import { UserExportFields, UserRoleData, UserRoleDataJson, UserStatusData } from '../../../@data/User.data';
@@ -419,8 +636,7 @@
     import UserStatus from '../../../components/features/user/UserStatus.vue';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
-    import type { UserDataType, UserFilterType } from '../../../@types/User.type.ts';
-    import { computed } from 'vue'
+    import type { UserDataType, UserFilterType, UserFormType, UserRoleType, UserStatusType } from '../../../@types/User.type.ts';
     import { useUserService } from '../../../core/services/user.service.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
@@ -435,6 +651,7 @@
     const isOpenContextMenu = ref(false)
     const selected_user = ref<UserDataType>()
     const context_menu_user = ref<UserDataType>()
+    const loading = ref<boolean>(false)
     const loading_status = ref<boolean>(false)
     const canChangeStatus = computed(() => {
         return !!my_info.value &&
@@ -464,6 +681,73 @@
         "status": []
     })
     const loading_permission = ref<boolean>(false)
+    
+    const modal_add = ref(false)
+    const loading_add = ref(false)
+
+    const newUserForm = ref({
+        first_name: '',
+        last_name: '',
+        phone_number: '',
+        department: '',
+        job: '',
+        email: '',
+        password: '',
+        confirmation_password: '',
+        role: 'USER' as UserRoleType,
+        status: 'ENABLED' as UserStatusType
+    })
+
+    function openAddModal() {
+        newUserForm.value = {
+            first_name: '',
+            last_name: '',
+            phone_number: '',
+            department: '',
+            job: '',
+            email: '',
+            password: '',
+            confirmation_password: '',
+            role: 'USER',
+            status: 'ENABLED'
+        }
+        modal_add.value = true
+    }
+
+    async function submitAddUser() {
+        if (!newUserForm.value.first_name || !newUserForm.value.email || !newUserForm.value.password) return
+        if (newUserForm.value.password !== newUserForm.value.confirmation_password) {
+            toast.error(locale.value === 'en' ? 'Passwords do not match.' : 'Les mots de passe ne correspondent pas.')
+            return
+        }
+
+        loading_add.value = true
+        try {
+            const payload: UserFormType = {
+                first_name: newUserForm.value.first_name.trim(),
+                last_name: newUserForm.value.last_name.trim(),
+                phone_number: newUserForm.value.phone_number.trim(),
+                department: newUserForm.value.department.trim(),
+                job: newUserForm.value.job.trim(),
+                email: newUserForm.value.email.trim(),
+                password: newUserForm.value.password,
+                confirmation_password: newUserForm.value.confirmation_password,
+                role: newUserForm.value.role,
+                status: newUserForm.value.status,
+                image_path: undefined
+            }
+            await user.createUser(payload)
+            toast.success(locale.value === 'en' ? 'User created successfully!' : 'Utilisateur créé avec succès !')
+            modal_add.value = false
+            fetchData()
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to create user.' : 'Erreur lors de la création de l\'utilisateur.')
+            toast.error(errorMsg)
+        } finally {
+            loading_add.value = false
+        }
+    }
+
     const my_info = ref<UserDataType>()
     const permissionsCount = computed(
         () =>
@@ -489,6 +773,7 @@
             })
     }
     function fetchData(params?: UserFilterType) {
+        loading.value = true
         user.index(params)
             .then(res => {
                 console.log(res.data)
@@ -498,6 +783,9 @@
             })
             .catch(err => {
                 console.error(err)
+            })
+            .finally(() => {
+                loading.value = false
             })
     }
     function clearFilters() {

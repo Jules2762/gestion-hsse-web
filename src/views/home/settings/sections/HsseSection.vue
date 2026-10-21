@@ -1,32 +1,36 @@
 <template>
   <div class="flex flex-col gap-y-5">
     <div class="border-b border-border p-5">
-      <h3 class="text-base font-bold text-text-primary">Conformité & Règles d’Or HSSE</h3>
+      <h3 class="text-base font-bold text-text-primary">
+        {{ locale === 'en' ? 'Compliance & HSSE Golden Rules' : 'Conformité & Règles d’Or HSSE' }}
+      </h3>
       <p class="mt-1 text-xs text-text-secondary">
-        Paramètres opérationnels régissant les inspections terrain, les visites managériales VMC et la sécurité au travail Galana.
+        {{ locale === 'en' ? 'Operational settings governing field inspections, VMC management visits and Galana occupational safety.' : 'Paramètres opérationnels régissant les inspections terrain, les visites managériales VMC et la sécurité au travail Galana.' }}
       </p>
     </div>
 
     <!-- 1. LIGNE D'URGENCE & ESCALADE -->
     <div class="p-5 border-b border-border">
       <div class="mb-4">
-        <h5 class="text-xs font-bold text-text-primary">Ligne d’Urgence & Contacts Clés</h5>
+        <h5 class="text-xs font-bold text-text-primary">
+          {{ locale === 'en' ? 'Emergency Hotline & Key Contacts' : 'Ligne d’Urgence & Contacts Clés' }}
+        </h5>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Coordonnées prioritaires affichées sur les fiches de terrain et dans la barre d’assistance.
+          {{ locale === 'en' ? 'Priority contact information displayed on field sheets and in the help bar.' : 'Coordonnées prioritaires affichées sur les fiches de terrain et dans la barre d’assistance.' }}
         </p>
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           v-model="form.emergency_hotline"
-          label="Ligne d’urgence HSSE (Poste / Tel)"
+          :label="locale === 'en' ? 'HSSE Emergency Hotline (Ext / Phone)' : 'Ligne d’urgence HSSE (Poste / Tel)'"
           :icon="PhoneCall"
           placeholder="+261 20 22 404 40 / Poste 404"
         />
         <Input
           v-model="form.hse_manager_email"
           type="email"
-          label="E-mail du Responsable HSSE"
+          :label="locale === 'en' ? 'HSSE Manager Email' : 'E-mail du Responsable HSSE'"
           :icon="Mail"
           placeholder="hsse-manager@galana.mg"
         />
@@ -36,9 +40,11 @@
     <!-- 2. CADENCE DES INSPECTIONS & VMC -->
     <div class="p-5 border-b border-border">
       <div class="mb-4">
-        <h5 class="text-xs font-bold text-text-primary">Cadence & Seuils des Contrôles</h5>
+        <h5 class="text-xs font-bold text-text-primary">
+          {{ locale === 'en' ? 'Inspection Cadence & Thresholds' : 'Cadence & Seuils des Contrôles' }}
+        </h5>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Périodicité des Visites Managériales de Conformité et délais de rappel des actions correctives.
+          {{ locale === 'en' ? 'Frequency of VMC Compliance Visits and reminder delays for corrective actions.' : 'Périodicité des Visites Managériales de Conformité et délais de rappel des actions correctives.' }}
         </p>
       </div>
 
@@ -48,7 +54,7 @@
           type="number"
           min="7"
           max="180"
-          label="Fréquence VMC (jours)"
+          :label="locale === 'en' ? 'VMC Frequency (days)' : 'Fréquence VMC (jours)'"
           :icon="Calendar"
         />
         <Input
@@ -56,7 +62,7 @@
           type="number"
           min="1"
           max="30"
-          label="Préavis de rappel (jours)"
+          :label="locale === 'en' ? 'Reminder notice (days)' : 'Préavis de rappel (jours)'"
           :icon="Bell"
         />
         <Input
@@ -64,7 +70,7 @@
           type="number"
           min="1"
           max="60"
-          label="Seuil retard action (jours)"
+          :label="locale === 'en' ? 'Action overdue threshold (days)' : 'Seuil retard action (jours)'"
           :icon="ClockAlert"
         />
       </div>
@@ -73,9 +79,11 @@
     <!-- 3. RÈGLES DE CONFORMITÉ & PROTOCOLES -->
     <div class="p-5">
       <div class="mb-4">
-        <h5 class="text-xs font-bold text-text-primary">Protocoles & Exigences Opérationnelles</h5>
+        <h5 class="text-xs font-bold text-text-primary">
+          {{ locale === 'en' ? 'Protocols & Operational Requirements' : 'Protocoles & Exigences Opérationnelles' }}
+        </h5>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Options de renforcement des processus qualité et gestion des incidents.
+          {{ locale === 'en' ? 'Options to strengthen quality processes and incident management.' : 'Options de renforcement des processus qualité et gestion des incidents.' }}
         </p>
       </div>
 
@@ -83,9 +91,11 @@
         <!-- Objectif Zero Incident -->
         <div class="flex items-center justify-between gap-4 p-4">
           <div>
-            <p class="text-xs font-semibold text-text-primary">Politique « Objectif Zéro Incident »</p>
+            <p class="text-xs font-semibold text-text-primary">
+              {{ locale === 'en' ? '“Zero Incident Target” Policy' : 'Politique « Objectif Zéro Incident »' }}
+            </p>
             <p class="mt-0.5 text-[11px] text-text-secondary">
-              Affiche le ruban d’engagement sécurité sur les tableaux de bord et fiches VMC.
+              {{ locale === 'en' ? 'Displays safety commitment ribbon on dashboards and VMC sheets.' : 'Affiche le ruban d’engagement sécurité sur les tableaux de bord et fiches VMC.' }}
             </p>
           </div>
           <button
@@ -106,9 +116,11 @@
         <!-- Escalade auto -->
         <div class="flex items-center justify-between gap-4 p-4">
           <div>
-            <p class="text-xs font-semibold text-text-primary">Escalade automatique des incidents critiques</p>
+            <p class="text-xs font-semibold text-text-primary">
+              {{ locale === 'en' ? 'Automatic escalation of critical incidents' : 'Escalade automatique des incidents critiques' }}
+            </p>
             <p class="mt-0.5 text-[11px] text-text-secondary">
-              Transmet une alerte prioritaire par e-mail au Directeur de site et au Responsable HSSE dès saisie d’un événement de niveau 3+.
+              {{ locale === 'en' ? 'Sends a priority email alert to Site Director and HSSE Manager upon entry of a level 3+ incident.' : 'Transmet une alerte prioritaire par e-mail au Directeur de site et au Responsable HSSE dès saisie d’un événement de niveau 3+.' }}
             </p>
           </div>
           <button
@@ -129,9 +141,11 @@
         <!-- Preuve photo -->
         <div class="flex items-center justify-between gap-4 p-4">
           <div>
-            <p class="text-xs font-semibold text-text-primary">Preuve photographique obligatoire pour clôture</p>
+            <p class="text-xs font-semibold text-text-primary">
+              {{ locale === 'en' ? 'Mandatory photo proof for closure' : 'Preuve photographique obligatoire pour clôture' }}
+            </p>
             <p class="mt-0.5 text-[11px] text-text-secondary">
-              Empêche la validation définitive d’une action corrective sans pièce jointe justificative.
+              {{ locale === 'en' ? 'Prevents final approval of a corrective action without supporting attachment.' : 'Empêche la validation définitive d’une action corrective sans pièce jointe justificative.' }}
             </p>
           </div>
           <button
@@ -160,7 +174,7 @@
         class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50"
       >
         <RotateCcw class="h-3.5 w-3.5" />
-        Annuler
+        {{ t('common.cancel') }}
       </button>
 
       <button
@@ -171,7 +185,7 @@
       >
         <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
         <Save v-else class="h-3.5 w-3.5" />
-        Enregistrer les paramètres HSSE
+        {{ locale === 'en' ? 'Save HSSE settings' : 'Enregistrer les paramètres HSSE' }}
       </button>
     </div>
   </div>
@@ -189,9 +203,12 @@ import {
   Loader2
 } from '@lucide/vue'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Input from '../../../../components/ui/Input.vue'
 import settingService from '../../../../core/services/setting.service'
 import { toast } from 'vue3-toastify'
+
+const { t, locale } = useI18n()
 
 const defaults = {
   emergency_hotline: '+261 20 22 404 40 / Poste 404',
@@ -252,10 +269,10 @@ function save() {
     })
     .then(() => {
       initialSnapshot.value = JSON.stringify(form)
-      toast.success('Paramètres HSSE enregistrés avec succès !')
+      toast.success(locale.value === 'en' ? 'HSSE settings saved successfully!' : 'Paramètres HSSE enregistrés avec succès !')
     })
     .catch(() => {
-      toast.error('Erreur lors de la sauvegarde des paramètres HSSE.')
+      toast.error(locale.value === 'en' ? 'Error saving HSSE settings.' : 'Erreur lors de la sauvegarde des paramètres HSSE.')
     })
     .finally(() => {
       isSaving.value = false

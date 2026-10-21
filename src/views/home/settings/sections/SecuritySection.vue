@@ -4,14 +4,16 @@
     <div class="border-b border-border p-5">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-text-primary">Sécurité, Authentification & Traçabilité</h3>
+          <h3 class="text-base font-bold text-text-primary">
+            {{ locale === 'en' ? 'Security, Authentication & Traceability' : 'Sécurité, Authentification & Traçabilité' }}
+          </h3>
           <p class="mt-1 text-xs text-text-secondary">
-            Politique de gestion des accès, complexité des mots de passe et journalisation d'audit Galana HSSE.
+            {{ locale === 'en' ? 'Access management policy, password complexity and Galana HSSE audit logging.' : "Politique de gestion des accès, complexité des mots de passe et journalisation d'audit Galana HSSE." }}
           </p>
         </div>
         <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-[#0F9D58] ring-1 ring-[#0F9D58]/20">
           <ShieldCheck class="h-3.5 w-3.5" />
-          Conforme Politique DSI
+          {{ locale === 'en' ? 'IT Policy Compliant' : 'Conforme Politique DSI' }}
         </span>
       </div>
     </div>
@@ -21,10 +23,12 @@
       <div class="mb-4">
         <div class="flex items-center gap-2">
           <Clock class="h-4 w-4 text-[#0F9D58]" />
-          <h5 class="text-xs font-bold text-text-primary">Gestion des Sessions & Verrouillage</h5>
+          <h5 class="text-xs font-bold text-text-primary">
+            {{ locale === 'en' ? 'Session Management & Lockout' : 'Gestion des Sessions & Verrouillage' }}
+          </h5>
         </div>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Délai de déconnexion automatique en cas d'inactivité et protection contre les attaques par force brute.
+          {{ locale === 'en' ? 'Automatic logout timeout on inactivity and brute force protection.' : "Délai de déconnexion automatique en cas d'inactivité et protection contre les attaques par force brute." }}
         </p>
       </div>
 
@@ -34,7 +38,7 @@
           type="number"
           min="15"
           max="1440"
-          label="Inactivité max (minutes)"
+          :label="locale === 'en' ? 'Max inactivity (minutes)' : 'Inactivité max (minutes)'"
           :icon="Timer"
           placeholder="120"
         />
@@ -44,7 +48,7 @@
           type="number"
           min="3"
           max="10"
-          label="Échecs avant blocage"
+          :label="locale === 'en' ? 'Failed attempts before lockout' : 'Échecs avant blocage'"
           :icon="ShieldAlert"
           placeholder="5"
         />
@@ -54,7 +58,7 @@
           type="number"
           min="5"
           max="120"
-          label="Durée de blocage (minutes)"
+          :label="locale === 'en' ? 'Lockout duration (minutes)' : 'Durée de blocage (minutes)'"
           :icon="KeyRound"
           placeholder="15"
         />
@@ -66,10 +70,12 @@
       <div class="mb-4">
         <div class="flex items-center gap-2">
           <Lock class="h-4 w-4 text-[#0F9D58]" />
-          <h5 class="text-xs font-bold text-text-primary">Politique de Mots de Passe</h5>
+          <h5 class="text-xs font-bold text-text-primary">
+            {{ locale === 'en' ? 'Password Policy' : 'Politique de Mots de Passe' }}
+          </h5>
         </div>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Exigences de robustesse et périodicité de renouvellement imposées aux comptes utilisateurs.
+          {{ locale === 'en' ? 'Strength requirements and mandatory renewal frequency for user accounts.' : 'Exigences de robustesse et périodicité de renouvellement imposées aux comptes utilisateurs.' }}
         </p>
       </div>
 
@@ -79,7 +85,7 @@
           type="number"
           min="6"
           max="32"
-          label="Longueur minimale (caractères)"
+          :label="locale === 'en' ? 'Minimum length (characters)' : 'Longueur minimale (caractères)'"
           :icon="KeyRound"
           placeholder="8"
         />
@@ -89,7 +95,7 @@
           type="number"
           min="0"
           max="365"
-          label="Renouvellement obligatoire (jours)"
+          :label="locale === 'en' ? 'Mandatory renewal (days)' : 'Renouvellement obligatoire (jours)'"
           :icon="Calendar"
           placeholder="90"
         />
@@ -100,10 +106,10 @@
         <div class="flex items-center justify-between gap-4 p-4">
           <div>
             <p class="text-xs font-semibold text-text-primary">
-              Exiger majuscules, chiffres et caractères spéciaux
+              {{ locale === 'en' ? 'Require uppercase, numbers and special characters' : 'Exiger majuscules, chiffres et caractères spéciaux' }}
             </p>
             <p class="mt-0.5 text-[11px] text-text-secondary">
-              Impose au moins un symbole (#, $, @, !), une majuscule et un chiffre lors de la création ou modification du mot de passe.
+              {{ locale === 'en' ? 'Requires at least one symbol (#, $, @, !), uppercase letter and digit when creating or updating passwords.' : 'Impose au moins un symbole (#, $, @, !), une majuscule et un chiffre lors de la création ou modification du mot de passe.' }}
             </p>
           </div>
           <button
@@ -128,10 +134,12 @@
       <div class="mb-4">
         <div class="flex items-center gap-2">
           <FileText class="h-4 w-4 text-[#0F9D58]" />
-          <h5 class="text-xs font-bold text-text-primary">Journalisation des Actions & Audit HSSE</h5>
+          <h5 class="text-xs font-bold text-text-primary">
+            {{ locale === 'en' ? 'Action Logging & HSSE Audit' : 'Journalisation des Actions & Audit HSSE' }}
+          </h5>
         </div>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Traçabilité des consultations, suppressions et validations pour conformité réglementaire.
+          {{ locale === 'en' ? 'Traceability of consultations, deletions and approvals for regulatory compliance.' : 'Traçabilité des consultations, suppressions et validations pour conformité réglementaire.' }}
         </p>
       </div>
 
@@ -139,10 +147,10 @@
         <div class="flex items-center justify-between gap-4 p-4">
           <div>
             <p class="text-xs font-semibold text-text-primary">
-              Journalisation intégrale des actions d'audit
+              {{ locale === 'en' ? 'Full logging of audit actions' : "Journalisation intégrale des actions d'audit" }}
             </p>
             <p class="mt-0.5 text-[11px] text-text-secondary">
-              Enregistre l'adresse IP, l'utilisateur, l'horodatage et l'action pour chaque validation ou modification de fiche VMC.
+              {{ locale === 'en' ? 'Logs IP address, user, timestamp and action for each validation or modification of VMC records.' : "Enregistre l'adresse IP, l'utilisateur, l'horodatage et l'action pour chaque validation ou modification de fiche VMC." }}
             </p>
           </div>
           <button
@@ -171,7 +179,7 @@
         class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50"
       >
         <RotateCcw class="h-3.5 w-3.5" />
-        Annuler
+        {{ t('common.cancel') }}
       </button>
 
       <button
@@ -182,7 +190,7 @@
       >
         <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
         <Save v-else class="h-3.5 w-3.5" />
-        Enregistrer les paramètres de sécurité
+        {{ locale === 'en' ? 'Save security settings' : 'Enregistrer les paramètres de sécurité' }}
       </button>
     </div>
   </div>
@@ -203,9 +211,12 @@ import {
   Timer
 } from '@lucide/vue'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Input from '../../../../components/ui/Input.vue'
 import settingService from '../../../../core/services/setting.service'
 import { toast } from 'vue3-toastify'
+
+const { t, locale } = useI18n()
 
 const defaults = {
   session_timeout_minutes: 120,
@@ -277,10 +288,10 @@ function save() {
     })
     .then(() => {
       initialSnapshot.value = JSON.stringify(form)
-      toast.success('Paramètres de sécurité enregistrés avec succès !')
+      toast.success(locale.value === 'en' ? 'Security settings saved successfully!' : 'Paramètres de sécurité enregistrés avec succès !')
     })
     .catch(() => {
-      toast.error('Erreur lors de la sauvegarde des paramètres de sécurité.')
+      toast.error(locale.value === 'en' ? 'Error saving security settings.' : 'Erreur lors de la sauvegarde des paramètres de sécurité.')
     })
     .finally(() => {
       isSaving.value = false

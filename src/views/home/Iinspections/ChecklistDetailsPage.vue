@@ -33,6 +33,7 @@
     } from '@lucide/vue'
     import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
+    import { useI18n } from 'vue-i18n'
     import Header from '../../../components/shared/Header.vue'
     import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue'
 
@@ -58,6 +59,7 @@
         type ChecklistFilters,
         type ChecklistSectionVM,
         type ItemStatus,
+        type ActionPriority,
     } from '../../../core/utils/checklist.utils.ts'
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
     import { useChecklistService } from '../../../core/services/checklist.service.ts'
@@ -66,6 +68,51 @@
     import type { ActionStatusType } from '../../../@types/Action.type.ts'
 
     const router = useRouter()
+    const { t, locale } = useI18n()
+
+    function getStatusLabel(status: ItemStatus) {
+        if (locale.value === 'en') {
+            if (status === 'CONFORME') return 'Compliant'
+            if (status === 'NON_CONFORME') return 'Non-compliant'
+            if (status === 'NON_APPLICABLE') return 'Not applicable'
+        }
+        return STATUS_CONFIG[status]?.label || status
+    }
+
+    function getPriorityLabel(priority: ActionPriority) {
+        if (locale.value === 'en') {
+            if (priority === 'HAUTE') return 'High priority'
+            if (priority === 'MOYENNE') return 'Medium priority'
+            if (priority === 'BASSE') return 'Low priority'
+        }
+        return PRIORITY_CONFIG[priority]?.label || priority
+    }
+
+    function formatDueDate(isoDate: string) {
+        const orig = dueDateLabel(isoDate)
+        if (locale.value === 'en') {
+            let txt = orig.text
+            txt = txt.replace('En retard de', 'Overdue by')
+                     .replace('jours', 'days')
+                     .replace('jour', 'day')
+                     .replace('Aujourd’hui', 'Today')
+                     .replace('Dans', 'In')
+                     .replace('Demain', 'Tomorrow')
+                     .replace('Pas d’échéance', 'No due date')
+            return { ...orig, text: txt }
+        }
+        return orig
+    }
+
+    function formatLocalizedDate(iso?: string) {
+        if (!iso) return '—'
+        const date = new Date(iso)
+        return Number.isNaN(date.getTime()) ? iso : new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'fr-FR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(date)
+    }
 
     /* -------------------------------------------------------------------------- */
     /* Données                                                                    */
@@ -582,7 +629,7 @@
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
                 >
                     <ArrowLeft :size="15" />
-                    <span>Retour à la liste</span>
+                    <span>{{ locale === 'en' ? 'Back to list' : 'Retour à la liste' }}</span>
                 </button>
                 <div class="h-4 w-px bg-gray-200 hidden sm:block"></div>
                 <div class="flex items-center gap-2 flex-wrap">
@@ -594,7 +641,7 @@
                         class="px-2.5 py-0.5 rounded-full text-[11px] font-bold"
                         :class="checklist.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-blue-100 text-blue-800 border border-blue-200'"
                     >
-                        {{ checklist.status === 'COMPLETED' ? 'Clôturée' : (checklist.status === 'IN_PROGRESS' ? 'En cours' : checklist.status) }}
+                        {{ checklist.status === 'COMPLETED' ? (locale === 'en' ? 'Closed' : 'Clôturée') : (checklist.status === 'IN_PROGRESS' ? (locale === 'en' ? 'In progress' : 'En cours') : checklist.status) }}
                     </span>
                     <span v-if="checklist.site || checklist.location" class="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-0.5 rounded-full">
                         <MapPin :size="12" class="text-primary" />
@@ -604,9 +651,9 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <ButtonFilter :text="copied === 'summary' ? 'Résumé copié !' : 'Copier le résumé'" :icon="copied === 'summary' ? Check : MessageSquare" @click="copySummary" />
-                <ButtonFilter text="Exporter en CSV" :icon="FileDown" @click="exportCsv" />
-                <ButtonFilter text="Exporter en PDF" :icon="Printer" is-primary @click="exportPdf" />
+                <ButtonFilter :text="copied === 'summary' ? (locale === 'en' ? 'Summary copied!' : 'Résumé copié !') : (locale === 'en' ? 'Copy summary' : 'Copier le résumé')" :icon="copied === 'summary' ? Check : MessageSquare" @click="copySummary" />
+                <ButtonFilter :text="locale === 'en' ? 'Export CSV' : 'Exporter en CSV'" :icon="FileDown" @click="exportCsv" />
+                <ButtonFilter :text="locale === 'en' ? 'Export PDF' : 'Exporter en PDF'" :icon="Printer" is-primary @click="exportPdf" />
             </div>
         </div>
 
@@ -627,7 +674,7 @@
                         <h4 class="text-lg sm:text-xl font-bold text-gray-900 leading-snug">{{ checklist.title }}</h4>
                         <p class="text-xs text-gray-500 mt-1 flex items-center gap-1.5 flex-wrap">
                             <MapPin :size="13" class="text-primary shrink-0" />
-                            <span class="font-semibold text-gray-700">{{ checklist.site || checklist.location || 'Site non spécifié' }}</span>
+                            <span class="font-semibold text-gray-700">{{ checklist.site || checklist.location || (locale === 'en' ? 'Site not specified' : 'Site non spécifié') }}</span>
                             <span v-if="checklist.site_location?.locality" class="text-gray-400">
                                 • {{ checklist.site_location.locality }} ({{ checklist.site_location.province }})
                             </span>
@@ -644,7 +691,7 @@
                 <div class="flex flex-col gap-2 pt-2 border-t border-gray-100">
                     <div class="flex items-baseline justify-between">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">
-                            Taux de conformité global
+                            {{ locale === 'en' ? 'Overall compliance rate' : 'Taux de conformité global' }}
                         </span>
                         <span class="text-lg font-black" :class="stats.conformityRate >= 80 ? 'text-emerald-700' : (stats.conformityRate >= 50 ? 'text-amber-700' : 'text-red-700')">
                             {{ stats.conformityRate }}%
@@ -660,12 +707,12 @@
 
                     <div class="text-xs text-gray-500 flex items-center justify-between flex-wrap gap-2 mt-1">
                         <span>
-                            <b>{{ stats.evaluated }}</b> question{{ stats.evaluated > 1 ? 's' : '' }} évaluée{{ stats.evaluated > 1 ? 's' : '' }} sur <b>{{ stats.total }}</b>
+                            <b>{{ stats.evaluated }}</b> {{ locale === 'en' ? `question${stats.evaluated > 1 ? 's' : ''} evaluated out of` : `question${stats.evaluated > 1 ? 's' : ''} évaluée${stats.evaluated > 1 ? 's' : ''} sur` }} <b>{{ stats.total }}</b>
                         </span>
                         <span>
-                            <b>{{ stats.actions }}</b> action{{ stats.actions > 1 ? 's' : '' }} corrective{{ stats.actions > 1 ? 's' : '' }}
+                            <b>{{ stats.actions }}</b> {{ locale === 'en' ? `corrective action${stats.actions > 1 ? 's' : ''}` : `action${stats.actions > 1 ? 's' : ''} corrective${stats.actions > 1 ? 's' : ''}` }}
                             <span v-if="stats.overdueActions" class="text-red-700 font-bold ml-1">
-                                (dont {{ stats.overdueActions }} en retard)
+                                ({{ locale === 'en' ? `including ${stats.overdueActions} overdue` : `dont ${stats.overdueActions} en retard` }})
                             </span>
                         </span>
                     </div>
@@ -673,14 +720,14 @@
 
                 <!-- CARTES DE STATISTIQUES CONFORME / NON CONFORME / N/A -->
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 pt-2">
-                    <Card title="Conformité" :value="stats.conforme" :icon="ShieldCheck" theme="green"
-                        :subtitle="`sur ${stats.evaluated} évaluées`" clickable
+                    <Card :title="locale === 'en' ? 'Compliance' : 'Conformité'" :value="stats.conforme" :icon="ShieldCheck" theme="green"
+                        :subtitle="locale === 'en' ? `out of ${stats.evaluated} evaluated` : `sur ${stats.evaluated} évaluées`" clickable
                         :selected="filters.statuses.includes('CONFORME')" @click="toggleStatus('CONFORME')" />
-                    <Card title="Non-conformité" :value="stats.nonConforme" :icon="TriangleAlert" theme="red"
-                        :subtitle="`sur ${stats.evaluated} évaluées`" clickable
+                    <Card :title="locale === 'en' ? 'Non-compliance' : 'Non-conformité'" :value="stats.nonConforme" :icon="TriangleAlert" theme="red"
+                        :subtitle="locale === 'en' ? `out of ${stats.evaluated} evaluated` : `sur ${stats.evaluated} évaluées`" clickable
                         :selected="filters.statuses.includes('NON_CONFORME')" @click="toggleStatus('NON_CONFORME')" />
-                    <Card title="Non applicable" :value="stats.nonApplicable" :icon="CircleSlash2" theme="gray"
-                        :subtitle="`sur ${stats.total} questions`" clickable
+                    <Card :title="locale === 'en' ? 'Not applicable' : 'Non applicable'" :value="stats.nonApplicable" :icon="CircleSlash2" theme="gray"
+                        :subtitle="locale === 'en' ? `out of ${stats.total} questions` : `sur ${stats.total} questions`" clickable
                         :selected="filters.statuses.includes('NON_APPLICABLE')" @click="toggleStatus('NON_APPLICABLE')" />
                 </div>
             </section>
@@ -702,7 +749,7 @@
                 <!-- 2. FICHE DÉTAILS DE L'INSPECTION -->
                 <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-2xs flex flex-col gap-3">
                     <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                        <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500">Détails de l'inspection</h5>
+                        <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500">{{ locale === 'en' ? 'Inspection details' : "Détails de l'inspection" }}</h5>
                         <span class="text-[10px] text-gray-400">Réf. #{{ route.params.id }}</span>
                     </div>
 
@@ -710,37 +757,37 @@
                         <div class="flex items-center justify-between gap-2">
                             <dt class="flex items-center gap-2 text-gray-500">
                                 <MapPin :size="14" class="text-gray-400 shrink-0" />
-                                <span>Site / Station</span>
+                                <span>{{ locale === 'en' ? 'Site / Station' : 'Site / Station' }}</span>
                             </dt>
                             <dd class="font-bold text-gray-900 truncate max-w-[150px] text-right">
-                                {{ checklist.site || checklist.location || 'Non spécifié' }}
+                                {{ checklist.site || checklist.location || (locale === 'en' ? 'Not specified' : 'Non spécifié') }}
                             </dd>
                         </div>
 
                         <div class="flex items-center justify-between gap-2">
                             <dt class="flex items-center gap-2 text-gray-500">
                                 <UserCheck2 :size="14" class="text-gray-400 shrink-0" />
-                                <span>Inspecteur</span>
+                                <span>{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</span>
                             </dt>
                             <dd class="font-bold text-gray-900 truncate">
-                                {{ checklist.inspector || 'Non assigné' }}
+                                {{ checklist.inspector || (locale === 'en' ? 'Not assigned' : 'Non assigné') }}
                             </dd>
                         </div>
 
                         <div class="flex items-center justify-between gap-2">
                             <dt class="flex items-center gap-2 text-gray-500">
                                 <Calendar :size="14" class="text-gray-400 shrink-0" />
-                                <span>Date d'inspection</span>
+                                <span>{{ locale === 'en' ? 'Inspection date' : "Date d'inspection" }}</span>
                             </dt>
                             <dd class="font-semibold text-gray-800">
-                                {{ formatDate(checklist.createdAt) }}
+                                {{ formatLocalizedDate(checklist.createdAt) }}
                             </dd>
                         </div>
 
                         <div class="flex items-center justify-between gap-2">
                             <dt class="flex items-center gap-2 text-gray-500">
                                 <User :size="14" class="text-gray-400 shrink-0" />
-                                <span>Créateur</span>
+                                <span>{{ locale === 'en' ? 'Creator' : 'Créateur' }}</span>
                             </dt>
                             <dd class="font-semibold text-gray-800 truncate">
                                 {{ checklist.createdBy }}
@@ -750,10 +797,10 @@
                         <div class="flex items-center justify-between gap-2">
                             <dt class="flex items-center gap-2 text-gray-500">
                                 <TimerReset :size="14" class="text-gray-400 shrink-0" />
-                                <span>Dernière mise à jour</span>
+                                <span>{{ locale === 'en' ? 'Last update' : 'Dernière mise à jour' }}</span>
                             </dt>
                             <dd class="font-semibold text-gray-800">
-                                {{ formatDate(checklist.updatedAt) }}
+                                {{ formatLocalizedDate(checklist.updatedAt) }}
                             </dd>
                         </div>
                     </dl>
@@ -769,14 +816,14 @@
                         <div class="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
                             <ListTodo :size="16" />
                         </div>
-                        <h4 class="font-bold text-gray-900 text-sm sm:text-base">Plan d'actions correctives</h4>
+                        <h4 class="font-bold text-gray-900 text-sm sm:text-base">{{ locale === 'en' ? 'Corrective action plan' : "Plan d'actions correctives" }}</h4>
                         <span class="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-bold">
                             {{ actions.length }}
                         </span>
                     </div>
 
                     <span v-if="stats.overdueActions" class="rounded-full bg-red-100 px-3 py-1 text-xs text-red-700 font-bold">
-                        {{ stats.overdueActions }} en retard
+                        {{ stats.overdueActions }} {{ locale === 'en' ? 'overdue' : 'en retard' }}
                     </span>
                 </div>
 
@@ -789,7 +836,7 @@
                             </button>
                             <span class="rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0"
                                 :class="PRIORITY_CONFIG[entry.action.priority].badge">
-                                {{ PRIORITY_CONFIG[entry.action.priority].label }}
+                                {{ getPriorityLabel(entry.action.priority) }}
                             </span>
                         </div>
 
@@ -801,8 +848,8 @@
                                 <User :size="12" class="text-gray-400" />
                                 <span>{{ entry.action.responsible }}</span>
                             </span>
-                            <span :class="DUE_TONE_CLASS[dueDateLabel(entry.action.dueDate).tone]">
-                                {{ dueDateLabel(entry.action.dueDate).text }}
+                            <span :class="DUE_TONE_CLASS[formatDueDate(entry.action.dueDate).tone]">
+                                {{ formatDueDate(entry.action.dueDate).text }}
                             </span>
                         </div>
                     </li>
@@ -814,14 +861,14 @@
         <div class="flex flex-col gap-y-3 p-4 pt-0">
             <div class="flex flex-wrap items-center justify-between gap-3 pb-1">
                 <div>
-                    <h4 class="text-base font-bold text-gray-900">Détails des sections et questions</h4>
-                    <p class="text-xs text-gray-500">Évaluation point par point du protocole de conformité</p>
+                    <h4 class="text-base font-bold text-gray-900">{{ locale === 'en' ? 'Section and question details' : 'Détails des sections et questions' }}</h4>
+                    <p class="text-xs text-gray-500">{{ locale === 'en' ? 'Point-by-point compliance protocol evaluation' : 'Évaluation point par point du protocole de conformité' }}</p>
                 </div>
 
                 <button type="button" class="no-print text-xs font-bold text-primary hover:underline cursor-pointer"
                     :disabled="filtersActive" :class="filtersActive && 'cursor-not-allowed opacity-40'"
                     @click="toggleAll">
-                    {{ allOpen ? 'Tout replier' : 'Tout déplier' }}
+                    {{ allOpen ? (locale === 'en' ? 'Collapse all' : 'Tout replier') : (locale === 'en' ? 'Expand all' : 'Tout déplier') }}
                 </button>
             </div>
 
@@ -830,11 +877,11 @@
                 <div class="relative min-w-60 flex-1">
                     <Search :size="16" class="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
                     <input ref="searchInput" v-model="filters.search" type="search"
-                        placeholder="Rechercher une question, un point de contrôle, un responsable…  ( / )"
+                        :placeholder="locale === 'en' ? 'Search question, control point, person in charge... ( / )' : 'Rechercher une question, un point de contrôle, un responsable…  ( / )'"
                         class="w-full rounded-xl border border-gray-200 py-2 pr-9 pl-9 text-xs focus:border-primary focus:outline-none" />
                     <button v-if="filters.search" type="button"
                         class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-black cursor-pointer"
-                        aria-label="Effacer la recherche" @click="filters.search = ''">
+                        :aria-label="locale === 'en' ? 'Clear search' : 'Effacer la recherche'" @click="filters.search = ''">
                         <X :size="16" />
                     </button>
                 </div>
@@ -847,7 +894,7 @@
                                 : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
                             " :aria-pressed="filters.statuses.includes(status)" @click="toggleStatus(status)">
                         <span class="size-2 rounded-full" :class="STATUS_CONFIG[status].dot" />
-                        {{ STATUS_CONFIG[status].label }}
+                        {{ getStatusLabel(status) }}
                     </button>
 
                     <button type="button" class="rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer" :class="filters.withActionOnly
@@ -855,7 +902,7 @@
                             : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
                         " :aria-pressed="filters.withActionOnly"
                         @click="filters.withActionOnly = !filters.withActionOnly">
-                        Avec action
+                        {{ locale === 'en' ? 'With action' : 'Avec action' }}
                     </button>
 
                     <button type="button" class="rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer" :class="filters.nonConformeFirst
@@ -863,25 +910,25 @@
                             : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
                         " :aria-pressed="filters.nonConformeFirst"
                         @click="filters.nonConformeFirst = !filters.nonConformeFirst">
-                        Écarts en premier
+                        {{ locale === 'en' ? 'Deviations first' : 'Écarts en premier' }}
                     </button>
                 </div>
 
                 <div v-if="filtersActive" class="flex items-center gap-3 text-xs text-gray-500">
                     <span class="font-semibold text-gray-700">
-                        {{ visibleCount }} résultat{{ visibleCount > 1 ? 's' : '' }}
+                        {{ visibleCount }} {{ locale === 'en' ? `result${visibleCount > 1 ? 's' : ''}` : `résultat${visibleCount > 1 ? 's' : ''}` }}
                     </span>
                     <button type="button" class="font-bold text-primary hover:underline cursor-pointer" @click="resetFilters">
-                        Réinitialiser
+                        {{ locale === 'en' ? 'Reset' : 'Réinitialiser' }}
                     </button>
                 </div>
             </div>
 
             <p v-if="visibleSections.length === 0"
                 class="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center text-gray-500 text-xs">
-                Aucune question ne correspond à ces critères.
+                {{ locale === 'en' ? 'No question matches these criteria.' : 'Aucune question ne correspond à ces critères.' }}
                 <button type="button" class="font-bold text-primary hover:underline ml-1 cursor-pointer" @click="resetFilters">
-                    Réinitialiser les filtres
+                    {{ locale === 'en' ? 'Reset filters' : 'Réinitialiser les filtres' }}
                 </button>
             </p>
 
@@ -913,16 +960,12 @@
                         <div class="flex shrink-0 items-center gap-2.5">
                             <span v-if="sectionStats(section).nonConforme"
                                 class="rounded-full bg-red-100 border border-red-200 px-2.5 py-0.5 text-[11px] font-bold text-red-700">
-                                {{ sectionStats(section).nonConforme }} écart{{
-                                    sectionStats(section).nonConforme > 1 ? 's' : ''
-                                }}
+                                {{ sectionStats(section).nonConforme }} {{ locale === 'en' ? `deviation${sectionStats(section).nonConforme > 1 ? 's' : ''}` : `écart${sectionStats(section).nonConforme > 1 ? 's' : ''}` }}
                             </span>
 
                             <span class="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700">
                                 {{ sectionStats(section).conformityRate }}% ·
-                                {{ section.items.length }} question{{
-                                    section.items.length > 1 ? 's' : ''
-                                }}
+                                {{ section.items.length }} {{ locale === 'en' ? `question${section.items.length > 1 ? 's' : ''}` : `question${section.items.length > 1 ? 's' : ''}` }}
                             </span>
 
                             <ChevronDown :size="16" class="no-print transition-transform duration-300 text-gray-400"
@@ -970,7 +1013,7 @@
 
                                             <span class="rounded-full px-3 py-1 text-xs font-bold"
                                                 :class="STATUS_CONFIG[item.status].badge">
-                                                {{ STATUS_CONFIG[item.status].label }}
+                                                {{ getStatusLabel(item.status) }}
                                             </span>
                                         </div>
                                     </div>
@@ -978,7 +1021,7 @@
                                     <!-- RÉPONSE -->
                                     <div class="mt-3 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
                                         <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                                            <span>Réponse enregistrée :</span>
+                                            <span>{{ locale === 'en' ? 'Recorded response:' : 'Réponse enregistrée :' }}</span>
                                         </div>
                                         <div class="mt-1 flex items-center gap-2">
                                             <span class="size-2 rounded-full shrink-0" :class="STATUS_CONFIG[item.status].dot" />
@@ -991,9 +1034,7 @@
                                         class="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
                                         <span v-if="item.commentCount" class="flex items-center gap-1.5">
                                             <MessageSquare :size="14" />
-                                            {{ item.commentCount }} commentaire{{
-                                                item.commentCount > 1 ? 's' : ''
-                                            }}
+                                            {{ item.commentCount }} {{ locale === 'en' ? `comment${item.commentCount > 1 ? 's' : ''}` : `commentaire${item.commentCount > 1 ? 's' : ''}` }}
                                         </span>
 
                                         <span v-if="item.photoCount" class="flex items-center gap-1.5">
@@ -1009,14 +1050,14 @@
                                         <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
                                             <div class="flex items-center gap-1.5 font-bold text-gray-700">
                                                 <ClipboardCheck :size="15" class="text-primary" />
-                                                <span>Action corrective</span>
+                                                <span>{{ locale === 'en' ? 'Corrective action' : 'Action corrective' }}</span>
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 <button
                                                     type="button"
                                                     @click="openEditChecklistAction(item)"
                                                     class="p-1 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 cursor-pointer"
-                                                    title="Modifier l'action">
+                                                    :title="locale === 'en' ? 'Edit action' : 'Modifier l\'action'">
                                                     <Edit :size="13" />
                                                 </button>
                                             </div>
@@ -1036,7 +1077,7 @@
                                                 <span
                                                     class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                                                     :class="item.action.status === 'FINISHED' ? 'bg-emerald-100 text-emerald-700' : (item.action.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700')">
-                                                    {{ item.action.status === 'FINISHED' ? 'Terminée' : (item.action.status === 'IN_PROGRESS' ? 'En cours' : 'En attente') }}
+                                                    {{ item.action.status === 'FINISHED' ? (locale === 'en' ? 'Completed' : 'Terminée') : (item.action.status === 'IN_PROGRESS' ? (locale === 'en' ? 'In progress' : 'En cours') : (locale === 'en' ? 'Pending' : 'En attente')) }}
                                                 </span>
                                             </div>
 
@@ -1047,21 +1088,21 @@
                                                     type="button"
                                                     @click="updateChecklistActionStatus(item.action.id, 'IN_PROGRESS')"
                                                     class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition">
-                                                    Prendre en charge
+                                                    {{ locale === 'en' ? 'Take charge' : 'Prendre en charge' }}
                                                 </button>
                                                 <button
                                                     v-if="item.action.status === 'IN_PROGRESS'"
                                                     type="button"
                                                     @click="updateChecklistActionStatus(item.action.id, 'FINISHED')"
                                                     class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg cursor-pointer transition">
-                                                    Clôturer
+                                                    {{ locale === 'en' ? 'Close' : 'Clôturer' }}
                                                 </button>
                                                 <button
                                                     v-if="item.action.status === 'FINISHED'"
                                                     type="button"
                                                     @click="updateChecklistActionStatus(item.action.id, 'PENDING')"
                                                     class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer transition">
-                                                    Réouvrir
+                                                    {{ locale === 'en' ? 'Reopen' : 'Réouvrir' }}
                                                 </button>
                                             </div>
                                         </div>
@@ -1069,13 +1110,13 @@
 
                                     <!-- SI NON CONFORME MAIS SANS ACTION : PROPOSER D'EN CRÉER UNE -->
                                     <div v-else-if="item.status === 'NON_CONFORME'" class="mt-3 pt-2.5 border-t border-red-100 flex items-center justify-between text-xs">
-                                        <span class="text-red-600 text-[11px] italic font-medium">Écart constaté : aucune action corrective n'a encore été définie.</span>
+                                        <span class="text-red-600 text-[11px] italic font-medium">{{ locale === 'en' ? 'Deviation observed: no corrective action defined yet.' : 'Écart constaté : aucune action corrective n\'a encore été définie.' }}</span>
                                         <button
                                             type="button"
                                             @click="openAddChecklistAction(item)"
                                             class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg cursor-pointer transition shadow-2xs">
                                             <Plus :size="12" />
-                                            Définir une action
+                                            {{ locale === 'en' ? 'Define action' : 'Définir une action' }}
                                         </button>
                                     </div>
                                 </article>
@@ -1091,7 +1132,7 @@
             <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-200">
                     <h4 class="text-sm font-bold text-gray-900">
-                        {{ checklistActionModal.isEdit ? 'Modifier l\'action corrective' : 'Nouvelle action corrective' }}
+                        {{ checklistActionModal.isEdit ? (locale === 'en' ? 'Edit corrective action' : 'Modifier l\'action corrective') : (locale === 'en' ? 'New corrective action' : 'Nouvelle action corrective') }}
                     </h4>
                     <button @click="checklistActionModal.isOpen = false" class="text-gray-400 hover:text-gray-600 p-1">
                         <X :size="18" />
@@ -1101,7 +1142,7 @@
                 <div class="mt-4 space-y-4 text-xs">
                     <!-- Point de contrôle -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Point de contrôle / Question</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Control point / Question' : 'Point de contrôle / Question' }}</label>
                         <p class="p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium">
                             {{ checklistActionModal.itemQuestion }}
                         </p>
@@ -1109,21 +1150,21 @@
 
                     <!-- Description de l'action corrective -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Description de l'action corrective *</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Corrective action description *' : 'Description de l\'action corrective *' }}</label>
                         <textarea
                             v-model="checklistActionModal.description"
                             rows="3"
-                            placeholder="Décrivez précisément l'action corrective à mener..."
+                            :placeholder="locale === 'en' ? 'Describe precisely the corrective action to take...' : 'Décrivez précisément l\'action corrective à mener...'"
                             class="w-full p-2.5 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary resize-none"></textarea>
                     </div>
 
                     <!-- Responsable assigné -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Responsable assigné (Utilisateur)</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Assigned person (User)' : 'Responsable assigné (Utilisateur)' }}</label>
                         <select
                             v-model="checklistActionModal.assignedTo"
                             class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option :value="null">-- Aucun utilisateur assigné --</option>
+                            <option :value="null">{{ locale === 'en' ? '-- No user assigned --' : '-- Aucun utilisateur assigné --' }}</option>
                             <option v-for="u in usersList" :key="u.id" :value="u.id">
                                 {{ u.first_name }} {{ u.last_name || '' }} — {{ u.job || u.department || u.email }}
                             </option>
@@ -1132,13 +1173,13 @@
 
                     <!-- Statut -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Statut initial</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Initial status' : 'Statut initial' }}</label>
                         <select
                             v-model="checklistActionModal.status"
                             class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option value="PENDING">En attente</option>
-                            <option value="IN_PROGRESS">En cours</option>
-                            <option value="FINISHED">Terminée</option>
+                            <option value="PENDING">{{ locale === 'en' ? 'Pending' : 'En attente' }}</option>
+                            <option value="IN_PROGRESS">{{ locale === 'en' ? 'In progress' : 'En cours' }}</option>
+                            <option value="FINISHED">{{ locale === 'en' ? 'Completed' : 'Terminée' }}</option>
                         </select>
                     </div>
                 </div>
@@ -1148,7 +1189,7 @@
                         type="button"
                         @click="checklistActionModal.isOpen = false"
                         class="px-4 py-2 font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-                        Annuler
+                        {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                     </button>
                     <button
                         type="button"
@@ -1156,7 +1197,7 @@
                         :disabled="!checklistActionModal.description || !checklistActionModal.itemId || checklistActionModal.saving"
                         class="px-4 py-2 font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5">
                         <Loader2 v-if="checklistActionModal.saving" :size="14" class="animate-spin" />
-                        <span>Enregistrer l'action</span>
+                        <span>{{ checklistActionModal.saving ? (locale === 'en' ? 'Saving...' : 'Enregistrement...') : (locale === 'en' ? 'Save action' : 'Enregistrer l\'action') }}</span>
                     </button>
                 </div>
             </div>

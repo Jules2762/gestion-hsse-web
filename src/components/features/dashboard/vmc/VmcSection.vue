@@ -4,11 +4,11 @@
     <!-- ALERTE D'ERREUR -->
     <div v-if="error" role="alert"
       class="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <span>Impossible de charger les indicateurs VMC. Vérifiez la connexion puis réessayez.</span>
+      <span>{{ locale === 'en' ? 'Unable to load VMC indicators. Check connection and retry.' : 'Impossible de charger les indicateurs VMC. Vérifiez la connexion puis réessayez.' }}</span>
       <button type="button"
         class="shrink-0 rounded border border-red-300 bg-white px-3 py-1 font-medium hover:bg-red-100 transition"
         @click="fetchAllData">
-        Réessayer
+        {{ t('common.retry') || (locale === 'en' ? 'Retry' : 'Réessayer') }}
       </button>
     </div>
 
@@ -18,14 +18,14 @@
     <!-- 2. SECTION : TAUX DE RÉALISATION PAR DIRECTION & PAR PERSONNE -->
     <div class="flex flex-col gap-y-3">
       <div class="border-b border-gray-200 pb-2">
-        <h3 class="text-base font-bold text-gray-800">Taux de réalisation VMC par Direction et par Personne</h3>
-        <p class="text-xs text-gray-500">Suivi individuel et par département de l'exécution des visites managériales.</p>
+        <h3 class="text-base font-bold text-gray-800">{{ locale === 'en' ? 'VMC Completion Rate by Department and by Person' : 'Taux de réalisation VMC par Direction et par Personne' }}</h3>
+        <p class="text-xs text-gray-500">{{ locale === 'en' ? 'Individual and departmental tracking of managerial safety visits.' : "Suivi individuel et par département de l'exécution des visites managériales." }}</p>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
         <!-- PAR DIRECTION : GRAPHIQUE ET TABLEAU -->
-        <ChartCard title="Taux de réalisation pour chaque Direction" class="xl:col-span-6 flex flex-col">
+        <ChartCard :title="locale === 'en' ? 'Completion rate for each Department' : 'Taux de réalisation pour chaque Direction'" class="xl:col-span-6 flex flex-col">
           <template v-if="loading">
             <DashboardSkeleton type="chart" :height="240" class="mb-4" />
             <DashboardSkeleton type="table" :rows="4" />
@@ -37,10 +37,10 @@
               <table class="min-w-full text-sm">
                 <thead>
                   <tr class="text-left text-gray-500 border-b border-gray-200">
-                    <th class="py-2 pr-3 font-medium">Direction</th>
-                    <th class="py-2 pr-3 font-medium text-center">Réalisées</th>
-                    <th class="py-2 pr-3 font-medium text-center">Total</th>
-                    <th class="py-2 font-medium w-4/12">Taux</th>
+                    <th class="py-2 pr-3 font-medium">{{ t('table.direction') || (locale === 'en' ? 'Department' : 'Direction') }}</th>
+                    <th class="py-2 pr-3 font-medium text-center">{{ locale === 'en' ? 'Completed' : 'Réalisées' }}</th>
+                    <th class="py-2 pr-3 font-medium text-center">{{ t('table.total') || (locale === 'en' ? 'Total' : 'Total') }}</th>
+                    <th class="py-2 font-medium w-4/12">{{ locale === 'en' ? 'Rate' : 'Taux' }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -62,7 +62,7 @@
                   </template>
                   <tr v-else>
                     <td colspan="4" class="py-8 text-center text-gray-400">
-                      Aucune donnée de direction disponible.
+                      {{ locale === 'en' ? 'No department data available.' : 'Aucune donnée de direction disponible.' }}
                     </td>
                   </tr>
                 </tbody>
@@ -72,7 +72,7 @@
         </ChartCard>
 
         <!-- PAR PERSONNE : TABLEAU DÉTAILLÉ -->
-        <ChartCard title="Nombre de VMC réalisé pour chaque personne et taux de réalisation" class="xl:col-span-6 flex flex-col">
+        <ChartCard :title="locale === 'en' ? 'Number of VMC completed per person and completion rate' : 'Nombre de VMC réalisé pour chaque personne et taux de réalisation'" class="xl:col-span-6 flex flex-col">
           <template v-if="loading">
             <DashboardSkeleton type="table" :rows="6" />
           </template>
@@ -81,7 +81,7 @@
               <input
                 type="text"
                 v-model="personSearch"
-                placeholder="Filtrer une personne ou fonction..."
+                :placeholder="locale === 'en' ? 'Filter by person or position...' : 'Filtrer une personne ou fonction...'"
                 class="w-full text-xs px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-primary"
               />
             </div>
@@ -90,11 +90,11 @@
               <table class="min-w-full text-sm">
                 <thead class="sticky top-0 bg-white">
                   <tr class="text-left text-gray-500 border-b border-gray-200">
-                    <th class="py-2 pr-3 font-medium">Personne</th>
-                    <th class="py-2 pr-3 font-medium">Direction</th>
-                    <th class="py-2 pr-3 font-medium text-center">Réalisées</th>
-                    <th class="py-2 pr-3 font-medium text-center">Prévues</th>
-                    <th class="py-2 font-medium w-3/12">Taux</th>
+                    <th class="py-2 pr-3 font-medium">{{ locale === 'en' ? 'Person' : 'Personne' }}</th>
+                    <th class="py-2 pr-3 font-medium">{{ t('table.direction') || (locale === 'en' ? 'Department' : 'Direction') }}</th>
+                    <th class="py-2 pr-3 font-medium text-center">{{ locale === 'en' ? 'Completed' : 'Réalisées' }}</th>
+                    <th class="py-2 pr-3 font-medium text-center">{{ locale === 'en' ? 'Planned' : 'Prévues' }}</th>
+                    <th class="py-2 font-medium w-3/12">{{ locale === 'en' ? 'Rate' : 'Taux' }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -120,7 +120,7 @@
                   </template>
                   <tr v-else>
                     <td colspan="5" class="py-8 text-center text-gray-400">
-                      Aucune personne trouvée.
+                      {{ locale === 'en' ? 'No person found.' : 'Aucune personne trouvée.' }}
                     </td>
                   </tr>
                 </tbody>
@@ -135,8 +135,8 @@
     <!-- 3. SECTION : ÉVOLUTION ET VISITES PAR SITES -->
     <div class="flex flex-col gap-y-3">
       <div class="border-b border-gray-200 pb-2">
-        <h3 class="text-base font-bold text-gray-800">Évolution des visites et répartition géographique</h3>
-        <p class="text-xs text-gray-500">Suivi dans le temps et répartition par site opérationnel (Stations-Services, Magasins, Agences, Dépôts).</p>
+        <h3 class="text-base font-bold text-gray-800">{{ locale === 'en' ? 'Visit trends and geographical distribution' : 'Évolution des visites et répartition géographique' }}</h3>
+        <p class="text-xs text-gray-500">{{ locale === 'en' ? 'Time tracking and distribution across operational sites (Service Stations, Stores, Agencies, Depots).' : 'Suivi dans le temps et répartition par site opérationnel (Stations-Services, Magasins, Agences, Dépôts).' }}</p>
       </div>
 
       <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
@@ -144,7 +144,7 @@
         <!-- ÉVOLUTION MENSUELLE -->
         <ChartCard title="" class="xl:col-span-7">
           <div class="flex flex-row items-center justify-between mb-3">
-            <h5 class="text-base font-semibold text-gray-800">Évolution mensuelle des visites VMC</h5>
+            <h5 class="text-base font-semibold text-gray-800">{{ locale === 'en' ? 'Monthly VMC visit trends' : 'Évolution mensuelle des visites VMC' }}</h5>
             <select v-model="currentYear" class="border border-gray-300 rounded px-2.5 py-1 text-sm bg-white outline-none focus:border-primary">
               <option v-for="year in years" :key="year" :value="year">
                 {{ year }}
@@ -156,16 +156,16 @@
         </ChartCard>
 
         <!-- SITES OPÉRATIONNELS -->
-        <ChartCard title="Visites par site opérationnel" class="xl:col-span-5">
+        <ChartCard :title="locale === 'en' ? 'Visits by operational site' : 'Visites par site opérationnel'" class="xl:col-span-5">
           <DashboardSkeleton v-if="loading" type="table" :rows="6" />
           <div v-else class="overflow-x-auto max-h-[340px] overflow-y-auto">
             <table class="min-w-full text-sm">
               <thead class="sticky top-0 bg-white">
                 <tr class="text-left text-gray-500 border-b border-gray-200">
-                  <th class="py-2 pr-3 font-medium">Site</th>
-                  <th class="py-2 pr-3 font-medium text-center">Visites</th>
-                  <th class="py-2 pr-3 font-medium text-center">Clôturées</th>
-                  <th class="py-2 font-medium w-4/12">Taux</th>
+                  <th class="py-2 pr-3 font-medium">{{ t('table.site') || (locale === 'en' ? 'Site' : 'Site') }}</th>
+                  <th class="py-2 pr-3 font-medium text-center">{{ locale === 'en' ? 'Visits' : 'Visites' }}</th>
+                  <th class="py-2 pr-3 font-medium text-center">{{ locale === 'en' ? 'Completed' : 'Clôturées' }}</th>
+                  <th class="py-2 font-medium w-4/12">{{ locale === 'en' ? 'Rate' : 'Taux' }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -187,7 +187,7 @@
                 </template>
                 <tr v-else>
                   <td colspan="4" class="py-8 text-center text-gray-400">
-                    Aucune visite par site enregistrée pour le moment.
+                    {{ locale === 'en' ? 'No visit recorded by site yet.' : 'Aucune visite par site enregistrée pour le moment.' }}
                   </td>
                 </tr>
               </tbody>
@@ -206,6 +206,7 @@
 
 <script setup lang="ts">
   import { computed, defineComponent, h, onMounted, ref, watch } from 'vue';
+  import { useI18n } from 'vue-i18n';
   import type {
     DashboardVmcDirectionType,
     DashboardVmcKPIs,
@@ -216,6 +217,8 @@
   import VmcKPICards from './VmcKPICards.vue';
   import VmcMap from './VmcMap.vue';
   import DashboardSkeleton from '../DashboardSkeleton.vue';
+
+  const { t, locale } = useI18n();
 
   /* Composant conteneur de carte */
   const ChartCard = defineComponent({
@@ -261,11 +264,11 @@
   const directions_data = ref<DashboardVmcDirectionType[]>([]);
   const directions_chart_series = computed(() => [
     {
-      name: 'VMC Réalisées',
+      name: locale.value === 'en' ? 'Completed VMC' : 'VMC Réalisées',
       data: directions_data.value.map(d => d.completed),
     },
     {
-      name: 'VMC Prévues',
+      name: locale.value === 'en' ? 'Planned VMC' : 'VMC Prévues',
       data: directions_data.value.map(d => d.total),
     },
   ]);
@@ -313,13 +316,29 @@
   });
 
   /* 4. Monthly Chart */
-  const monthly_series = ref<{ name: string; data: number[] }[]>([
+  const raw_monthly_series = ref<{ name: string; data: number[] }[]>([
     { name: 'Clôturées', data: [] },
     { name: 'En cours', data: [] },
     { name: 'Planifiées', data: [] },
   ]);
 
-  const monthly_options = ref({
+  const monthly_series = computed(() =>
+    raw_monthly_series.value.map(s => {
+      let name = s.name;
+      if (s.name === 'Clôturées' || s.name === 'Completed') name = locale.value === 'en' ? 'Completed' : 'Clôturées';
+      else if (s.name === 'En cours' || s.name === 'In progress' || s.name === 'In Progress') name = locale.value === 'en' ? 'In Progress' : 'En cours';
+      else if (s.name === 'Planifiées' || s.name === 'Planned') name = locale.value === 'en' ? 'Planned' : 'Planifiées';
+      return { ...s, name };
+    })
+  );
+
+  const monthCategories = computed(() =>
+    locale.value === 'en'
+      ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      : ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+  );
+
+  const monthly_options = computed(() => ({
     chart: {
       stacked: true,
       toolbar: { show: false },
@@ -334,7 +353,7 @@
       },
     },
     xaxis: {
-      categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'],
+      categories: monthCategories.value,
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
@@ -346,7 +365,7 @@
     grid: {
       borderColor: '#f1f5f9',
     },
-  });
+  }));
 
   /* 5. Sites Table */
   const sites_data = ref<DashboardVmcSiteType[]>([]);
@@ -388,14 +407,9 @@
   function fetchMonthly() {
     return dashboardService.getVmcMonthly({ year: currentYear.value })
       .then(res => {
-        monthly_series.value = res.data.series;
-        monthly_options.value = {
-          ...monthly_options.value,
-          xaxis: {
-            ...monthly_options.value.xaxis,
-            categories: res.data.categories,
-          },
-        };
+        if (res.data?.series) {
+          raw_monthly_series.value = res.data.series;
+        }
       })
       .catch(err => {
         console.error(err);

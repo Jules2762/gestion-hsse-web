@@ -10,14 +10,14 @@
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter is-primary text="Ajout" :icon="SquarePlusIcon" @click="router.push({
-                            name: 'EQUIPMENT_MONITORING_NEW'
-                        })" />
+                        <ButtonFilter is-primary text="Ajout" :icon="SquarePlusIcon" @click="openAddModal" />
                         <ButtonFilter text="Importer" :icon="CloudDownloadIcon" @click="router.push({
                             name: 'EQUIPMENT_MONITORING_IMPORT'
                         })" />
                         <ButtonFilter text="Exporter" :icon="DownloadIcon" :loading="loading_export"
                             :badge="pagination.total.toString()" @click="exportData()" />
+                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading_data"
+                            @click="fetchData()" />
                     </div>
 
                     <!-- BADGES DE SYNTHÈSE DE CONFORMITÉ -->
@@ -28,9 +28,9 @@
                             @click="quickFilterConformity('ALL')"
                             class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
                             :class="conformityFilter === 'ALL' ? 'bg-slate-100 text-slate-800 border-slate-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
-                            title="Afficher tous les suivis de matériel"
+                            :title="locale === 'en' ? 'Show all equipment monitoring' : 'Afficher tous les suivis de matériel'"
                         >
-                            <span>Total</span>
+                            <span>{{ t('common.total') }}</span>
                             <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">
                                 {{ metaStats.total || pagination.total }}
                             </span>
@@ -42,10 +42,10 @@
                             @click="quickFilterConformity('CONFORME')"
                             class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
                             :class="conformityFilter === 'CONFORME' ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50/50'"
-                            title="Filtrer uniquement les suivis conformes"
+                            :title="locale === 'en' ? 'Filter compliant equipment' : 'Filtrer uniquement les suivis conformes'"
                         >
                             <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                            <span>Conformes</span>
+                            <span>{{ t('status.CONFORME') }}</span>
                             <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                                 {{ metaStats.conforme }}
                             </span>
@@ -57,10 +57,10 @@
                             @click="quickFilterConformity('NON_CONFORME')"
                             class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer border flex items-center gap-1.5 shadow-2xs"
                             :class="conformityFilter === 'NON_CONFORME' ? 'bg-red-50 text-red-800 border-red-300 font-bold' : 'bg-white text-gray-600 border-gray-200 hover:bg-red-50/50'"
-                            title="Filtrer les suivis non conformes ou requérant contrôle"
+                            :title="locale === 'en' ? 'Filter non-compliant equipment' : 'Filtrer les suivis non conformes ou requérant contrôle'"
                         >
                             <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-                            <span>Non conformes</span>
+                            <span>{{ t('status.NON_CONFORME') }}</span>
                             <span
                                 class="px-2 py-0.5 rounded-full text-[10px] font-bold leading-none"
                                 :class="metaStats.non_conforme > 0 ? 'bg-red-600 text-white animate-pulse' : 'bg-gray-100 text-gray-600'"
@@ -85,7 +85,7 @@
                     <!-- LOADING STATE -->
                     <div v-if="loading_data" class="p-16 flex flex-col items-center justify-center text-center text-gray-400 gap-2">
                         <Loader :size="28" class="animate-spin text-primary" />
-                        <span class="text-xs font-medium">Chargement des suivis de matériel...</span>
+                        <span class="text-xs font-medium">{{ locale === 'en' ? 'Loading equipment monitoring...' : 'Chargement des suivis de matériel...' }}</span>
                     </div>
 
                     <!-- EMPTY STATE -->
@@ -93,11 +93,12 @@
                         <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-3">
                             <SearchIcon :size="24" />
                         </div>
-                        <h5 class="text-gray-700 font-semibold mb-1 text-sm">Aucun suivi de matériel enregistré</h5>
+                        <h5 class="text-gray-700 font-semibold mb-1 text-sm">{{ locale === 'en' ? 'No equipment monitoring recorded' : 'Aucun suivi de matériel enregistré' }}</h5>
                         <p class="text-xs text-gray-500 max-w-sm">
-                            Aucun enregistrement ne correspond aux critères de filtre sélectionnés.
+                            {{ locale === 'en' ? 'No record matches the selected filter criteria.' : 'Aucun enregistrement ne correspond aux critères de filtre sélectionnés.' }}
                         </p>
                     </div>
+
 
                     <!-- TABLE DES SUIVIS DE MATÉRIEL -->
                     <table v-else class="w-full">
@@ -766,12 +767,158 @@
                 <img :src="lightboxUrl" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl" />
             </div>
         </div>
+
+        <!-- ========================================================= -->
+        <!-- MODAL NOUVEAU SUIVI MATÉRIEL (IN-PAGE MODAL)               -->
+        <!-- ========================================================= -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="modal_add"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="modal_add = false"
+                >
+                    <div
+                        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                        <!-- En-tête Modal -->
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                    <ClipboardList :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'New Equipment Monitoring' : 'Planifier un contrôle du parc matériel' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        {{ locale === 'en' ? 'Select station, scheduled date and assigned inspector.' : 'Sélectionnez le site, la date d\'intervention et l\'inspecteur assigné.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="modal_add = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <XIcon :size="18" />
+                            </button>
+                        </div>
+
+                        <!-- Formulaire Modal -->
+                        <form @submit.prevent="submitAddEquipment" class="flex flex-col flex-1 overflow-y-auto">
+                            <div class="p-5 space-y-4">
+                                <!-- Site / Station -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Site / Station Galana' : 'Site / Station Galana' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newEquipmentForm.site_name"
+                                        required
+                                        list="equipment_modal_sites_datalist"
+                                        type="text"
+                                        :placeholder="locale === 'en' ? 'Select or type station...' : 'Sélectionner ou saisir une station...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                    <datalist id="equipment_modal_sites_datalist">
+                                        <option v-for="site in sitesList" :key="site.id" :value="site.name">{{ site.name }}</option>
+                                    </datalist>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Date prévue -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Scheduled inspection date' : 'Date prévue du contrôle' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newEquipmentForm.date"
+                                            type="date"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Inspecteur assigné -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Assigned inspector' : 'Inspecteur assigné' }}
+                                        </label>
+                                        <select
+                                            v-model="newEquipmentForm.user_id"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                        >
+                                            <option value="">{{ locale === 'en' ? 'Unassigned (default yourself)' : 'Non assigné (par défaut vous-même)' }}</option>
+                                            <option v-for="user in usersList" :key="user.id" :value="user.id">
+                                                {{ user.first_name || '' }} {{ user.last_name || '' }} {{ user.email ? '(' + user.email + ')' : '' }} {{ user.job ? '— ' + user.job : '' }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Statut initial -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Initial status' : 'Statut initial' }}
+                                    </label>
+                                    <select
+                                        v-model="newEquipmentForm.status"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer font-medium"
+                                    >
+                                        <option v-for="st in ChecklistStatusJsonData" :key="st.value" :value="st.value">
+                                            {{ st.label }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Observations -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Initial observations / Scope' : 'Observations initiales / Périmètre' }}
+                                    </label>
+                                    <textarea
+                                        v-model="newEquipmentForm.observations"
+                                        rows="2"
+                                        :placeholder="locale === 'en' ? 'Notes on equipment to inspect (extinguishers, fire hose, sand buckets...)' : 'Notes sur les équipements à inspecter (extincteurs, RIA, bacs à sable...)'"
+                                        class="w-full p-2.5 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Footer d'actions -->
+                            <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="modal_add = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="loading_add || !newEquipmentForm.site_name || !newEquipmentForm.date"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                >
+                                    <Loader v-if="loading_add" :size="13" class="animate-spin" />
+                                    <span>{{ locale === 'en' ? 'Schedule Monitoring' : 'Planifier le contrôle' }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
     </div>
 </template>
 <script setup lang="ts">
     import { computed, onMounted, ref, watch, type ComputedRef } from 'vue';
+    import { useI18n } from 'vue-i18n';
     import { useRoute } from 'vue-router';
     import Header from '../../../components/shared/Header.vue';
+
+    const { t, locale } = useI18n();
+
     import type { EquipmentMonitoringFilterType, EquipmentMonitoringFormType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type.ts';
     import { EquipmentMonitoringFormData } from '../../../@data/EquipementMonitoring.data.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
@@ -779,7 +926,7 @@
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
-    import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
+    import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, RefreshCw, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
@@ -789,10 +936,84 @@
     import CenterModal from '../../../components/ui/centerModal.vue';
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
     import { useSidebarNotification } from '../../../services/useSidebarNotification';
+    import { useUserService } from '../../../core/services/user.service.ts';
+    import type { SiteNameType } from '../../../@types/SiteName..type.ts';
+    import { toast } from 'vue3-toastify';
 
     const route = useRoute()
     const sidebar_notification = useSidebarNotification()
     const equipments = useEquipmentMonitoringService()
+    
+    const userService = useUserService()
+    const modal_add = ref(false)
+    const loading_add = ref(false)
+    const sitesList = ref<SiteNameType[]>([])
+    const usersList = ref<any[]>([])
+
+    const newEquipmentForm = ref({
+        site_name: '',
+        date: new Date().toISOString().split('T')[0],
+        user_id: '',
+        status: 'DRAFT',
+        observations: ''
+    })
+
+    function openAddModal() {
+        newEquipmentForm.value = {
+            site_name: '',
+            date: new Date().toISOString().split('T')[0],
+            user_id: '',
+            status: 'DRAFT',
+            observations: ''
+        }
+        modal_add.value = true
+        loadEquipmentSuggestions()
+    }
+
+    function loadEquipmentSuggestions() {
+        if (sitesList.value.length === 0) {
+            equipments.getSiteNames()
+                .then((res: any) => {
+                    sitesList.value = res.data || []
+                })
+                .catch(err => console.error('Erreur chargement sites:', err))
+        }
+
+        if (usersList.value.length === 0) {
+            userService.index()
+                .then((res: any) => {
+                    usersList.value = res.data?.data || res.data || []
+                })
+                .catch(err => console.error('Erreur chargement utilisateurs:', err))
+        }
+    }
+
+    async function submitAddEquipment() {
+        if (!newEquipmentForm.value.site_name || !newEquipmentForm.value.date) return
+        loading_add.value = true
+        try {
+            const payload: any = {
+                site_name: newEquipmentForm.value.site_name,
+                date: newEquipmentForm.value.date,
+                user_id: newEquipmentForm.value.user_id || undefined,
+                status: newEquipmentForm.value.status,
+                observations: newEquipmentForm.value.observations || null,
+                conformity_rate: 100,
+                initial_conformity_rate: 100,
+                items: []
+            }
+            await equipments.store(payload)
+            toast.success(locale.value === 'en' ? 'Equipment monitoring scheduled successfully!' : 'Contrôle matériel planifié avec succès !')
+            modal_add.value = false
+            fetchData()
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to schedule equipment monitoring.' : 'Erreur lors de la planification.')
+            toast.error(errorMsg)
+        } finally {
+            loading_add.value = false
+        }
+    }
+
     const searchQuery = ref<string>("")
     const activeTab = ref<'items' | 'summary'>('items')
     const lightboxUrl = ref<string | null>(null)
@@ -984,14 +1205,15 @@
         context_menu: undefined,
         isOpen: false, equipment: undefined
     })
-    const headers = [
+    const headers = computed(() => [
         "#",
-        "DATE",
-        "SITE",
-        "INSPECTEUR",
-        "STATUT",
-        "CONFORMITÉ",
-    ]
+        t('table.date'),
+        t('table.site'),
+        t('table.inspector'),
+        t('table.status'),
+        t('table.conformity'),
+    ])
+
     const data = ref<EquipmentMonitoringType[]>()
     type filtersKeyType = "site" | "status" | "inspector"
     const filterableKeys: filtersKeyType[] = ["site", "status", "inspector"]

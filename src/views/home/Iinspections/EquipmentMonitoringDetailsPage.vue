@@ -16,10 +16,10 @@
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer"
                     >
                         <ArrowLeft :size="15" />
-                        Retour à la liste
+                        {{ locale === 'en' ? 'Back to list' : 'Retour à la liste' }}
                     </button>
                     <span class="text-sm font-bold text-gray-800 truncate" v-if="equipment">
-                        Fiche n° {{ equipment.id }} — {{ getSiteNameText(equipment.site_name) }}
+                        {{ locale === 'en' ? 'Sheet #' : 'Fiche n°' }} {{ equipment.id }} — {{ getSiteNameText(equipment.site_name) }}
                     </span>
                     <ChecklistStatus v-if="equipment" :name="(equipment.status as any) || 'COMPLETED'" />
                     <span
@@ -38,7 +38,7 @@
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition cursor-pointer"
                     >
                         <Edit :size="14" />
-                        Modifier la fiche
+                        {{ locale === 'en' ? 'Edit sheet' : 'Modifier la fiche' }}
                     </button>
 
                     <button
@@ -46,7 +46,7 @@
                         class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-sm transition cursor-pointer"
                     >
                         <Printer :size="15" />
-                        Imprimer / PDF
+                        {{ locale === 'en' ? 'Print / PDF' : 'Imprimer / PDF' }}
                     </button>
                 </div>
             </div>
@@ -55,7 +55,7 @@
         <!-- ÉTAT DE CHARGEMENT -->
         <div v-if="loading" class="p-20 flex flex-col items-center justify-center gap-3 text-gray-500 print:hidden">
             <Loader :size="32" class="animate-spin text-primary" />
-            <span class="text-sm font-medium">Chargement du contrôle de matériel...</span>
+            <span class="text-sm font-medium">{{ locale === 'en' ? 'Loading equipment inspection...' : 'Chargement du contrôle de matériel...' }}</span>
         </div>
 
         <!-- ÉTAT D'ERREUR -->
@@ -65,7 +65,7 @@
                 @click="router.push({ name: 'EQUIPMENT_MONITORING' })"
                 class="mt-4 px-4 py-2 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 cursor-pointer"
             >
-                Retour au suivi des matériels
+                {{ locale === 'en' ? 'Back to equipment monitoring' : 'Retour au suivi des matériels' }}
             </button>
         </div>
 
@@ -81,29 +81,29 @@
                     <div class="sm:w-[72%] flex flex-col justify-between">
                         <div class="p-4 text-center">
                             <h1 class="text-base sm:text-lg font-black tracking-wide uppercase text-gray-900 font-sans">
-                                CONTRÔLE & SUIVI DU MATÉRIEL HSSE
+                                {{ locale === 'en' ? 'HSSE EQUIPMENT AUDIT & MONITORING' : 'CONTRÔLE & SUIVI DU MATÉRIEL HSSE' }}
                             </h1>
-                            <p class="text-xs text-gray-500 mt-0.5">Réseau des Stations-Service & Sites Pétroliers Galana</p>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ locale === 'en' ? 'Galana Service Stations & Petroleum Sites Network' : 'Réseau des Stations-Service & Sites Pétroliers Galana' }}</p>
                         </div>
                         <div class="border-t border-gray-300 bg-gray-50/70 grid grid-cols-2 sm:grid-cols-5 text-xs divide-x divide-gray-300">
                             <div class="p-2 text-center">
-                                <span class="text-gray-400 block text-[10px] uppercase font-bold">Référence</span>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">{{ locale === 'en' ? 'Reference' : 'Référence' }}</span>
                                 <span class="font-mono font-bold text-gray-800">{{ equipment.id }}</span>
                             </div>
                             <div class="p-2 text-center">
-                                <span class="text-gray-400 block text-[10px] uppercase font-bold">Station / Site</span>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">{{ locale === 'en' ? 'Station / Site' : 'Station / Site' }}</span>
                                 <span class="font-bold text-gray-800">{{ getSiteNameText(equipment.site_name) }}</span>
                             </div>
                             <div class="p-2 text-center">
-                                <span class="text-gray-400 block text-[10px] uppercase font-bold">Date contrôle</span>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">{{ locale === 'en' ? 'Inspection date' : 'Date contrôle' }}</span>
                                 <span class="font-medium text-gray-800">{{ equipment.date || 'N/A' }}</span>
                             </div>
                             <div class="p-2 text-center">
-                                <span class="text-gray-400 block text-[10px] uppercase font-bold">Inspecteur</span>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</span>
                                 <span class="font-medium text-gray-800">{{ inspectorName }}</span>
                             </div>
                             <div class="p-2 text-center flex flex-col items-center justify-center">
-                                <span class="text-gray-400 block text-[10px] uppercase font-bold mb-0.5">Statut</span>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold mb-0.5">{{ locale === 'en' ? 'Status' : 'Statut' }}</span>
                                 <ChecklistStatus :name="(equipment.status as any) || 'COMPLETED'" />
                             </div>
                         </div>
@@ -114,28 +114,28 @@
             <!-- BANDEAU KPI DE CONFORMITÉ -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
-                    <span class="text-[11px] font-semibold text-gray-500">Taux actuel</span>
+                    <span class="text-[11px] font-semibold text-gray-500">{{ locale === 'en' ? 'Current rate' : 'Taux actuel' }}</span>
                     <span class="text-xl font-black mt-0.5" :class="(equipment.conformity_rate ?? 100) >= 90 ? 'text-emerald-700' : 'text-red-700'">
                         {{ equipment.conformity_rate ?? 100 }}%
                     </span>
                     <span
                         v-if="equipment.initial_conformity_rate !== undefined && equipment.initial_conformity_rate !== equipment.conformity_rate"
                         class="text-[9px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full mt-1 border border-amber-200"
-                        :title="`Taux initial constaté lors de la visite : ${equipment.initial_conformity_rate}%`"
+                        :title="locale === 'en' ? `Initial rate during inspection: ${equipment.initial_conformity_rate}%` : `Taux initial constaté lors de la visite : ${equipment.initial_conformity_rate}%`"
                     >
-                        Taux initial : {{ equipment.initial_conformity_rate }}%
+                        {{ locale === 'en' ? 'Initial rate:' : 'Taux initial :' }} {{ equipment.initial_conformity_rate }}%
                     </span>
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
-                    <span class="text-[11px] font-semibold text-gray-500">Équipements unitaires</span>
+                    <span class="text-[11px] font-semibold text-gray-500">{{ locale === 'en' ? 'Individual items' : 'Équipements unitaires' }}</span>
                     <span class="text-xl font-black text-gray-800 mt-0.5">{{ items.length }}</span>
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
-                    <span class="text-[11px] font-semibold text-gray-500">Conformes</span>
+                    <span class="text-[11px] font-semibold text-gray-500">{{ locale === 'en' ? 'Compliant' : 'Conformes' }}</span>
                     <span class="text-xl font-black text-emerald-600 mt-0.5">{{ compliantItemsCount }}</span>
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
-                    <span class="text-[11px] font-semibold text-gray-500">Anomalies détectées</span>
+                    <span class="text-[11px] font-semibold text-gray-500">{{ locale === 'en' ? 'Deviations detected' : 'Anomalies détectées' }}</span>
                     <span class="text-xl font-black mt-0.5" :class="nonCompliantItemsCount > 0 ? 'text-red-600' : 'text-gray-400'">
                         {{ nonCompliantItemsCount }}
                     </span>
@@ -147,16 +147,16 @@
                 <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
-                            <span>📦 Équipements & Matériels enregistrés</span>
+                            <span>📦 {{ locale === 'en' ? 'Registered Equipment & Materials' : 'Équipements & Matériels enregistrés' }}</span>
                             <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">{{ items.length }} items</span>
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Détail des matériels saisis, états de conformité et preuves photos</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ locale === 'en' ? 'Details of recorded equipment, compliance states and photo evidence' : 'Détail des matériels saisis, états de conformité et preuves photos' }}</p>
                     </div>
                 </div>
 
                 <div v-if="!items.length" class="text-center py-8 text-gray-400 text-xs bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                    <p class="font-medium text-gray-600">Aucun équipement unitaire spécifique n'a été inséré pour ce contrôle.</p>
-                    <p class="text-[11px] text-gray-400 mt-1">Consultez la synthèse globale ci-dessous pour les relevés volumiques de la station.</p>
+                    <p class="font-medium text-gray-600">{{ locale === 'en' ? 'No specific individual equipment has been entered for this inspection.' : 'Aucun équipement unitaire spécifique n\'a été inséré pour ce contrôle.' }}</p>
+                    <p class="text-[11px] text-gray-400 mt-1">{{ locale === 'en' ? 'Check the global summary below for station volumetric records.' : 'Consultez la synthèse globale ci-dessous pour les relevés volumiques de la station.' }}</p>
                 </div>
 
                 <div v-else class="space-y-3">
@@ -174,7 +174,7 @@
                                     </span>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-0.5">
-                                    <span v-if="item.location">📍 Emplacement : <b>{{ item.location }}</b></span>
+                                    <span v-if="item.location">📍 {{ locale === 'en' ? 'Location:' : 'Emplacement :' }} <b>{{ item.location }}</b></span>
                                     <span v-if="item.comment" class="italic text-gray-600 ml-2">« {{ item.comment }} »</span>
                                 </p>
                             </div>
@@ -186,20 +186,20 @@
                                     @click="toggleItemConformity(item)"
                                     class="px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer select-none"
                                     :class="item.conformity ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
-                                    :title="'Cliquer pour modifier l\'état de conformité'"
+                                    :title="locale === 'en' ? 'Click to toggle compliance state' : 'Cliquer pour modifier l\'état de conformité'"
                                 >
-                                    {{ item.conformity ? '🟢 Conforme' : '🔴 Non conforme' }}
+                                    {{ item.conformity ? (locale === 'en' ? '🟢 Compliant' : '🟢 Conforme') : (locale === 'en' ? '🔴 Non-compliant' : '🔴 Non conforme') }}
                                 </button>
                                 <span
                                     v-if="item.initial_conformity === false && item.conformity === true"
                                     class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"
-                                    title="Cet équipement était initialement non conforme et a été régularisé"
+                                    :title="locale === 'en' ? 'This equipment was initially non-compliant and was resolved' : 'Cet équipement était initialement non conforme et a été régularisé'"
                                 >
-                                    Régularisé
+                                    {{ locale === 'en' ? 'Resolved' : 'Régularisé' }}
                                 </span>
                             </div>
                             <div class="hidden print:block text-xs font-bold" :class="item.conformity ? 'text-emerald-700' : 'text-red-700'">
-                                {{ item.conformity ? 'CONFORME' : 'NON CONFORME' }}
+                                {{ item.conformity ? (locale === 'en' ? 'COMPLIANT' : 'CONFORME') : (locale === 'en' ? 'NON-COMPLIANT' : 'NON CONFORME') }}
                             </div>
                         </div>
 
@@ -208,12 +208,12 @@
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
                                     <ImageIcon :size="14" class="text-gray-400" />
-                                    Preuves photos ({{ (item.attachments || []).length }})
+                                    {{ locale === 'en' ? 'Photo evidence' : 'Preuves photos' }} ({{ (item.attachments || []).length }})
                                 </span>
 
                                 <label class="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center gap-1 print:hidden">
                                     <Plus :size="13" />
-                                    <span>Ajouter une photo</span>
+                                    <span>{{ locale === 'en' ? 'Add photo' : 'Ajouter une photo' }}</span>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -228,13 +228,13 @@
                                     v-for="att in item.attachments"
                                     :key="att.id"
                                     @click="previewImage(att.file_path)"
-                                    class="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shadow-2xs cursor-pointer hover:opacity-90 relative group transition"
-                                    title="Agrandir la photo"
+                                    class="w-20 h-20 rounded-xl border border-gray-200 shadow-2xs cursor-pointer hover:opacity-90 relative group transition"
+                                    :title="locale === 'en' ? 'Enlarge photo' : 'Agrandir la photo'"
                                 >
-                                    <img :src="resolvePhotoUrl(att.file_path)" class="w-full h-full object-cover" />
+                                    <img :src="resolvePhotoUrl(att.file_path)" class="w-full h-full object-cover rounded-xl" />
                                 </div>
                             </div>
-                            <p v-else class="text-xs text-gray-400 italic">Aucune preuve photo enregistrée pour cet équipement.</p>
+                            <p v-else class="text-xs text-gray-400 italic">{{ locale === 'en' ? 'No photo evidence recorded for this equipment.' : 'Aucune preuve photo enregistrée pour cet équipement.' }}</p>
                         </div>
                     </div>
                 </div>
@@ -243,45 +243,45 @@
             <!-- SECTION 2 : SYNTHÈSE GLOBALE DU PARC & MATÉRIEL -->
             <div class="border border-gray-200 rounded-xl p-5 bg-white shadow-2xs">
                 <div class="pb-3 border-b border-gray-200 mb-4">
-                    <h3 class="font-bold text-gray-900 text-sm">📊 Synthèse globale des dotations</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Volumes déclarés sur la station lors de la visite</p>
+                    <h3 class="font-bold text-gray-900 text-sm">📊 {{ locale === 'en' ? 'Global equipment allocation summary' : 'Synthèse globale des dotations' }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ locale === 'en' ? 'Volumes declared at the station during visit' : 'Volumes déclarés sur la station lors de la visite' }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <!-- Extincteurs & Bacs -->
                     <div class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <h4 class="font-bold text-gray-800 text-xs uppercase tracking-wide text-primary">Protection Incendie & Bacs</h4>
+                        <h4 class="font-bold text-gray-800 text-xs uppercase tracking-wide text-primary">{{ locale === 'en' ? 'Fire Protection & Bins' : 'Protection Incendie & Bacs' }}</h4>
                         <div class="divide-y divide-gray-200">
-                            <div class="py-1.5 flex justify-between"><span>Poudre 50 kg (P50)</span><span class="font-bold">{{ equipment.p50 ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Poudre 9 kg (P9)</span><span class="font-bold">{{ equipment.p9 ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Poudre 6 kg (P6)</span><span class="font-bold">{{ equipment.p6 ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Powder 50 kg (P50)' : 'Poudre 50 kg (P50)' }}</span><span class="font-bold">{{ equipment.p50 ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Powder 9 kg (P9)' : 'Poudre 9 kg (P9)' }}</span><span class="font-bold">{{ equipment.p9 ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Powder 6 kg (P6)' : 'Poudre 6 kg (P6)' }}</span><span class="font-bold">{{ equipment.p6 ?? 0 }}</span></div>
                             <div class="py-1.5 flex justify-between"><span>CO₂</span><span class="font-bold">{{ equipment.co2 ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Bac métallique</span><span class="font-bold">{{ equipment.bas_met ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Bac plastique & rétention</span><span class="font-bold">{{ (equipment.bas_plast ?? 0) + (equipment.bac_de_retention ?? 0) }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Pelles</span><span class="font-bold">{{ equipment.pelles ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Poubelles (120L / 240L)</span><span class="font-bold">{{ (equipment.poubelles_120l ?? 0) + (equipment.poubelles_240l ?? 0) }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Metal bin' : 'Bac métallique' }}</span><span class="font-bold">{{ equipment.bas_met ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Plastic bin & retention' : 'Bac plastique & rétention' }}</span><span class="font-bold">{{ (equipment.bas_plast ?? 0) + (equipment.bac_de_retention ?? 0) }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Shovels' : 'Pelles' }}</span><span class="font-bold">{{ equipment.pelles ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Trash bins (120L / 240L)' : 'Poubelles (120L / 240L)' }}</span><span class="font-bold">{{ (equipment.poubelles_120l ?? 0) + (equipment.poubelles_240l ?? 0) }}</span></div>
                         </div>
                     </div>
 
                     <!-- Signalisation & Sécurité -->
                     <div class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <h4 class="font-bold text-gray-800 text-xs uppercase tracking-wide text-primary">Signalisation & Règles HSSE</h4>
+                        <h4 class="font-bold text-gray-800 text-xs uppercase tracking-wide text-primary">{{ locale === 'en' ? 'Signage & HSSE Rules' : 'Signalisation & Règles HSSE' }}</h4>
                         <div class="divide-y divide-gray-200">
-                            <div class="py-1.5 flex justify-between"><span>Picto Extincteur</span><span class="font-bold">{{ equipment.picto_ext ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Picto CAF</span><span class="font-bold">{{ equipment.picto_caf ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Picto Défense de fumer</span><span class="font-bold">{{ equipment.picto_defense_de_fumer ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Point de rassemblement</span><span class="font-bold">{{ equipment.point_de_rasso ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Contacts d'urgence affichés</span><span class="font-bold">{{ equipment.contact_d_urgence ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Canne d'enfutage</span><span class="font-bold">{{ equipment.canne_d_enfutage ?? 0 }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Picto Danger TGBT</span><span class="font-bold" :class="equipment.picto_danger_tgbt ? 'text-emerald-700' : 'text-red-700'">{{ equipment.picto_danger_tgbt ? 'Oui' : 'Non' }}</span></div>
-                            <div class="py-1.5 flex justify-between"><span>Livret / Fiche réflexe</span><span class="font-bold" :class="equipment.livret_fiche_reflexe ? 'text-emerald-700' : 'text-red-700'">{{ equipment.livret_fiche_reflexe ? 'Oui' : 'Non' }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Extinguisher pictogram' : 'Picto Extincteur' }}</span><span class="font-bold">{{ equipment.picto_ext ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'CAF pictogram' : 'Picto CAF' }}</span><span class="font-bold">{{ equipment.picto_caf ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'No smoking pictogram' : 'Picto Défense de fumer' }}</span><span class="font-bold">{{ equipment.picto_defense_de_fumer ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Assembly point' : 'Point de rassemblement' }}</span><span class="font-bold">{{ equipment.point_de_rasso ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Emergency contacts displayed' : 'Contacts d\'urgence affichés' }}</span><span class="font-bold">{{ equipment.contact_d_urgence ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Filling rod' : 'Canne d\'enfutage' }}</span><span class="font-bold">{{ equipment.canne_d_enfutage ?? 0 }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'TGBT danger sign' : 'Picto Danger TGBT' }}</span><span class="font-bold" :class="equipment.picto_danger_tgbt ? 'text-emerald-700' : 'text-red-700'">{{ equipment.picto_danger_tgbt ? (locale === 'en' ? 'Yes' : 'Oui') : (locale === 'en' ? 'No' : 'Non') }}</span></div>
+                            <div class="py-1.5 flex justify-between"><span>{{ locale === 'en' ? 'Reflex booklet / sheet' : 'Livret / Fiche réflexe' }}</span><span class="font-bold" :class="equipment.livret_fiche_reflexe ? 'text-emerald-700' : 'text-red-700'">{{ equipment.livret_fiche_reflexe ? (locale === 'en' ? 'Yes' : 'Oui') : (locale === 'en' ? 'No' : 'Non') }}</span></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Observations -->
                 <div v-if="equipment.observations" class="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
-                    <span class="font-bold block mb-1">📝 Remarques & Observations :</span>
+                    <span class="font-bold block mb-1">📝 {{ locale === 'en' ? 'Remarks & Observations:' : 'Remarques & Observations :' }}</span>
                     <p class="whitespace-pre-line">{{ equipment.observations }}</p>
                 </div>
             </div>
@@ -289,12 +289,12 @@
             <!-- SECTION 3 : PIED DE PAGE & VALIDATION OFFICIELLE -->
             <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
                 <div>
-                    <p class="font-semibold text-gray-700">Fiche certifiée Galana Distribution Pétrolière</p>
-                    <p class="text-[11px] text-gray-400">Direction HSSE Madagascar • Inspection Réseau Matériel</p>
+                    <p class="font-semibold text-gray-700">{{ locale === 'en' ? 'Certified Sheet Galana Petroleum Distribution' : 'Fiche certifiée Galana Distribution Pétrolière' }}</p>
+                    <p class="text-[11px] text-gray-400">{{ locale === 'en' ? 'HSSE Directorate Madagascar • Network Equipment Inspection' : 'Direction HSSE Madagascar • Inspection Réseau Matériel' }}</p>
                 </div>
                 <div class="text-right">
-                    <p>Relevé validé le : <b>{{ equipment.date || 'N/A' }}</b></p>
-                    <p class="text-[11px] text-gray-400">Par l'inspecteur : {{ inspectorName }}</p>
+                    <p>{{ locale === 'en' ? 'Inspection validated on:' : 'Relevé validé le :' }} <b>{{ equipment.date || 'N/A' }}</b></p>
+                    <p class="text-[11px] text-gray-400">{{ locale === 'en' ? 'By inspector:' : "Par l'inspecteur :" }} {{ inspectorName }}</p>
                 </div>
             </div>
         </div>
@@ -310,7 +310,7 @@
                     type="button"
                     @click="lightboxUrl = null"
                     class="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg cursor-pointer"
-                    title="Fermer"
+                    :title="locale === 'en' ? 'Close' : 'Fermer'"
                 >
                     <X :size="20" />
                 </button>
@@ -323,6 +323,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import Header from '../../../components/shared/Header.vue';
 import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
 import type { EquipmentItemType, EquipmentMonitoringType } from '../../../@types/EquipmentMonitoring.type';
@@ -339,6 +340,7 @@ import {
     X
 } from '@lucide/vue';
 
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const equipmentsService = useEquipmentMonitoringService();
@@ -354,7 +356,7 @@ const inspectorName = computed(() => {
     if (user?.first_name || user?.last_name) {
         return `${user.first_name || ''} ${user.last_name || ''}`.trim();
     }
-    return 'Inspecteur HSSE';
+    return locale.value === 'en' ? 'HSSE Inspector' : 'Inspecteur HSSE';
 });
 
 const compliantItemsCount = computed(() => {
@@ -385,9 +387,9 @@ function badgeColor(status?: string, conformityRate?: number) {
 
 function formatStatus(status?: string, conformityRate?: number) {
     const rate = conformityRate ?? 100;
-    if (rate >= 90) return '🟢 Conforme';
-    if (rate >= 70) return '🟡 Contrôle requis';
-    return '🔴 Anomalie';
+    if (rate >= 90) return locale.value === 'en' ? '🟢 Compliant' : '🟢 Conforme';
+    if (rate >= 70) return locale.value === 'en' ? '🟡 Control required' : '🟡 Contrôle requis';
+    return locale.value === 'en' ? '🔴 Non-compliant' : '🔴 Anomalie';
 }
 
 function resolvePhotoUrl(path: string) {

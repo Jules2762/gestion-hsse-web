@@ -43,9 +43,9 @@
         <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                    <h3 class="font-bold text-gray-800 text-base">Performance & Suivi du parc matériel</h3>
+                    <h3 class="font-bold text-gray-800 text-base">{{ locale === 'en' ? 'Fleet Performance & Monitoring' : 'Performance & Suivi du parc matériel' }}</h3>
                     <p class="text-xs text-gray-500">
-                        {{ chartMode === 'monthly' ? "Évolution mensuelle des contrôles et taux de conformité sur l'année" : "Inventaire consolidé du parc matériel sous surveillance (toutes familles confondues)" }}
+                        {{ chartMode === 'monthly' ? (locale === 'en' ? "Monthly inspection trends and annual compliance rate" : "Évolution mensuelle des contrôles et taux de conformité sur l'année") : (locale === 'en' ? "Consolidated fleet inventory under surveillance (all families)" : "Inventaire consolidé du parc matériel sous surveillance (toutes familles confondues)") }}
                     </p>
                 </div>
 
@@ -59,7 +59,7 @@
                             :class="inventoryView === 'family' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
                         >
                             <Layers :size="13" />
-                            <span>Par famille (6)</span>
+                            <span>{{ locale === 'en' ? 'By family (6)' : 'Par famille (6)' }}</span>
                         </button>
                         <button
                             type="button"
@@ -68,7 +68,7 @@
                             :class="inventoryView === 'equipment' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
                         >
                             <Package :size="13" />
-                            <span>Par matériel (21)</span>
+                            <span>{{ locale === 'en' ? 'By equipment (21)' : 'Par matériel (21)' }}</span>
                         </button>
                     </div>
 
@@ -81,7 +81,7 @@
                             :class="chartMode === 'monthly' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
                         >
                             <TrendingUp :size="13" />
-                            <span>Évolution</span>
+                            <span>{{ locale === 'en' ? 'Trends' : 'Évolution' }}</span>
                         </button>
                         <button
                             type="button"
@@ -90,7 +90,7 @@
                             :class="chartMode === 'inventory' ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-800'"
                         >
                             <Package :size="13" />
-                            <span>Inventaire du parc</span>
+                            <span>{{ locale === 'en' ? 'Fleet inventory' : 'Inventaire du parc' }}</span>
                         </button>
                     </div>
 
@@ -101,10 +101,10 @@
                             @click="toggleYearDropdown"
                             class="inline-flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 active:bg-gray-200/70 border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 shadow-2xs transition-all cursor-pointer select-none"
                             :class="{ 'ring-2 ring-primary/20 border-primary': isYearDropdownOpen }"
-                            title="Sélectionner l'année"
+                            :title="locale === 'en' ? 'Select year' : 'Sélectionner l\'année'"
                         >
                             <Calendar :size="14" class="text-gray-400 shrink-0" />
-                            <span class="text-xs font-medium text-gray-500">Année :</span>
+                            <span class="text-xs font-medium text-gray-500">{{ locale === 'en' ? 'Year:' : 'Année :' }}</span>
                             <span class="text-xs font-bold text-gray-800">{{ selectedYear }}</span>
                             <ChevronDown
                                 :size="13"
@@ -139,8 +139,8 @@
                     v-if="chartMode === 'monthly'"
                     type="area"
                     height="320"
-                    :options="monthlyOptions"
-                    :series="monthlySeries"
+                    :options="displayMonthlyOptions"
+                    :series="displayMonthlySeries"
                 />
                 <apexchart
                     v-else
@@ -159,8 +159,8 @@
                 <div>
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm">Santé globale du parc</h3>
-                            <p class="text-xs text-gray-500">Statut de conformité sur les {{ statusDistribution.total_sites || kpis.unique_sites }} stations contrôlées</p>
+                            <h3 class="font-bold text-gray-800 text-sm">{{ locale === 'en' ? 'Overall Fleet Health' : 'Santé globale du parc' }}</h3>
+                            <p class="text-xs text-gray-500">{{ locale === 'en' ? `Compliance status across ${statusDistribution.total_sites || kpis.unique_sites} audited stations` : `Statut de conformité sur les ${statusDistribution.total_sites || kpis.unique_sites} stations contrôlées` }}</p>
                         </div>
                         <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                             {{ selectedYear }}
@@ -180,17 +180,17 @@
                         <!-- LÉGENDE RÉCAPITULATIVE AVEC PASTILLES -->
                         <div class="grid grid-cols-3 gap-2 w-full mt-3 text-center text-xs">
                             <div class="p-2 rounded-lg bg-emerald-50 border border-emerald-100">
-                                <p class="text-[11px] font-semibold text-emerald-800">Conformes</p>
+                                <p class="text-[11px] font-semibold text-emerald-800">{{ locale === 'en' ? 'Compliant' : 'Conformes' }}</p>
                                 <p class="text-base font-bold text-emerald-700 mt-0.5">{{ statusDistribution.conforme || 0 }}</p>
                                 <p class="text-[10px] text-emerald-600">≥ 90%</p>
                             </div>
                             <div class="p-2 rounded-lg bg-amber-50 border border-amber-100">
-                                <p class="text-[11px] font-semibold text-amber-800">Contrôle req.</p>
+                                <p class="text-[11px] font-semibold text-amber-800">{{ locale === 'en' ? 'Check req.' : 'Contrôle req.' }}</p>
                                 <p class="text-base font-bold text-amber-700 mt-0.5">{{ statusDistribution.warning || 0 }}</p>
                                 <p class="text-[10px] text-amber-600">70 - 89%</p>
                             </div>
                             <div class="p-2 rounded-lg bg-red-50 border border-red-100">
-                                <p class="text-[11px] font-semibold text-red-800">Anomalies</p>
+                                <p class="text-[11px] font-semibold text-red-800">{{ locale === 'en' ? 'Anomalies' : 'Anomalies' }}</p>
                                 <p class="text-base font-bold text-red-700 mt-0.5">{{ statusDistribution.danger || 0 }}</p>
                                 <p class="text-[10px] text-red-600">&lt; 70%</p>
                             </div>
@@ -204,19 +204,19 @@
                 <div>
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                         <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-gray-800 text-sm">Équipements nécessitant intervention</h3>
+                            <h3 class="font-bold text-gray-800 text-sm">{{ locale === 'en' ? 'Equipment requiring intervention' : 'Équipements nécessitant intervention' }}</h3>
                             <span
                                 v-if="recentAnomalies.length"
                                 class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-700 animate-pulse"
                             >
-                                {{ recentAnomalies.length }} non-conformité{{ recentAnomalies.length > 1 ? 's' : '' }}
+                                {{ recentAnomalies.length }} {{ locale === 'en' ? (recentAnomalies.length > 1 ? 'non-compliances' : 'non-compliance') : (recentAnomalies.length > 1 ? 'non-conformités' : 'non-conformité') }}
                             </span>
                         </div>
                         <button
                             @click="router.push({ name: 'EQUIPMENT_MONITORING' })"
                             class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline cursor-pointer"
                         >
-                            Tout voir <ArrowUpRight :size="13" />
+                            {{ locale === 'en' ? 'View all' : 'Tout voir' }} <ArrowUpRight :size="13" />
                         </button>
                     </div>
 
@@ -224,8 +224,8 @@
 
                     <div v-else-if="recentAnomalies.length === 0" class="py-12 flex flex-col items-center justify-center text-center gap-2 text-gray-400">
                         <CheckCircle2 :size="32" class="text-emerald-500" />
-                        <p class="text-xs font-semibold text-gray-700">Aucune anomalie critique enregistrée</p>
-                        <p class="text-[11px] text-gray-400">L'ensemble des équipements contrôlés sur cette période sont conformes.</p>
+                        <p class="text-xs font-semibold text-gray-700">{{ locale === 'en' ? 'No critical anomaly recorded' : 'Aucune anomalie critique enregistrée' }}</p>
+                        <p class="text-[11px] text-gray-400">{{ locale === 'en' ? 'All equipment inspected during this period are compliant.' : "L'ensemble des équipements contrôlés sur cette période sont conformes." }}</p>
                     </div>
 
                     <div v-else class="space-y-2 max-h-[290px] overflow-y-auto pr-1">
@@ -258,7 +258,7 @@
                             <div class="text-right shrink-0">
                                 <span class="text-[10px] text-gray-400 block">{{ anom.date }}</span>
                                 <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary mt-1 hover:underline">
-                                    Fiche <ArrowUpRight :size="11" />
+                                    {{ locale === 'en' ? 'Record' : 'Fiche' }} <ArrowUpRight :size="11" />
                                 </span>
                             </div>
                         </div>
@@ -274,32 +274,32 @@
                 <div>
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm">Derniers contrôles de suivi matériel</h3>
-                            <p class="text-xs text-gray-500">Sessions d'inspection des équipements récemment renseignées</p>
+                            <h3 class="font-bold text-gray-800 text-sm">{{ locale === 'en' ? 'Recent equipment monitoring checks' : 'Derniers contrôles de suivi matériel' }}</h3>
+                            <p class="text-xs text-gray-500">{{ locale === 'en' ? 'Recently recorded equipment inspection sessions' : "Sessions d'inspection des équipements récemment renseignées" }}</p>
                         </div>
                         <button
                             @click="router.push({ name: 'EQUIPMENT_MONITORING' })"
                             class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline cursor-pointer"
                         >
-                            Voir tout <ArrowUpRight :size="13" />
+                            {{ locale === 'en' ? 'View all' : 'Voir tout' }} <ArrowUpRight :size="13" />
                         </button>
                     </div>
 
                     <DashboardSkeleton v-if="loading" type="table" :rows="5" />
 
                     <div v-else-if="latestMonitorings.length === 0" class="py-10 text-center text-xs text-gray-400">
-                        Aucune fiche de suivi d'équipements enregistrée pour cette année
+                        {{ locale === 'en' ? 'No equipment monitoring recorded for this year' : "Aucune fiche de suivi d'équipements enregistrée pour cette année" }}
                     </div>
 
                     <div v-else class="overflow-x-auto">
                         <table class="w-full text-xs">
                             <thead>
                                 <tr class="text-left text-gray-400 font-semibold border-b border-gray-100">
-                                    <th class="pb-2">Date</th>
-                                    <th class="pb-2">Site / Station</th>
-                                    <th class="pb-2">Inspecteur</th>
-                                    <th class="pb-2 text-center">Conformité</th>
-                                    <th class="pb-2 text-right">Statut</th>
+                                    <th class="pb-2">{{ t('table.date') || (locale === 'en' ? 'Date' : 'Date') }}</th>
+                                    <th class="pb-2">{{ t('table.site') || (locale === 'en' ? 'Site / Station' : 'Site / Station') }}</th>
+                                    <th class="pb-2">{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</th>
+                                    <th class="pb-2 text-center">{{ locale === 'en' ? 'Compliance' : 'Conformité' }}</th>
+                                    <th class="pb-2 text-right">{{ t('table.status') || (locale === 'en' ? 'Status' : 'Statut') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -327,9 +327,9 @@
                                             <span
                                                 v-if="item.is_resolved"
                                                 class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full mt-0.5"
-                                                :title="`Taux initial constaté lors de la visite : ${item.initial_conformity_rate}%`"
+                                                :title="locale === 'en' ? `Initial rate observed during inspection: ${item.initial_conformity_rate}%` : `Taux initial constaté lors de la visite : ${item.initial_conformity_rate}%`"
                                             >
-                                                Initial: {{ item.initial_conformity_rate }}%
+                                                {{ locale === 'en' ? 'Initial:' : 'Initial :' }} {{ item.initial_conformity_rate }}%
                                             </span>
                                         </div>
                                     </td>
@@ -353,8 +353,8 @@
                 <div>
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm">Synthèse par famille d'équipements</h3>
-                            <p class="text-xs text-gray-500">Taux de conformité par domaine de sécurité</p>
+                            <h3 class="font-bold text-gray-800 text-sm">{{ locale === 'en' ? 'Summary by equipment family' : "Synthèse par famille d'équipements" }}</h3>
+                            <p class="text-xs text-gray-500">{{ locale === 'en' ? 'Compliance rate by safety domain' : 'Taux de conformité par domaine de sécurité' }}</p>
                         </div>
                     </div>
 
@@ -382,8 +382,8 @@
                                 ></div>
                             </div>
                             <div class="flex items-center justify-between mt-1 text-[10px] text-gray-400">
-                                <span>Volume en parc : <strong>{{ cat.total }} unités</strong></span>
-                                <span>Conformes : <strong>{{ cat.ok_count }} / {{ cat.items_count || cat.total }}</strong></span>
+                                <span>{{ locale === 'en' ? 'Fleet volume:' : 'Volume en parc :' }} <strong>{{ cat.total }} {{ locale === 'en' ? 'units' : 'unités' }}</strong></span>
+                                <span>{{ locale === 'en' ? 'Compliant:' : 'Conformes :' }} <strong>{{ cat.ok_count }} / {{ cat.items_count || cat.total }}</strong></span>
                             </div>
                         </div>
 
@@ -392,9 +392,9 @@
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-[11px] font-bold text-gray-700 flex items-center gap-1.5">
                                     <Flame :size="12" class="text-red-500" />
-                                    <span>Calibres extincteurs incendie</span>
+                                    <span>{{ locale === 'en' ? 'Fire extinguisher gauges' : 'Calibres extincteurs incendie' }}</span>
                                 </span>
-                                <span class="text-[10px] text-gray-400 font-semibold">Parc stations</span>
+                                <span class="text-[10px] text-gray-400 font-semibold">{{ locale === 'en' ? 'Stations fleet' : 'Parc stations' }}</span>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
@@ -428,6 +428,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import Card from '../Card.vue';
 import DashboardSkeleton from '../DashboardSkeleton.vue';
 import EquipmentMap from './EquipmentMap.vue';
@@ -451,6 +452,7 @@ import {
 import dashboardService from '../../../../core/services/dashboard.service';
 
 const router = useRouter();
+const { t, locale } = useI18n();
 const loading = ref(true);
 
 const selectedYear = ref(new Date().getFullYear());
@@ -508,17 +510,37 @@ const monthlySeries = ref<any[]>([
     { name: 'Taux actuel résolu (%)', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
 ]);
 
-const monthlyOptions = ref({
+const displayMonthlySeries = computed(() => {
+    return monthlySeries.value.map(s => {
+        let name = s.name;
+        if (s.name.includes('réalisés') || s.name.includes('completed')) {
+            name = locale.value === 'en' ? 'Inspections completed' : 'Contrôles réalisés';
+        } else if (s.name.includes('initial') || s.name.includes('Initial')) {
+            name = locale.value === 'en' ? 'Initial observed rate (%)' : 'Taux initial constaté (%)';
+        } else if (s.name.includes('résolu') || s.name.includes('resolved') || s.name.includes('actuel')) {
+            name = locale.value === 'en' ? 'Current resolved rate (%)' : 'Taux actuel résolu (%)';
+        }
+        return { ...s, name };
+    });
+});
+
+const monthCategories = computed(() =>
+    locale.value === 'en'
+        ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        : ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+);
+
+const displayMonthlyOptions = computed(() => ({
     chart: { type: 'area', toolbar: { show: false }, fontFamily: 'inherit' },
     stroke: { curve: 'smooth', width: [2, 2.5, 2.5] },
-    xaxis: { categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'] },
+    xaxis: { categories: monthCategories.value },
     colors: ['#3B82F6', '#F59E0B', '#10B981'],
     dataLabels: { enabled: false },
     grid: { borderColor: '#f1f5f9' },
     tooltip: {
         y: {
             formatter: (val: number, opts: any) => {
-                if (opts?.seriesIndex === 0) return `${val} contrôles`;
+                if (opts?.seriesIndex === 0) return `${val} ${locale.value === 'en' ? 'checks' : 'contrôles'}`;
                 return `${val}%`;
             }
         }
@@ -528,7 +550,7 @@ const monthlyOptions = ref({
         fontSize: '12px',
         fontWeight: 500,
     }
-});
+}));
 
 const inventoryView = ref<'family' | 'equipment'>('family');
 const inventoryData = ref<any>(null);
@@ -790,12 +812,6 @@ async function loadData(year: number) {
         }
         if (res?.data?.monthly) {
             monthlySeries.value = res.data.monthly.series;
-            if (res.data.monthly.categories) {
-                monthlyOptions.value = {
-                    ...monthlyOptions.value,
-                    xaxis: { categories: res.data.monthly.categories }
-                };
-            }
         }
         if (res?.data?.latest_monitorings) {
             latestMonitorings.value = res.data.latest_monitorings;

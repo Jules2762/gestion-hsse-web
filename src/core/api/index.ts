@@ -24,10 +24,11 @@ function showError(status: number|string) {
         return
     }
 
-    lastErrorStatus = status
-    lastErrorTime = now
+    lastErrorStatus = status;
+    lastErrorTime = now;
 
-    toast.error(i18n.global.t(`errors.${status}`))
+    const showToast: any = toast.error;
+    showToast((i18n.global as any).t(`errors.${status}`));
 }
 api.interceptors.request.use(
     (config) => {

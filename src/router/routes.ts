@@ -34,6 +34,8 @@ import VmcPage from "../views/home/Iinspections/VmcPage.vue";
 import VMCAddPage from "../views/home/Iinspections/VMCAddPage.vue";
 import VMCDetailsPage from "../views/home/Iinspections/VMCDetailsPage.vue";
 import EmergencyContactPage from "../views/home/emergency/EmergencyContactPage.vue";
+import SitesPage from "../views/home/administration/SitesPage.vue";
+import HelpCenterPage from "../views/home/help/HelpCenterPage.vue";
 
 
 const routes = [
@@ -119,6 +121,11 @@ const routes = [
                         path: "personnels/update/:id",
                         name: "PERSONNEL_UPDATE",
                         component: PersonnelUpdatePage
+                    },
+                    {
+                        path: "sites",
+                        name: "SITES",
+                        component: SitesPage
                     },
                     {
                         path: "/activity",
@@ -252,6 +259,16 @@ const routes = [
                 path: "emergency-contacts",
                 name: "EMERGENCY_CONTACT",
                 component: EmergencyContactPage
+            },
+            {
+                path: "help-center",
+                name: "HELP_CENTER",
+                component: HelpCenterPage
+            },
+            {
+                path: "help-center",
+                name: "HELP_CENTER",
+                component: HelpCenterPage
             },
         ]
     }

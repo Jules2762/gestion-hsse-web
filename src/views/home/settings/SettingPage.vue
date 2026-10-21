@@ -35,65 +35,64 @@ interface SettingTab {
   tag?: string
 }
 
-const tabs: SettingTab[] = [
+const { t, te, locale } = useI18n()
+
+const tabs = computed<SettingTab[]>(() => [
   {
     id: 'general',
-    title: 'Général & Identité',
-    subtitle: 'Organisation, coordonnées & régionalisation',
+    title: locale.value === 'en' ? 'General & Identity' : 'Général & Identité',
+    subtitle: locale.value === 'en' ? 'Organization, contact details & localization' : 'Organisation, coordonnées & régionalisation',
     icon: Building2,
   },
   {
     id: 'hsse',
-    title: 'Conformité & HSSE',
-    subtitle: 'Règles d’or, urgence & seuils des VMC',
+    title: locale.value === 'en' ? 'Compliance & HSSE' : 'Conformité & HSSE',
+    subtitle: locale.value === 'en' ? 'Golden rules, emergency & VMC thresholds' : 'Règles d’or, urgence & seuils des VMC',
     icon: ShieldAlert,
-    tag: 'Prioritaire'
+    tag: locale.value === 'en' ? 'Priority' : 'Prioritaire'
   },
   {
     id: 'display',
-    title: 'Affichage & Police',
-    subtitle: 'Taille de police (13px/14.5px/16px), densité & alertes',
+    title: locale.value === 'en' ? 'Display & Font' : 'Affichage & Police',
+    subtitle: locale.value === 'en' ? 'Font size (13px/14.5px/16px), density & alerts' : 'Taille de police (13px/14.5px/16px), densité & alertes',
     icon: Type,
-    tag: 'Nouveau'
+    tag: locale.value === 'en' ? 'New' : 'Nouveau'
   },
   {
     id: 'email',
-    title: 'Messagerie & E-mail',
-    subtitle: 'Ouverture Outlook, serveur SMTP & copies CC',
+    title: locale.value === 'en' ? 'Messaging & Email' : 'Messagerie & E-mail',
+    subtitle: locale.value === 'en' ? 'Outlook launch, SMTP server & CC copies' : 'Ouverture Outlook, serveur SMTP & copies CC',
     icon: Mail,
   },
   {
     id: 'security',
-    title: 'Sécurité & Audit',
-    subtitle: 'Sessions, complexité mots de passe & journalisation',
+    title: locale.value === 'en' ? 'Security & Audit' : 'Sécurité & Audit',
+    subtitle: locale.value === 'en' ? 'Sessions, password complexity & logging' : 'Sessions, complexité mots de passe & journalisation',
     icon: ShieldCheck,
   },
   {
     id: 'documents',
-    title: 'Gestion Documentaire',
-    subtitle: 'Quotas de téléversement, formats & archivage GED',
+    title: locale.value === 'en' ? 'Document Management' : 'Gestion Documentaire',
+    subtitle: locale.value === 'en' ? 'Upload quotas, formats & DMS archiving' : 'Quotas de téléversement, formats & archivage GED',
     icon: FolderArchive,
   },
-]
+])
 
 const currentTab = ref<string>('general')
 const searchQuery = ref<string>('')
 
-const { t, te } = useI18n()
-
 const filteredTabs = computed(() => {
-  if (!searchQuery.value.trim()) return tabs
+  if (!searchQuery.value.trim()) return tabs.value
   const query = searchQuery.value.toLowerCase().trim()
-  return tabs.filter(tab => {
-    const title = te('settings.tabs.' + tab.id) ? t('settings.tabs.' + tab.id) : tab.title
-    return title.toLowerCase().includes(query) || tab.subtitle.toLowerCase().includes(query)
+  return tabs.value.filter(tab => {
+    return tab.title.toLowerCase().includes(query) || tab.subtitle.toLowerCase().includes(query)
   })
 })
 </script>
 
 <template>
   <div class="min-h-screen bg-background text-text-primary">
-    <Header title="settings.title" show-search />
+    <Header title="settings.title"  />
 
     <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
@@ -170,7 +169,7 @@ const filteredTabs = computed(() => {
           <div class="rounded-2xl border border-border bg-linear-to-br from-surface to-surface-alt/40 p-4 shadow-2xs space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-text-muted">
-                Statut Système Galana
+                {{ locale === 'en' ? 'Galana System Status' : 'Statut Système Galana' }}
               </span>
               <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#0F9D58]">
                 <Globe2 class="h-3 w-3" />
@@ -180,16 +179,16 @@ const filteredTabs = computed(() => {
 
             <div class="space-y-1.5 text-xs text-text-secondary border-t border-border/60 pt-2.5">
               <div class="flex items-center justify-between">
-                <span>Version Plateforme</span>
+                <span>{{ locale === 'en' ? 'Platform Version' : 'Version Plateforme' }}</span>
                 <span class="font-medium text-text-primary">v2.4.0 HSSE</span>
               </div>
               <div class="flex items-center justify-between">
-                <span>Moteur API Backend</span>
+                <span>{{ locale === 'en' ? 'Backend API Engine' : 'Moteur API Backend' }}</span>
                 <span class="font-medium text-text-primary">Laravel 11 / PHP 8.3</span>
               </div>
               <div class="flex items-center justify-between">
-                <span>Paramètres enregistrés</span>
-                <span class="font-semibold text-[#0F9D58]">46 paramètres actifs</span>
+                <span>{{ locale === 'en' ? 'Saved Parameters' : 'Paramètres enregistrés' }}</span>
+                <span class="font-semibold text-[#0F9D58]">{{ locale === 'en' ? '46 active parameters' : '46 paramètres actifs' }}</span>
               </div>
             </div>
           </div>

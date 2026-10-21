@@ -17,9 +17,15 @@
                         :loading="loading_export"
                         @click="exportData"
                     />
+                    <ButtonFilter
+                        text="Actualiser"
+                        :icon="RefreshCw"
+                        :loading="loading"
+                        @click="fetchLogs"
+                    />
                 </div>
                 <div class="flex flex-row items-center gap-2">
-                    <InputFilter :icon="Search" placeholder="Rechercher une activité..." v-model="searchQuery" />
+                    <InputFilter :icon="Search" :placeholder="locale === 'en' ? 'Search an activity...' : 'Rechercher une activité...'" v-model="searchQuery" />
                 </div>
             </div>
             <ChipFilter
@@ -41,7 +47,7 @@
                 <!-- INDICATEUR DE CHARGEMENT -->
                 <div v-if="loading" class="p-12 flex flex-col items-center justify-center gap-3 text-gray-500">
                     <Loader :size="32" class="animate-spin text-primary" />
-                    <span class="text-sm">Chargement du journal d'activités...</span>
+                    <span class="text-sm">{{ locale === 'en' ? 'Loading activity logs...' : 'Chargement du journal d\'activités...' }}</span>
                 </div>
 
                 <!-- AUCUN RÉSULTAT -->
@@ -49,16 +55,18 @@
                     <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
                         <Logs :size="28" />
                     </div>
-                    <h5 class="text-gray-700 font-semibold mb-1">Aucune activité enregistrée</h5>
+                    <h5 class="text-gray-700 font-semibold mb-1">
+                        {{ locale === 'en' ? 'No activity recorded' : 'Aucune activité enregistrée' }}
+                    </h5>
                     <p class="text-sm text-gray-500 max-w-sm">
-                        Aucun journal ne correspond à vos critères de recherche actuels.
+                        {{ locale === 'en' ? 'No logs match your current search criteria.' : 'Aucun journal ne correspond à vos critères de recherche actuels.' }}
                     </p>
                     <button
                         v-if="searchQuery || filters.type.length || filters.user.length || dataRange.from || dataRange.to"
                         @click="clearFilters"
                         class="mt-4 px-4 py-2 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition"
                     >
-                        Réinitialiser les filtres
+                        {{ locale === 'en' ? 'Reset filters' : 'Réinitialiser les filtres' }}
                     </button>
                 </div>
 
@@ -68,11 +76,11 @@
                         <thead>
                             <tr>
                                 <th class="w-12">#</th>
-                                <th class="w-40">Type</th>
-                                <th>Titre</th>
-                                <th>Description</th>
-                                <th class="w-48">Utilisateur</th>
-                                <th class="w-40">Date et heure</th>
+                                <th class="w-40">{{ t('table.TYPE', 'Type') }}</th>
+                                <th>{{ t('table.TITLE', 'Titre') }}</th>
+                                <th>{{ t('table.DESCRIPTION', 'Description') }}</th>
+                                <th class="w-48">{{ t('table.USER', 'Utilisateur') }}</th>
+                                <th class="w-40">{{ locale === 'en' ? 'Date & Time' : 'Date et heure' }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -134,7 +142,7 @@
                                 <td colspan="6" class="w-full p-4 border-t border-gray-200">
                                     <div class="flex flex-row items-center justify-between text-sm">
                                         <span class="text-xs text-gray-500">
-                                            Affichage de {{ pagination.to }} sur {{ pagination.total }} activités
+                                            {{ locale === 'en' ? `Showing ${pagination.to} of ${pagination.total} activities` : `Affichage de ${pagination.to} sur ${pagination.total} activités` }}
                                         </span>
                                         <vue-awesome-paginate
                                             :hide-prev-next-when-ends="true"
@@ -218,20 +226,22 @@
             <!-- VOLET LATÉRAL DE DÉTAILS -->
             <aside
                 v-if="selected_log"
-                aria-label="Détails de l'activité"
+                :aria-label="locale === 'en' ? 'Activity details' : 'Détails de l\'activité'"
                 class="w-[400px] min-w-[400px] max-w-[400px] bg-white border-l border-gray-200 sticky top-0 transition-all h-screen overflow-y-auto p-5 z-20 shrink-0 shadow-xl scrollbar-hide"
             >
                 <!-- EN-TÊTE DU VOLET -->
                 <div class="flex items-start justify-between pb-4 border-b border-gray-200">
                     <div class="min-w-0 flex-1">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Journal n° {{ selected_log.id }}</p>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            {{ locale === 'en' ? 'Log #' : 'Journal n°' }} {{ selected_log.id }}
+                        </p>
                         <h4 class="mt-1 font-bold text-gray-900 truncate">{{ selected_log.title }}</h4>
                     </div>
                     <button
-                        class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                         @click="selected_log = undefined"
                         type="button"
-                        aria-label="Fermer l'aperçu"
+                        :aria-label="locale === 'en' ? 'Close preview' : 'Fermer l\'aperçu'"
                     >
                         <XIcon :size="18" />
                     </button>
@@ -256,7 +266,7 @@
                     </h6>
 
                     <p class="mt-2 text-sm text-gray-600 whitespace-pre-line">
-                        {{ selected_log.description || 'Aucune description détaillée.' }}
+                        {{ selected_log.description || (locale === 'en' ? 'No detailed description.' : 'Aucune description détaillée.') }}
                     </p>
                 </div>
 
@@ -265,7 +275,7 @@
                     <Clock :size="16" class="text-gray-400 mt-0.5 shrink-0" />
                     <div>
                         <span class="text-xs uppercase tracking-wide text-gray-500 block">
-                            Date et heure
+                            {{ locale === 'en' ? 'Date & Time' : 'Date et heure' }}
                         </span>
                         <p class="mt-0.5 text-sm font-medium text-gray-800 font-mono">
                             {{ formatDate(selected_log.created_at) }}
@@ -276,7 +286,7 @@
                 <!-- SECTION UTILISATEUR -->
                 <div class="mt-6 border-t border-gray-200 pt-5">
                     <h6 class="mb-4 text-xs uppercase tracking-wider font-semibold text-gray-500">
-                        Auteur de l'action
+                        {{ locale === 'en' ? 'Action Author' : 'Auteur de l\'action' }}
                     </h6>
 
                     <template v-if="selected_log.user">
@@ -306,40 +316,40 @@
                         <!-- DÉTAILS DE L'UTILISATEUR -->
                         <div class="mt-4 flex flex-col gap-3 text-xs">
                             <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-500">Rôle</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Role' : 'Rôle' }}</span>
                                 <span class="font-medium px-2 py-0.5 rounded text-[11px]" :class="selected_log.user.role === 'ADMIN' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'">
-                                    {{ selected_log.user.role === 'ADMIN' ? 'Administrateur' : 'Utilisateur' }}
+                                    {{ selected_log.user.role === 'ADMIN' ? (locale === 'en' ? 'Administrator' : 'Administrateur') : (locale === 'en' ? 'User' : 'Utilisateur') }}
                                 </span>
                             </div>
 
                             <div v-if="selected_log.user.department" class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-500">Département</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Department' : 'Département' }}</span>
                                 <span class="font-medium text-gray-800 truncate max-w-[160px] text-right">
                                     {{ selected_log.user.department }}
                                 </span>
                             </div>
 
                             <div v-if="selected_log.user.job" class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-500">Fonction</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Job Title' : 'Fonction' }}</span>
                                 <span class="font-medium text-gray-800 truncate max-w-[160px] text-right">
                                     {{ selected_log.user.job }}
                                 </span>
                             </div>
 
                             <div v-if="selected_log.user.phone_number" class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-500">Téléphone</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Phone' : 'Téléphone' }}</span>
                                 <span class="font-medium text-gray-800">
                                     {{ selected_log.user.phone_number }}
                                 </span>
                             </div>
 
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-500">Statut</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Status' : 'Statut' }}</span>
                                 <span
                                     class="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
                                     :class="selected_log.user.status === 'ENABLED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
                                 >
-                                    {{ selected_log.user.status === 'ENABLED' ? 'Actif' : 'Inactif' }}
+                                    {{ selected_log.user.status === 'ENABLED' ? (locale === 'en' ? 'Active' : 'Actif') : (locale === 'en' ? 'Inactive' : 'Inactif') }}
                                 </span>
                             </div>
                         </div>
@@ -347,7 +357,7 @@
 
                     <template v-else>
                         <p class="text-xs text-gray-500 italic">
-                            Utilisateur ID #{{ selected_log.user_id }} (compte non chargé ou supprimé)
+                            {{ locale === 'en' ? `User ID #${selected_log.user_id} (account not loaded or deleted)` : `Utilisateur ID #${selected_log.user_id} (compte non chargé ou supprimé)` }}
                         </p>
                     </template>
                 </div>
@@ -358,7 +368,7 @@
                     class="mt-6 border-t border-gray-200 pt-5"
                 >
                     <h6 class="mb-3 text-xs uppercase tracking-wider font-semibold text-gray-500">
-                        Paramètres complémentaires
+                        {{ locale === 'en' ? 'Additional Parameters' : 'Paramètres complémentaires' }}
                     </h6>
 
                     <div class="rounded-lg bg-gray-50 border border-gray-200 p-3 text-xs space-y-2">
@@ -387,7 +397,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import Header from '../../../components/shared/Header.vue'
 import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
@@ -400,15 +411,20 @@ import { exportUtils } from '../../../core/utils/export.utils'
 import type { LogType } from '../../../@types/Logs.type'
 import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type'
 import { router } from '../../../router'
+import { useSidebarNotification } from '../../../services/useSidebarNotification'
 import {
     Clock,
     Download,
     Loader,
     Logs,
+    RefreshCw,
     Search,
     User as UserIcon,
     X as XIcon,
 } from '@lucide/vue'
+
+const { t, locale } = useI18n()
+const sidebar_notification = useSidebarNotification()
 
 const show_mode = ref(0)
 const loading = ref(false)
@@ -424,10 +440,10 @@ const searchQuery = ref<string>('')
 
 const filterableKeys: string[] = ['type', 'user']
 
-const columnLabels: Record<string, string> = {
-    type: 'Type',
-    user: 'Utilisateur',
-}
+const columnLabels = computed<Record<string, string>>(() => ({
+    type: locale.value === 'en' ? 'Type' : 'Type',
+    user: locale.value === 'en' ? 'User' : 'Utilisateur',
+}))
 
 const filters = ref<Record<string, string[]>>({
     type: [],
@@ -461,9 +477,16 @@ const contextMenu = ref<{
     actions: ContextMenuActionType[]
 }>({
     isOpen: false,
-    actions: [
+    actions: []
+})
+
+function openContextMenu(event: MouseEvent, item: LogType) {
+    contextMenu.value.log = item
+    contextMenu.value.isOpen = true
+    contextMenu.value.contextMenu = event
+    contextMenu.value.actions = [
         {
-            label: "Profil de l'auteur",
+            label: locale.value === 'en' ? "Author's profile" : "Profil de l'auteur",
             icon: UserIcon,
             onClick: () => {
                 const user = contextMenu.value.log?.user
@@ -476,12 +499,6 @@ const contextMenu = ref<{
             }
         }
     ]
-})
-
-function openContextMenu(event: MouseEvent, item: LogType) {
-    contextMenu.value.log = item
-    contextMenu.value.isOpen = true
-    contextMenu.value.contextMenu = event
 }
 
 /* =======================================================
@@ -663,6 +680,8 @@ watch(searchQuery, () => {
 const route = useRoute()
 
 onMounted(async () => {
+    localStorage.setItem('hsse_last_viewed_activity_at', new Date().toISOString())
+    sidebar_notification.setCount('ACTIVITY', 0)
     await fetchFilters()
     if (route.query.user) {
         filters.value.user = [route.query.user as string]
@@ -710,7 +729,47 @@ function formatPropertyKey(key: string): string {
 }
 
 function getLogTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
+    const isEn = locale.value === 'en'
+    const labelsEn: Record<string, string> = {
+        LOGIN: 'Login',
+        LOGOUT: 'Logout',
+        USER_CREATED: 'User created',
+        USER_UPDATED: 'User updated',
+        USER_DELETED: 'User deleted',
+        USER_ENABLED: 'User enabled',
+        USER_DISABLED: 'User disabled',
+        USER_ROLE_UPDATED: 'Role updated',
+        USER_PERMISSION_UPDATED: 'Permissions updated',
+        PERSONNEL_CREATED: 'Personnel added',
+        FORMATION_CREATED: 'Training created',
+        FORMATION_UPDATED: 'Training updated',
+        FORMATION_DELETED: 'Training deleted',
+        FORMATION_CANCELLED: 'Training cancelled',
+        FORMATION_RESCHEDULED: 'Training rescheduled',
+        FORMATION_IMPORTED: 'Trainings imported',
+        PARTICIPANT_ADDED: 'Participant added',
+        PARTICIPANT_DELETED: 'Participant removed',
+        EQUIPMENT_CREATED: 'Equipment created',
+        EQUIPMENT_UPDATED: 'Equipment updated',
+        EQUIPMENT_DELETED: 'Equipment deleted',
+        EQUIPMENT_IMPORTED: 'Equipments imported',
+        CHECKLIST_CREATED: 'Checklist created',
+        CHECKLIST_UPDATED: 'Checklist updated',
+        CHECKLIST_DELETED: 'Checklist deleted',
+        CHECKLIST_FINISHED: 'Checklist finished',
+        CHECKLIST_TEMPLATE_CREATED: 'Template created',
+        CHECKLIST_TEMPLATE_UPDATED: 'Template updated',
+        CHECKLIST_TEMPLATE_DELETED: 'Template deleted',
+        FOLDER_CREATED: 'Folder created',
+        FOLDER_RENAMED: 'Folder renamed',
+        FOLDER_DELETED: 'Folder deleted',
+        DOCUMENT_UPLOADED: 'Document uploaded',
+        DOCUMENT_DELETED: 'Document deleted',
+        DOCUMENT_DOWNLOADED: 'Document downloaded',
+        VMC_CREATED: 'VMC created',
+    }
+
+    const labelsFr: Record<string, string> = {
         LOGIN: 'Connexion',
         LOGOUT: 'Déconnexion',
         USER_CREATED: 'Utilisateur créé',
@@ -749,6 +808,7 @@ function getLogTypeLabel(type: string): string {
         VMC_CREATED: 'VMC créée',
     }
 
+    const labels = isEn ? labelsEn : labelsFr
     return labels[type] || type.replace(/_/g, ' ')
 }
 

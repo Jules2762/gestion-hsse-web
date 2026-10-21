@@ -1,7 +1,7 @@
 import type { FormationType, VoletType, FormationStatusType, FormationStatusJsonType } from "../@types/Formation.type"
 
 const VoletData: VoletType[] = ["Environnement", "Santé", "Sécurité", "Sûreté"]
-const FormationTypeData: FormationType[] = ["Atelier", "Exercice d'urgence", "Formation", "Induction", "Sensibilisation"]
+const FormationTypeData: FormationType[] = ["Atelier", "Exercice d'urgence", "Formation", "Induction", "Réunion", "Sensibilisation"]
 const FormationStatusData:FormationStatusType[]=["SCHEDULED","COMPLETED","CANCELLED","POSTPONED"]
 const FormationStatusJsonData: FormationStatusJsonType[] = [
     {

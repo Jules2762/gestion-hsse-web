@@ -15,26 +15,26 @@
           </div>
           <div class="truncate">
             <h3 class="font-bold text-gray-800 text-xs sm:text-sm truncate flex items-center gap-1.5">
-              <span>Cartographie Secours & Stations Galana</span>
+              <span>{{ locale === 'en' ? 'Emergency, Sites & Stations Mapping' : 'Cartographie Secours, Sites & Stations Galana' }}</span>
               <span
                 v-if="isFullscreen"
                 class="text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.2 rounded-full"
               >
-                Plein Écran
+                {{ locale === 'en' ? 'Fullscreen' : 'Plein Écran' }}
               </span>
             </h3>
             <p v-if="selectedStation" class="text-[10px] text-amber-700 font-semibold truncate flex items-center gap-1">
-              <span>⛽ Station active : {{ selectedStation.name }} ({{ selectedStation.locality }})</span>
+              <span>{{ siteEmoji(selectedStation.type) }} {{ locale === 'en' ? 'Active site' : 'Site actif' }} : {{ selectedStation.name }} ({{ formatSiteType(selectedStation.type) }} • {{ selectedStation.locality }})</span>
               <button
                 type="button"
                 @click="$emit('clear-selection')"
                 class="text-gray-500 hover:text-gray-800 underline ml-1 cursor-pointer"
               >
-                (Effacer)
+                ({{ locale === 'en' ? 'Clear' : 'Effacer' }})
               </button>
             </p>
             <p v-else class="text-[10px] text-gray-500 truncate">
-              Cliquez sur un secours ou une station (SS) pour afficher les détails.
+              {{ locale === 'en' ? 'Click on an emergency service or Galana site/station to view details.' : 'Cliquez sur un secours ou un site Galana (Station, Magasin, Agence, Siège) pour afficher les détails.' }}
             </p>
           </div>
         </div>
@@ -45,10 +45,10 @@
           @click="toggleFullscreen"
           class="inline-flex items-center gap-1 border rounded-lg px-2 py-1 text-xs font-medium transition cursor-pointer shadow-2xs select-none shrink-0"
           :class="isFullscreen ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200'"
-          :title="isFullscreen ? 'Quitter le plein écran (Échap)' : 'Plein écran'"
+          :title="isFullscreen ? (locale === 'en' ? 'Exit fullscreen (Esc)' : 'Quitter le plein écran (Échap)') : (locale === 'en' ? 'Fullscreen' : 'Plein écran')"
         >
           <component :is="isFullscreen ? Minimize2 : Maximize2" :size="13" />
-          <span class="hidden sm:inline">{{ isFullscreen ? 'Quitter' : 'Agrandir' }}</span>
+          <span class="hidden sm:inline">{{ isFullscreen ? (locale === 'en' ? 'Exit' : 'Quitter') : (locale === 'en' ? 'Expand' : 'Agrandir') }}</span>
         </button>
       </div>
 
@@ -59,7 +59,7 @@
           <input
             v-model="mapSearchQuery"
             type="text"
-            placeholder="Rechercher sur la carte (secours, station Galana, ville, téléphone, adresse)..."
+            :placeholder="locale === 'en' ? 'Search on map (emergency, Galana station, city, phone, address)...' : 'Rechercher sur la carte (secours, station Galana, ville, téléphone, adresse)...'"
             @focus="isSearchDropdownOpen = true"
             @keydown.enter.prevent="handleSearchEnter"
             @keydown.escape="isSearchDropdownOpen = false"
@@ -70,14 +70,14 @@
               v-if="mapSearchQuery.trim()"
               class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary whitespace-nowrap"
             >
-              {{ filteredContacts.length + filteredSites.length }} repères
+              {{ filteredContacts.length + filteredSites.length }} {{ locale === 'en' ? 'pins' : 'repères' }}
             </span>
             <button
               v-if="mapSearchQuery"
               type="button"
               @click="clearMapSearch"
               class="p-0.5 rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition cursor-pointer"
-              title="Effacer la recherche"
+              :title="locale === 'en' ? 'Clear search' : 'Effacer la recherche'"
             >
               <XIcon :size="13" />
             </button>
@@ -99,10 +99,10 @@
           <div v-if="searchResultsContacts.length > 0">
             <div class="flex items-center justify-between pb-1.5 border-b border-gray-100 text-[11px] font-bold text-gray-700">
               <span class="flex items-center gap-1">
-                <span>🚨 Services de secours</span>
+                <span>🚨 {{ locale === 'en' ? 'Emergency Services' : 'Services de secours' }}</span>
                 <span class="text-xs text-red-600 font-extrabold">({{ searchResultsContacts.length }})</span>
               </span>
-              <span class="text-[10px] text-gray-400 font-normal">Cliquer pour localiser</span>
+              <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Click to locate' : 'Cliquer pour localiser' }}</span>
             </div>
             <div class="divide-y divide-gray-50 mt-1">
               <button
@@ -133,7 +133,7 @@
                 </div>
                 <div class="shrink-0 flex items-center gap-1 text-[10px] text-primary font-semibold group-hover:underline">
                   <Compass :size="12" />
-                  <span>Voir</span>
+                  <span>{{ locale === 'en' ? 'View' : 'Voir' }}</span>
                 </div>
               </button>
             </div>
@@ -143,10 +143,10 @@
           <div v-if="searchResultsSites.length > 0">
             <div class="flex items-center justify-between pb-1.5 border-b border-gray-100 text-[11px] font-bold text-amber-900">
               <span class="flex items-center gap-1">
-                <span>⛽ Stations Galana (SS)</span>
+                <span>📍 {{ locale === 'en' ? 'Galana Sites & Stations' : 'Sites & Stations Galana' }}</span>
                 <span class="text-xs text-amber-600 font-extrabold">({{ searchResultsSites.length }})</span>
               </span>
-              <span class="text-[10px] text-gray-400 font-normal">Cliquer pour centrer et voir secours proches</span>
+              <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Click to center and see nearby services' : 'Cliquer pour centrer et voir secours proches' }}</span>
             </div>
             <div class="divide-y divide-gray-50 mt-1">
               <button
@@ -173,7 +173,7 @@
                 </div>
                 <div class="shrink-0 flex items-center gap-1 text-[10px] text-amber-700 font-semibold group-hover:underline">
                   <Compass :size="12" />
-                  <span>Centrer</span>
+                  <span>{{ locale === 'en' ? 'Center' : 'Centrer' }}</span>
                 </div>
               </button>
             </div>
@@ -185,9 +185,9 @@
             class="py-4 text-center text-gray-500"
           >
             <div class="text-xl mb-1">🔍</div>
-            <p class="text-xs font-semibold text-gray-700">Aucun résultat trouvé sur la carte</p>
+            <p class="text-xs font-semibold text-gray-700">{{ locale === 'en' ? 'No results found on map' : 'Aucun résultat trouvé sur la carte' }}</p>
             <p class="text-[10px] text-gray-400 mt-0.5">
-              Essayez un nom de ville (ex: Toamasina, Majunga), une catégorie (pompier, hôpital) ou une station Galana.
+              {{ locale === 'en' ? 'Try a city name (e.g. Toamasina, Majunga), a category (firefighters, hospital) or a Galana station.' : 'Essayez un nom de ville (ex: Toamasina, Majunga), une catégorie (pompier, hôpital) ou une station Galana.' }}
             </p>
           </div>
         </div>
@@ -200,12 +200,12 @@
           v-model="selectedType"
           class="border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-[11px] font-medium text-gray-700 outline-none focus:border-primary cursor-pointer"
         >
-          <option value="ALL">Tous types ({{ contacts.length }})</option>
-          <option value="POMPIER">🚒 Pompiers</option>
-          <option value="HOPITAL">🏥 Hôpitaux</option>
-          <option value="AMBULANCE">🚑 Ambulances</option>
-          <option value="POLICE">👮 Police</option>
-          <option value="GENDARMERIE">🛡️ Gendarmerie</option>
+          <option value="ALL">{{ locale === 'en' ? 'All types' : 'Tous types' }} ({{ contacts.length }})</option>
+          <option value="POMPIER">🚒 {{ locale === 'en' ? 'Firefighters' : 'Pompiers' }}</option>
+          <option value="HOPITAL">🏥 {{ locale === 'en' ? 'Hospitals' : 'Hôpitaux' }}</option>
+          <option value="AMBULANCE">🚑 {{ locale === 'en' ? 'Ambulances' : 'Ambulances' }}</option>
+          <option value="POLICE">👮 {{ locale === 'en' ? 'Police' : 'Police' }}</option>
+          <option value="GENDARMERIE">🛡️ {{ locale === 'en' ? 'Gendarmerie' : 'Gendarmerie' }}</option>
         </select>
 
         <!-- Filtre Province -->
@@ -213,7 +213,7 @@
           v-model="selectedProvince"
           class="border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-[11px] font-medium text-gray-700 outline-none focus:border-primary cursor-pointer"
         >
-          <option value="ALL">Toutes provinces</option>
+          <option value="ALL">{{ locale === 'en' ? 'All provinces' : 'Toutes provinces' }}</option>
           <option v-for="prov in provinceList" :key="prov" :value="prov">
             {{ prov }}
           </option>
@@ -225,9 +225,9 @@
           @click="showContacts = !showContacts"
           class="inline-flex items-center gap-1 border rounded-lg px-2 py-1 text-[11px] font-medium transition cursor-pointer select-none"
           :class="showContacts ? 'bg-red-50 text-red-800 border-red-300 font-bold' : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'"
-          title="Afficher/masquer les secours sur la carte"
+          :title="locale === 'en' ? 'Show/hide emergency services on map' : 'Afficher/masquer les secours sur la carte'"
         >
-          <span>🚨 Secours ({{ filteredContacts.length }})</span>
+          <span>🚨 {{ locale === 'en' ? 'Emergency' : 'Secours' }} ({{ filteredContacts.length }})</span>
         </button>
 
         <!-- Toggle Affichage Stations Galana (SS) -->
@@ -236,10 +236,10 @@
           @click="showStations = !showStations"
           class="inline-flex items-center gap-1 border rounded-lg px-2 py-1 text-[11px] font-medium transition cursor-pointer select-none"
           :class="showStations ? 'bg-amber-50 text-amber-900 border-amber-300 font-bold' : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'"
-          title="Afficher/masquer les stations-service Galana"
+          :title="locale === 'en' ? 'Show/hide Galana service stations' : 'Afficher/masquer les stations-service Galana'"
         >
           <Fuel :size="12" class="text-amber-600" />
-          <span>Stations ({{ filteredSites.length }})</span>
+          <span>{{ locale === 'en' ? 'Stations' : 'Stations' }} ({{ filteredSites.length }})</span>
         </button>
 
         <!-- Reset Vue -->
@@ -247,9 +247,9 @@
           type="button"
           @click="jumpTo([-18.8792, 47.5079], 6)"
           class="px-2 py-1 rounded-lg border border-gray-200 bg-white hover:bg-gray-100 text-gray-600 text-[11px] transition cursor-pointer font-medium ml-auto"
-          title="Centrer sur Madagascar"
+          :title="locale === 'en' ? 'Center on Madagascar' : 'Centrer sur Madagascar'"
         >
-          Centrer
+          {{ locale === 'en' ? 'Center' : 'Centrer' }}
         </button>
       </div>
 
@@ -257,7 +257,7 @@
       <div class="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-hide text-[10px] text-gray-500">
         <span class="font-semibold text-gray-600 mr-0.5 shrink-0 flex items-center gap-0.5">
           <Compass :size="11" />
-          Zoom :
+          {{ locale === 'en' ? 'Zoom:' : 'Zoom :' }}
         </span>
         <button
           v-for="city in cityJumpList"
@@ -283,33 +283,33 @@
         class="absolute inset-0 bg-white/80 backdrop-blur-2xs z-[1000] flex flex-col items-center justify-center gap-2 text-gray-600"
       >
         <Loader2 :size="24" class="animate-spin text-primary" />
-        <span class="text-xs font-semibold">Chargement des coordonnées des secours et stations...</span>
+        <span class="text-xs font-semibold">{{ locale === 'en' ? 'Loading emergency and station coordinates...' : 'Chargement des coordonnées des secours et stations...' }}</span>
       </div>
 
       <!-- LÉGENDE COMPACTE -->
       <div
         class="absolute bottom-2.5 left-2.5 z-[1000] bg-white/95 backdrop-blur-xs border border-gray-200 rounded-xl p-2 shadow-md text-[10px] hidden sm:flex flex-col gap-1 max-w-[210px]"
       >
-        <span class="font-bold text-gray-800 border-b border-gray-100 pb-0.5">Légende</span>
+        <span class="font-bold text-gray-800 border-b border-gray-100 pb-0.5">{{ locale === 'en' ? 'Legend' : 'Légende' }}</span>
         <div class="flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-full bg-red-600 border border-white shadow-xs"></span>
-          <span class="text-gray-700">Pompiers (118)</span>
+          <span class="text-gray-700">{{ locale === 'en' ? 'Firefighters (118)' : 'Pompiers (118)' }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-full bg-emerald-600 border border-white shadow-xs"></span>
-          <span class="text-gray-700">Hôpitaux / CHU</span>
+          <span class="text-gray-700">{{ locale === 'en' ? 'Hospitals / Clinics' : 'Hôpitaux / CHU' }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-full bg-sky-500 border border-white shadow-xs"></span>
-          <span class="text-gray-700">Ambulances SAMU</span>
+          <span class="text-gray-700">{{ locale === 'en' ? 'Ambulances / SAMU' : 'Ambulances SAMU' }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-full bg-indigo-600 border border-white shadow-xs"></span>
-          <span class="text-gray-700">Police / Gendarmerie</span>
+          <span class="text-gray-700">{{ locale === 'en' ? 'Police / Gendarmerie' : 'Police / Gendarmerie' }}</span>
         </div>
         <div v-if="showStations" class="flex items-center gap-1.5 pt-0.5 border-t border-gray-100">
           <span class="h-2.5 w-2.5 rounded-full bg-amber-500 border border-white shadow-xs"></span>
-          <span class="text-amber-900 font-semibold">Stations Galana (SS)</span>
+          <span class="text-amber-900 font-semibold">{{ locale === 'en' ? 'Sites & Stations Galana' : 'Sites & Stations Galana' }}</span>
         </div>
       </div>
 
@@ -343,7 +343,7 @@
             <!-- TOOLTIP -->
             <LTooltip :options="{ direction: 'top', offset: [0, -6] }">
               <div class="text-xs p-1">
-                <span class="font-bold text-gray-900 block">⛽ Galana {{ site.name }}</span>
+                <span class="font-bold text-gray-900 block">{{ siteEmoji(site.type) }} Galana {{ site.name }} ({{ formatSiteType(site.type) }})</span>
                 <span class="text-gray-500 font-normal">{{ site.locality }} ({{ site.province }})</span>
                 <span class="text-amber-800 font-semibold block text-[10px] mt-0.5">
                   Cliquez pour localiser les secours proches
@@ -421,7 +421,7 @@
                   class="w-full mt-2 py-1.5 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                 >
                   <Fuel :size="13" />
-                  <span>Classer l'annuaire par cette station</span>
+                  <span>Classer l'annuaire par ce site</span>
                 </button>
               </div>
             </LPopup>
@@ -554,11 +554,75 @@ import {
   MapPin,
 } from "@lucide/vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import type {
   EmergencyContactType,
   EmergencySiteType,
   EmergencyType,
 } from "../../../../@types/EmergencyContact.type";
+
+const { t, locale } = useI18n();
+
+function formatSiteType(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return locale.value === 'en' ? 'Shop' : 'Magasin';
+    case 'AGENCE': return locale.value === 'en' ? 'Agency' : 'Agence';
+    case 'SIEGE': return locale.value === 'en' ? 'Headquarters' : 'Siège';
+    case 'STATION_SERVICE':
+    default: return locale.value === 'en' ? 'Service Station' : 'Station-Service';
+  }
+}
+
+function siteEmoji(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return '🏪';
+    case 'AGENCE': return '🏢';
+    case 'SIEGE': return '🏛️';
+    case 'STATION_SERVICE':
+    default: return '⛽';
+  }
+}
+
+function siteTypeBadgeClass(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'AGENCE': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'SIEGE': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'STATION_SERVICE':
+    default: return 'bg-amber-50 text-amber-700 border-amber-200';
+  }
+}
+
+function getSiteHeaderClass(type?: string): string {
+  switch (type) {
+    case 'MAGASIN': return 'text-blue-700';
+    case 'AGENCE': return 'text-purple-700';
+    case 'SIEGE': return 'text-indigo-700';
+    case 'STATION_SERVICE':
+    default: return 'text-amber-700';
+  }
+}
+
+function getSiteMarkerStyle(site: EmergencySiteType, isSelected: boolean) {
+  const type = site.type;
+  if (isSelected) {
+    return {
+      radius: 13,
+      color: '#FFFFFF',
+      fillColor: type === 'MAGASIN' ? '#2563EB' : type === 'AGENCE' ? '#9333EA' : type === 'SIEGE' ? '#4F46E5' : '#D97706',
+      fillOpacity: 1.0,
+      weight: 3.5,
+    };
+  }
+  switch (type) {
+    case 'MAGASIN': return { radius: 7, color: '#1E40AF', fillColor: '#3B82F6', fillOpacity: 0.9, weight: 1.5 };
+    case 'AGENCE': return { radius: 7, color: '#6B21A8', fillColor: '#A855F7', fillOpacity: 0.9, weight: 1.5 };
+    case 'SIEGE': return { radius: 7, color: '#3730A3', fillColor: '#6366F1', fillOpacity: 0.9, weight: 1.5 };
+    case 'STATION_SERVICE':
+    default: return { radius: 7, color: '#B45309', fillColor: '#F59E0B', fillOpacity: 0.9, weight: 1.5 };
+  }
+}
+
 
 interface Props {
   contacts: EmergencyContactType[];

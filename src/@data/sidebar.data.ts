@@ -24,13 +24,14 @@ const sidebar_routes = [
             {
                 label: "personnels",
                 name: "PERSONNEL",
-
             },
-
+            {
+                label: "sites",
+                name: "SITES",
+            },
             {
                 label: "activity",
                 name: "ACTIVITY",
-
             },
         ]
     },
@@ -90,30 +91,30 @@ const sidebar_routes = [
         name: "EMERGENCY_CONTACT",
         children: []
     },
-    {
-        label: "inventory",
-        icon: PackageIcon,
-        isOpen: false,
-        name: "DASHBOARDe",
-        children: [
-            {
-                label: "Templates",
-                name: "DASHBOARD1",
+    // {
+    //     label: "inventory",
+    //     icon: PackageIcon,
+    //     isOpen: false,
+    //     name: "DASHBOARDe",
+    //     children: [
+    //         {
+    //             label: "Templates",
+    //             name: "DASHBOARD1",
 
-            },
-            {
-                label: "Checklists",
-                name: "DASHBOARD1",
+    //         },
+    //         {
+    //             label: "Checklists",
+    //             name: "DASHBOARD1",
 
-            },
-            {
-                label: "Actions",
-                name: "DASHBOARD1",
+    //         },
+    //         {
+    //             label: "Actions",
+    //             name: "DASHBOARD1",
 
-            },
+    //         },
 
-        ]
-    },
+    //     ]
+    // },
 
     {
         label: "profile",

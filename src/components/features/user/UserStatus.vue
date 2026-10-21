@@ -4,18 +4,13 @@
     class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap shadow-2xs"
   >
     <span class="w-1.5 h-1.5 rounded-full" :class="dotClass"></span>
-    <span>
-      {{
-        UserStatusJsonData.find(
-          item => item.value === name,
-        )?.label || name
-      }}
-    </span>
+    <span>{{ displayLabel }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { UserStatusType } from '../../../@types/User.type'
 import { UserStatusJsonData } from '../../../@data/User.data'
 
@@ -24,6 +19,15 @@ type Props = {
 }
 
 const props = defineProps<Props>()
+const { t, te } = useI18n()
+
+const displayLabel = computed(() => {
+  if (props.name && te(`status.${props.name}`)) {
+    return t(`status.${props.name}`)
+  }
+  return UserStatusJsonData.find(item => item.value === props.name)?.label || props.name
+})
+
 
 const statusClass = computed(() => {
   switch (props.name) {

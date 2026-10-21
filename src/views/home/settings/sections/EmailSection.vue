@@ -4,14 +4,16 @@
     <div class="border-b border-border p-5">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-text-primary">Messagerie, Protocoles & Notifications E-mail</h3>
+          <h3 class="text-base font-bold text-text-primary">
+            {{ locale === 'en' ? 'Messaging, Protocols & Email Notifications' : 'Messagerie, Protocoles & Notifications E-mail' }}
+          </h3>
           <p class="mt-1 text-xs text-text-secondary">
-            Comportement des liens vers la messagerie, serveur d'envoi SMTP et destinataires en copie automatique.
+            {{ locale === 'en' ? 'Email link behavior, SMTP outgoing server, and automatic carbon copy recipients.' : "Comportement des liens vers la messagerie, serveur d'envoi SMTP et destinataires en copie automatique." }}
           </p>
         </div>
         <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-[#0F9D58] ring-1 ring-[#0F9D58]/20">
           <MailCheck class="h-3.5 w-3.5" />
-          Passerelle SMTP Active
+          {{ locale === 'en' ? 'SMTP Gateway Active' : 'Passerelle SMTP Active' }}
         </span>
       </div>
     </div>
@@ -21,10 +23,12 @@
       <div class="mb-4">
         <div class="flex items-center gap-2">
           <Send class="h-4 w-4 text-[#0F9D58]" />
-          <h5 class="text-xs font-bold text-text-primary">Méthode d'Ouverture des Liens E-mail</h5>
+          <h5 class="text-xs font-bold text-text-primary">
+            {{ locale === 'en' ? 'Email Links Opening Method' : "Méthode d'Ouverture des Liens E-mail" }}
+          </h5>
         </div>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Définissez comment s'ouvrent les adresses e-mail cliquées depuis les fiches d'audit et les profils.
+          {{ locale === 'en' ? 'Define how clicked email addresses open from audit sheets and profiles.' : "Définissez comment s'ouvrent les adresses e-mail cliquées depuis les fiches d'audit et les profils." }}
         </p>
       </div>
 
@@ -44,15 +48,15 @@
                 Outlook Desktop
               </span>
               <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
-                Installé
+                {{ locale === 'en' ? 'Installed' : 'Installé' }}
               </span>
             </div>
             <p class="mt-2 text-[11px] leading-relaxed text-text-secondary">
-              Lance directement l'application Microsoft Outlook installée sur le poste de travail.
+              {{ locale === 'en' ? 'Directly launches the Microsoft Outlook app installed on the workstation.' : "Lance directement l'application Microsoft Outlook installée sur le poste de travail." }}
             </p>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border/50 pt-2 text-[11px]">
-            <span class="text-text-muted">Recommandé PC</span>
+            <span class="text-text-muted">{{ locale === 'en' ? 'Recommended PC' : 'Recommandé PC' }}</span>
             <div
               class="flex h-4 w-4 items-center justify-center rounded-full border"
               :class="emailOpenMethod === 'OUTLOOK_DESKTOP' ? 'border-[#0F9D58] bg-[#0F9D58] text-white' : 'border-border'"
@@ -81,11 +85,11 @@
               </span>
             </div>
             <p class="mt-2 text-[11px] leading-relaxed text-text-secondary">
-              Ouvre un nouvel onglet avec la version Web d'Outlook (portal.office.com).
+              {{ locale === 'en' ? 'Opens a new tab with the web version of Outlook (portal.office.com).' : "Ouvre un nouvel onglet avec la version Web d'Outlook (portal.office.com)." }}
             </p>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border/50 pt-2 text-[11px]">
-            <span class="text-text-muted">Navigateur</span>
+            <span class="text-text-muted">{{ locale === 'en' ? 'Browser' : 'Navigateur' }}</span>
             <div
               class="flex h-4 w-4 items-center justify-center rounded-full border"
               :class="emailOpenMethod === 'OUTLOOK_WEB' ? 'border-[#0F9D58] bg-[#0F9D58] text-white' : 'border-border'"
@@ -107,18 +111,18 @@
             <div class="flex items-center justify-between">
               <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-text-primary">
                 <HelpCircle class="h-4 w-4 text-[#0F9D58]" />
-                Demander à chaque fois
+                {{ locale === 'en' ? 'Ask every time' : 'Demander à chaque fois' }}
               </span>
               <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
-                Dialogue
+                {{ locale === 'en' ? 'Prompt' : 'Dialogue' }}
               </span>
             </div>
             <p class="mt-2 text-[11px] leading-relaxed text-text-secondary">
-              Affiche un dialogue modal pour choisir la méthode à chaque envoi de message.
+              {{ locale === 'en' ? 'Displays a modal dialog to choose the method for each message sent.' : 'Affiche un dialogue modal pour choisir la méthode à chaque envoi de message.' }}
             </p>
           </div>
           <div class="mt-3 flex items-center justify-between border-t border-border/50 pt-2 text-[11px]">
-            <span class="text-text-muted">Flexible</span>
+            <span class="text-text-muted">{{ locale === 'en' ? 'Flexible' : 'Flexible' }}</span>
             <div
               class="flex h-4 w-4 items-center justify-center rounded-full border"
               :class="emailOpenMethod === 'ASK' ? 'border-[#0F9D58] bg-[#0F9D58] text-white' : 'border-border'"
@@ -135,22 +139,24 @@
       <div class="mb-4">
         <div class="flex items-center gap-2">
           <Server class="h-4 w-4 text-[#0F9D58]" />
-          <h5 class="text-xs font-bold text-text-primary">Serveur d'Envoi SMTP & Expéditeur Officiel</h5>
+          <h5 class="text-xs font-bold text-text-primary">
+            {{ locale === 'en' ? 'SMTP Outgoing Server & Official Sender' : "Serveur d'Envoi SMTP & Expéditeur Officiel" }}
+          </h5>
         </div>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Paramètres de connexion utilisés par la plateforme pour émettre les alertes automatiques.
+          {{ locale === 'en' ? 'Connection settings used by the platform to issue automated alerts.' : 'Paramètres de connexion utilisés par la plateforme pour émettre les alertes automatiques.' }}
         </p>
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
-        <Input v-model="smtpForm.from_name" label="Nom affiché de l'expéditeur" :icon="User" placeholder="Galana HSSE Système" />
-        <Input v-model="smtpForm.from_email" type="email" label="Adresse d'expédition (From)" :icon="Mail" placeholder="no-reply-hsse@galana.mg" />
+        <Input v-model="smtpForm.from_name" :label="locale === 'en' ? 'Sender display name' : 'Nom affiché de l\'expéditeur'" :icon="User" placeholder="Galana HSSE Système" />
+        <Input v-model="smtpForm.from_email" type="email" :label="locale === 'en' ? 'Sender address (From)' : 'Adresse d\'expédition (From)'" :icon="Mail" placeholder="no-reply-hsse@galana.mg" />
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Input v-model="smtpForm.smtp_host" label="Hôte SMTP" :icon="Server" placeholder="smtp.office365.com" />
-        <Input v-model.number="smtpForm.smtp_port" type="number" label="Port SMTP" :icon="Hash" placeholder="587" />
-        <Select v-model="smtpForm.smtp_encryption" label="Chiffrement" :icon="Lock" :options="encryptionOptions" />
+        <Input v-model="smtpForm.smtp_host" :label="locale === 'en' ? 'SMTP Host' : 'Hôte SMTP'" :icon="Server" placeholder="smtp.office365.com" />
+        <Input v-model.number="smtpForm.smtp_port" type="number" :label="locale === 'en' ? 'SMTP Port' : 'Port SMTP'" :icon="Hash" placeholder="587" />
+        <Select v-model="smtpForm.smtp_encryption" :label="locale === 'en' ? 'Encryption' : 'Chiffrement'" :icon="Lock" :options="encryptionOptions" />
       </div>
     </div>
 
@@ -159,10 +165,12 @@
       <div class="mb-4">
         <div class="flex items-center gap-2">
           <Users class="h-4 w-4 text-[#0F9D58]" />
-          <h5 class="text-xs font-bold text-text-primary">Destinataires en Copie Permanente (CC)</h5>
+          <h5 class="text-xs font-bold text-text-primary">
+            {{ locale === 'en' ? 'Permanent CC Recipients' : 'Destinataires en Copie Permanente (CC)' }}
+          </h5>
         </div>
         <p class="mt-0.5 text-xs text-text-secondary">
-          Ces rôles reçoivent systématiquement une copie des alertes d'assignation et de clôture d'actions correctives.
+          {{ locale === 'en' ? 'These roles automatically receive a copy of corrective action assignment and closure alerts.' : 'Ces rôles reçoivent systématiquement une copie des alertes d’assignation et de clôture d’actions correctives.' }}
         </p>
       </div>
 
@@ -171,9 +179,9 @@
           v-model="selectedRecipientId"
           class="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-xs text-text-primary focus:border-[#0F9D58] focus:outline-hidden"
         >
-          <option :value="undefined">Sélectionner un rôle à ajouter en copie...</option>
+          <option :value="undefined">{{ locale === 'en' ? 'Select a role to add to CC...' : 'Sélectionner un rôle à ajouter en copie...' }}</option>
           <option v-for="recipient in selectableRecipients" :key="recipient.id" :value="recipient.id">
-            {{ recipient.label }}
+            {{ getRecipientLabel(recipient) }}
           </option>
         </select>
 
@@ -183,7 +191,7 @@
           class="inline-flex items-center gap-1.5 rounded-xl bg-[#0F9D58] px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#0c8248] disabled:opacity-40"
         >
           <Plus :size="16" />
-          Ajouter
+          {{ t('common.add') }}
         </button>
       </div>
 
@@ -193,7 +201,7 @@
           :key="recipient.id"
           class="inline-flex items-center gap-2 rounded-full border border-[#0F9D58]/30 bg-[#0F9D58]/5 px-3 py-1 text-xs font-medium text-text-primary"
         >
-          <span>{{ recipient.label }}</span>
+          <span>{{ getRecipientLabel(recipient) }}</span>
           <button
             @click="removeRecipient(recipient.id)"
             class="rounded-full p-0.5 text-text-muted hover:bg-danger/10 hover:text-danger"
@@ -204,7 +212,7 @@
       </div>
 
       <p v-else class="mt-3 text-xs text-text-muted">
-        Aucun destinataire permanent configuré en copie.
+        {{ locale === 'en' ? 'No permanent CC recipient configured.' : 'Aucun destinataire permanent configuré en copie.' }}
       </p>
     </div>
 
@@ -217,7 +225,7 @@
         class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50"
       >
         <RotateCcw class="h-3.5 w-3.5" />
-        Annuler
+        {{ t('common.cancel') }}
       </button>
 
       <button
@@ -228,7 +236,7 @@
       >
         <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
         <Save v-else class="h-3.5 w-3.5" />
-        Enregistrer les paramètres e-mail
+        {{ locale === 'en' ? 'Save email settings' : 'Enregistrer les paramètres e-mail' }}
       </button>
     </div>
   </div>
@@ -255,21 +263,24 @@ import {
   X
 } from '@lucide/vue'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Input from '../../../../components/ui/Input.vue'
 import Select from '../../../../components/ui/Select.vue'
 import settingService from '../../../../core/services/setting.service'
 import { toast } from 'vue3-toastify'
+
+const { t, locale } = useI18n()
 
 type EmailOpenMethodType = 'OUTLOOK_DESKTOP' | 'OUTLOOK_WEB' | 'ASK'
 
 const emailOpenMethod = ref<EmailOpenMethodType>('OUTLOOK_DESKTOP')
 const savedEmailOpenMethod = ref<EmailOpenMethodType>('OUTLOOK_DESKTOP')
 
-const encryptionOptions = [
-  { label: 'TLS (Recommandé - Port 587)', value: 'tls' },
-  { label: 'SSL (Port 465)', value: 'ssl' },
-  { label: 'Aucun (Port 25)', value: 'none' }
-]
+const encryptionOptions = computed(() => [
+  { label: locale.value === 'en' ? 'TLS (Recommended - Port 587)' : 'TLS (Recommandé - Port 587)', value: 'tls' },
+  { label: locale.value === 'en' ? 'SSL (Port 465)' : 'SSL (Port 465)', value: 'ssl' },
+  { label: locale.value === 'en' ? 'None (Port 25)' : 'Aucun (Port 25)', value: 'none' }
+])
 
 const smtpDefaults = {
   from_name: 'Galana HSSE Système',
@@ -284,22 +295,27 @@ const initialSmtpSnapshot = ref(JSON.stringify(smtpDefaults))
 
 type RecipientType = {
   id: number
-  label: string
+  label_fr: string
+  label_en: string
 }
 
 const availableRecipients = ref<RecipientType[]>([
-  { id: 1, label: 'Responsable hiérarchique du déclarant' },
-  { id: 2, label: 'Responsable HSSE Galana' },
-  { id: 3, label: 'Directeur d’exploitation de site' },
-  { id: 4, label: 'Administrateurs du système' }
+  { id: 1, label_fr: 'Responsable hiérarchique du déclarant', label_en: 'Direct supervisor of reporter' },
+  { id: 2, label_fr: 'Responsable HSSE Galana', label_en: 'Galana HSSE Manager' },
+  { id: 3, label_fr: 'Directeur d’exploitation de site', label_en: 'Site Operations Director' },
+  { id: 4, label_fr: 'Administrateurs du système', label_en: 'System Administrators' }
 ])
 
 const selectedRecipients = ref<RecipientType[]>([
-  { id: 1, label: 'Responsable hiérarchique du déclarant' },
-  { id: 2, label: 'Responsable HSSE Galana' }
+  { id: 1, label_fr: 'Responsable hiérarchique du déclarant', label_en: 'Direct supervisor of reporter' },
+  { id: 2, label_fr: 'Responsable HSSE Galana', label_en: 'Galana HSSE Manager' }
 ])
 const savedRecipientIds = ref<number[]>([1, 2])
 const selectedRecipientId = ref<number>()
+
+function getRecipientLabel(r: RecipientType) {
+  return locale.value === 'en' ? r.label_en : r.label_fr
+}
 
 const selectableRecipients = computed(() =>
   availableRecipients.value.filter(
@@ -371,10 +387,10 @@ function save() {
       savedEmailOpenMethod.value = emailOpenMethod.value
       savedRecipientIds.value = selectedRecipients.value.map(r => r.id)
       initialSmtpSnapshot.value = JSON.stringify(smtpForm)
-      toast.success('Paramètres e-mail enregistrés avec succès !')
+      toast.success(locale.value === 'en' ? 'Email settings saved successfully!' : 'Paramètres e-mail enregistrés avec succès !')
     })
     .catch(() => {
-      toast.error("Erreur lors de l'enregistrement des paramètres e-mail.")
+      toast.error(locale.value === 'en' ? 'Error saving email settings.' : "Erreur lors de l'enregistrement des paramètres e-mail.")
     })
     .finally(() => {
       isSaving.value = false

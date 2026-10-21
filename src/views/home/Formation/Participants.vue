@@ -154,7 +154,7 @@
                                 <th>FONCTION</th>
                                 <th>DIRECTION</th>
                                 <th>ENTITÉ</th>
-                                <th class="text-right pr-4">ACTIONS</th>
+                               
                             </tr>
                         </thead>
                         <tbody>
@@ -197,15 +197,7 @@
                                         {{ item.entity || '-' }}
                                     </span>
                                 </td>
-                                <td class="text-right pr-4" @click.stop>
-                                    <button
-                                        type="button"
-                                        @click="deleteSpecificParticipant(item)"
-                                        class="p-1 rounded text-gray-400 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
-                                        title="Retirer de la formation">
-                                        <Trash2Icon :size="16" />
-                                    </button>
-                                </td>
+                               
                             </tr>
                             <tr v-if="filteredData.length === 0">
                                 <td colspan="8" class="text-center py-12 text-gray-500">

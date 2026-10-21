@@ -17,7 +17,9 @@
         if (!val) return '';
         if (te(val)) return t(val);
         const map: Record<string, string> = {
+            'Ajout': t('common.add'),
             'Ajouter': t('common.add'),
+            'Créer': t('common.create'),
             'Importer': t('common.import'),
             'Export': t('common.export'),
             'Exporter': t('common.export'),

@@ -28,6 +28,7 @@ import Header from '../../../components/shared/Header.vue'
 import Button from '../../../components/ui/Button.vue'
 import Card from '../../../components/features/dashboard/Card.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RolePermissionSection from '../../../components/features/profile/RolePermissionSection.vue'
 import OverviewSection from '../../../components/features/profile/OverviewSection.vue'
 import SecuritySection from '../../../components/features/profile/SecuritySection.vue'
@@ -54,11 +55,13 @@ export interface ProfileUser {
   created_at?: string
 }
 
-const tab_profile = [
-  { label: "Coordonnées & Organisation", id: 0 },
-  { label: "Rôles & Habilitations", id: 1 },
-  { label: "Sécurité & Conformité HSSE", id: 2 }
-]
+const { t, locale } = useI18n()
+
+const tab_profile = computed(() => [
+  { label: t('profile.tabs.overview', 'Coordonnées & Organisation'), id: 0 },
+  { label: t('profile.tabs.roles', 'Rôles & Habilitations'), id: 1 },
+  { label: t('profile.tabs.security', 'Sécurité & Conformité HSSE'), id: 2 }
+])
 const selected_tab = ref(0)
 const copiedHeaderField = ref<string | null>(null)
 
@@ -66,7 +69,7 @@ function copyText(text: string | undefined, key: string) {
   if (!text) return
   navigator.clipboard.writeText(text).then(() => {
     copiedHeaderField.value = key
-    toast.success('Copié dans le presse-papier')
+    toast.success(locale.value === 'en' ? 'Copied to clipboard' : 'Copié dans le presse-papier')
     setTimeout(() => {
       if (copiedHeaderField.value === key) {
         copiedHeaderField.value = null
@@ -134,27 +137,28 @@ const userInitials = computed(() => {
 })
 
 const statusInfo = computed(() => {
-  const match = (UserStatusJsonData as { value: string; label: string }[])?.find(
-    (item) => item.value === user.value.status
-  )
   const active = user.value.status === 'ACTIVE' || user.value.status === 'ENABLED'
   return {
-    label: match?.label ?? (active ? 'Actif' : 'Désactivé'),
+    label: active ? t('status.ENABLED', 'Actif') : t('status.DISABLED', 'Désactivé'),
     active
   }
 })
 
 const roleLabel = computed(() => {
+  const isEn = locale.value === 'en'
+  const r = (user.value.role || '').toUpperCase()
+  if (r === 'ADMIN') return isEn ? 'Administrator' : 'Administrateur'
+  if (r === 'USER') return isEn ? 'User' : 'Utilisateur'
   const match = (UserRoleDataJson as { value: string; label: string }[])?.find(
     (item) => item.value === user.value.role
   )
-  return match?.label ?? user.value.role ?? 'Utilisateur'
+  return match?.label ?? user.value.role ?? (isEn ? 'User' : 'Utilisateur')
 })
 
 const memberSince = computed(() => {
   if (!user.value.created_at) return null
   try {
-    return new Intl.DateTimeFormat('fr-FR', {
+    return new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
@@ -447,11 +451,11 @@ function submitPasswordModal() {
                 </div>
 
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-1.5 text-xs text-slate-600">
-                  <span class="font-semibold text-slate-800">{{ user.job || 'Fonction non spécifiée' }}</span>
+                  <span class="font-semibold text-slate-800">{{ user.job || (locale === 'en' ? 'Position not specified' : 'Fonction non spécifiée') }}</span>
                   <span class="text-slate-300">•</span>
                   <span class="inline-flex items-center gap-1 font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
                     <Building2 class="h-3 w-3" />
-                    {{ user.department || 'Département HSSE' }}
+                    {{ user.department || (locale === 'en' ? 'HSSE Department' : 'Département HSSE') }}
                   </span>
                   <span class="text-slate-300">•</span>
                   <span class="inline-flex items-center gap-1 font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
@@ -470,7 +474,7 @@ function submitPasswordModal() {
                 class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
               >
                 <KeyRound class="h-4 w-4 text-[#0F9D58]" />
-                <span>Mot de passe</span>
+                <span>{{ locale === 'en' ? 'Password' : 'Mot de passe' }}</span>
               </button>
 
               <button
@@ -479,7 +483,7 @@ function submitPasswordModal() {
                 class="inline-flex items-center gap-2 rounded-xl bg-[#0F9D58] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#0c8248] hover:shadow-sm cursor-pointer"
               >
                 <UserPen class="h-4 w-4" />
-                <span>Modifier le profil</span>
+                <span>{{ locale === 'en' ? 'Edit profile' : 'Modifier le profil' }}</span>
               </button>
             </div>
           </div>
@@ -490,13 +494,13 @@ function submitPasswordModal() {
             <div class="flex items-center justify-between rounded-lg bg-slate-50/80 px-3 py-2 border border-slate-100">
               <div class="flex items-center gap-2 min-w-0">
                 <MailIcon class="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                <span class="truncate text-slate-700 font-medium">{{ user.email || 'Non renseigné' }}</span>
+                <span class="truncate text-slate-700 font-medium">{{ user.email || (locale === 'en' ? 'Not specified' : 'Non renseigné') }}</span>
               </div>
               <button
                 v-if="user.email"
                 type="button"
                 @click="copyText(user.email, 'email')"
-                title="Copier l'e-mail"
+                :title="locale === 'en' ? 'Copy email' : 'Copier l\'e-mail'"
                 class="text-slate-400 hover:text-slate-700 ml-1.5 shrink-0"
               >
                 <Check v-if="copiedHeaderField === 'email'" class="h-3.5 w-3.5 text-emerald-600" />
@@ -508,13 +512,13 @@ function submitPasswordModal() {
             <div class="flex items-center justify-between rounded-lg bg-slate-50/80 px-3 py-2 border border-slate-100">
               <div class="flex items-center gap-2 min-w-0">
                 <Phone class="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                <span class="truncate text-slate-700 font-medium">{{ user.phone_number || 'Téléphone non renseigné' }}</span>
+                <span class="truncate text-slate-700 font-medium">{{ user.phone_number || (locale === 'en' ? 'Phone not specified' : 'Téléphone non renseigné') }}</span>
               </div>
               <button
                 v-if="user.phone_number"
                 type="button"
                 @click="copyText(user.phone_number, 'phone')"
-                title="Copier le téléphone"
+                :title="locale === 'en' ? 'Copy phone' : 'Copier le téléphone'"
                 class="text-slate-400 hover:text-slate-700 ml-1.5 shrink-0"
               >
                 <Check v-if="copiedHeaderField === 'phone'" class="h-3.5 w-3.5 text-emerald-600" />
@@ -527,7 +531,7 @@ function submitPasswordModal() {
               <div class="flex items-center gap-2 min-w-0">
                 <CalendarDays class="h-3.5 w-3.5 text-slate-400 shrink-0" />
                 <span class="truncate text-slate-700 font-medium">
-                  {{ memberSince ? `Inscrit le ${memberSince}` : 'Compte actif Galana' }}
+                  {{ memberSince ? (locale === 'en' ? `Member since ${memberSince}` : `Inscrit le ${memberSince}`) : (locale === 'en' ? 'Active Galana account' : 'Compte actif Galana') }}
                 </span>
               </div>
               <span class="h-2 w-2 rounded-full bg-emerald-500 shrink-0"></span>
@@ -539,26 +543,26 @@ function submitPasswordModal() {
       <!-- 2. KPI CARDS RÉSUMÉ EXÉCUTIF (Couleurs foncées conformes) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card
-          title="État du Compte"
+          :title="locale === 'en' ? 'Account Status' : 'État du Compte'"
           :value="statusInfo.label"
-          subtitle="Accès certifié & conforme HSSE"
+          :subtitle="locale === 'en' ? 'Certified & HSSE compliant access' : 'Accès certifié & conforme HSSE'"
           theme="green"
           :icon="CheckCircle2"
         />
 
         <Card
-          title="Accréditation Système"
+          :title="locale === 'en' ? 'System Accreditation' : 'Accréditation Système'"
           :value="roleLabel"
-          subtitle="Niveau de privilèges actif"
+          :subtitle="locale === 'en' ? 'Active privilege level' : 'Niveau de privilèges actif'"
           theme="blue"
           :icon="ShieldCheck"
         />
 
         <Card
-          title="Habilitations Actives"
+          :title="locale === 'en' ? 'Active Permissions' : 'Habilitations Actives'"
           :value="user.permissions?.length ?? 0"
-          unit="droits"
-          subtitle="Répartis sur l’ensemble des modules"
+          :unit="locale === 'en' ? 'rights' : 'droits'"
+          :subtitle="locale === 'en' ? 'Across all system modules' : 'Répartis sur l’ensemble des modules'"
           theme="indigo"
           :icon="KeyRound"
           clickable
@@ -566,9 +570,9 @@ function submitPasswordModal() {
         />
 
         <Card
-          title="Rattachement Pôle"
+          :title="locale === 'en' ? 'Pole Attachment' : 'Rattachement Pôle'"
           :value="user.department || 'HSSE'"
-          :subtitle="user.job || 'Fonction opérationnelle'"
+          :subtitle="user.job || (locale === 'en' ? 'Operational function' : 'Fonction opérationnelle')"
           theme="teal"
           :icon="Building2"
         />
@@ -632,27 +636,27 @@ function submitPasswordModal() {
               <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-[#0F9D58]">
                 <HardHat class="h-4 w-4" />
               </div>
-              <h4 class="text-sm font-bold text-slate-800">Engagement Qualité & HSSE</h4>
+              <h4 class="text-sm font-bold text-slate-800">{{ locale === 'en' ? 'Quality & HSSE Commitment' : 'Engagement Qualité & HSSE' }}</h4>
             </div>
 
             <p class="text-xs text-slate-600 leading-relaxed mb-4">
-              La conformité aux exigences HSSE de Galana garantit la protection de nos collaborateurs, la sûreté des installations et la préservation de l'environnement.
+              {{ locale === 'en' ? 'Compliance with Galana HSSE requirements guarantees the protection of our employees, facility safety, and environmental preservation.' : 'La conformité aux exigences HSSE de Galana garantit la protection de nos collaborateurs, la sûreté des installations et la préservation de l\'environnement.' }}
             </p>
 
             <div class="space-y-2 border-t border-slate-100 pt-3 text-xs">
               <div class="flex items-center justify-between text-slate-700">
                 <span class="flex items-center gap-1.5 text-slate-500">
                   <Headphones class="h-3.5 w-3.5 text-emerald-600" />
-                  Assistance HSSE :
+                  {{ locale === 'en' ? 'HSSE Support:' : 'Assistance HSSE :' }}
                 </span>
-                <span class="font-semibold text-slate-800">Poste 404 / DSI</span>
+                <span class="font-semibold text-slate-800">{{ locale === 'en' ? 'Ext 404 / IT Dept' : 'Poste 404 / DSI' }}</span>
               </div>
               <div class="flex items-center justify-between text-slate-700">
                 <span class="flex items-center gap-1.5 text-slate-500">
                   <ShieldCheck class="h-3.5 w-3.5 text-blue-600" />
-                  Protocole :
+                  {{ locale === 'en' ? 'Protocol:' : 'Protocole :' }}
                 </span>
-                <span class="font-semibold text-emerald-700">Zéro Incident</span>
+                <span class="font-semibold text-emerald-700">{{ locale === 'en' ? 'Zero Incident' : 'Zéro Incident' }}</span>
               </div>
             </div>
           </div>
@@ -682,8 +686,8 @@ function submitPasswordModal() {
                 <UserPen class="h-5 w-5" />
               </div>
               <div>
-                <h3 class="text-base font-bold text-slate-900">Mettre à jour mon profil</h3>
-                <p class="text-xs text-slate-500">Modifiez vos informations de contact et votre biographie</p>
+                <h3 class="text-base font-bold text-slate-900">{{ locale === 'en' ? 'Update my profile' : 'Mettre à jour mon profil' }}</h3>
+                <p class="text-xs text-slate-500">{{ locale === 'en' ? 'Modify your contact information and biography' : 'Modifiez vos informations de contact et votre biographie' }}</p>
               </div>
             </div>
             <button
@@ -723,14 +727,14 @@ function submitPasswordModal() {
                 v-model="editForm.first_name"
                 required
                 type="text"
-                label="Prénom *"
-                placeholder="Votre prénom"
+                :label="locale === 'en' ? 'First name *' : 'Prénom *'"
+                :placeholder="locale === 'en' ? 'Your first name' : 'Votre prénom'"
               />
               <Input
                 v-model="editForm.last_name"
                 type="text"
-                label="Nom de famille"
-                placeholder="Votre nom"
+                :label="locale === 'en' ? 'Last name' : 'Nom de famille'"
+                :placeholder="locale === 'en' ? 'Your last name' : 'Votre nom'"
               />
             </div>
 
@@ -738,28 +742,28 @@ function submitPasswordModal() {
             <Input
               v-model="editForm.phone_number"
               type="tel"
-              label="Numéro de téléphone de service"
+              :label="locale === 'en' ? 'Service phone number' : 'Numéro de téléphone de service'"
               placeholder="+261 34 00 000 00"
             />
 
             <!-- Bio -->
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <label class="text-xs font-semibold text-slate-700">À propos / Présentation</label>
-                <span class="text-[11px] text-slate-400">{{ editForm.bio?.length || 0 }}/300 car.</span>
+                <label class="text-xs font-semibold text-slate-700">{{ locale === 'en' ? 'About / Introduction' : 'À propos / Présentation' }}</label>
+                <span class="text-[11px] text-slate-400">{{ editForm.bio?.length || 0 }}/300 {{ locale === 'en' ? 'chars' : 'car.' }}</span>
               </div>
               <textarea
                 v-model="editForm.bio"
                 rows="3"
                 maxlength="300"
-                placeholder="Présentez brièvement vos missions ou votre rôle au sein de l'équipe HSSE Galana..."
+                :placeholder="locale === 'en' ? 'Briefly describe your missions or role within the Galana HSSE team...' : 'Présentez brièvement vos missions ou votre rôle au sein de l\'équipe HSSE Galana...'"
                 class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 transition focus:border-[#0F9D58] focus:outline-none focus:ring-1 focus:ring-[#0F9D58]"
               ></textarea>
             </div>
 
             <!-- Notice email / role -->
             <p class="text-[11px] text-slate-400 leading-tight">
-              Note : L'adresse e-mail professionnelle, l'affectation de département et les habilitations système sont gérées par les administrateurs DSI.
+              {{ locale === 'en' ? 'Note: Work email, department assignment, and system permissions are managed by IT administrators.' : 'Note : L\'adresse e-mail professionnelle, l\'affectation de département et les habilitations système sont gérées par les administrateurs DSI.' }}
             </p>
 
             <!-- Actions buttons -->
@@ -770,7 +774,7 @@ function submitPasswordModal() {
                 @click="closeEditModal"
                 :disabled="isSubmitting"
               >
-                Annuler
+                {{ t('common.cancel', 'Annuler') }}
               </Button>
               <button
                 type="submit"
@@ -779,7 +783,7 @@ function submitPasswordModal() {
               >
                 <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
                 <CheckCircle v-else class="h-4 w-4" />
-                <span>{{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}</span>
+                <span>{{ isSubmitting ? (locale === 'en' ? 'Saving...' : 'Enregistrement...') : (locale === 'en' ? 'Save' : 'Enregistrer') }}</span>
               </button>
             </div>
           </form>
@@ -809,8 +813,8 @@ function submitPasswordModal() {
                 <KeyRound class="h-5 w-5" />
               </div>
               <div>
-                <h3 class="text-base font-bold text-slate-900">Modifier le mot de passe</h3>
-                <p class="text-xs text-slate-500">Sécurisez l'accès à votre compte Galana</p>
+                <h3 class="text-base font-bold text-slate-900">{{ locale === 'en' ? 'Change password' : 'Modifier le mot de passe' }}</h3>
+                <p class="text-xs text-slate-500">{{ locale === 'en' ? 'Secure access to your Galana account' : 'Sécurisez l\'accès à votre compte Galana' }}</p>
               </div>
             </div>
             <button
@@ -833,13 +837,13 @@ function submitPasswordModal() {
 
             <!-- Mot de passe actuel -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-slate-700">Mot de passe actuel *</label>
+              <label class="block text-xs font-semibold text-slate-700">{{ locale === 'en' ? 'Current password *' : 'Mot de passe actuel *' }}</label>
               <div class="relative flex items-center">
                 <input
                   v-model="passwordForm.current_password"
                   :type="showCurrentPassword ? 'text' : 'password'"
                   required
-                  placeholder="Votre mot de passe actuel"
+                  :placeholder="locale === 'en' ? 'Your current password' : 'Votre mot de passe actuel'"
                   class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pr-10 text-xs text-slate-800 placeholder-slate-400 transition focus:border-[#0F9D58] focus:outline-none focus:ring-1 focus:ring-[#0F9D58]"
                   :class="{ 'border-rose-400': passwordFieldErrors.current_password }"
                 />
@@ -859,14 +863,14 @@ function submitPasswordModal() {
 
             <!-- Nouveau mot de passe -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-slate-700">Nouveau mot de passe *</label>
+              <label class="block text-xs font-semibold text-slate-700">{{ locale === 'en' ? 'New password *' : 'Nouveau mot de passe *' }}</label>
               <div class="relative flex items-center">
                 <input
                   v-model="passwordForm.password"
                   :type="showNewPassword ? 'text' : 'password'"
                   required
                   minlength="8"
-                  placeholder="Minimum 8 caractères"
+                  :placeholder="locale === 'en' ? 'Minimum 8 characters' : 'Minimum 8 caractères'"
                   class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pr-10 text-xs text-slate-800 placeholder-slate-400 transition focus:border-[#0F9D58] focus:outline-none focus:ring-1 focus:ring-[#0F9D58]"
                   :class="{ 'border-rose-400': passwordFieldErrors.password }"
                 />
@@ -886,14 +890,14 @@ function submitPasswordModal() {
 
             <!-- Confirmation mot de passe -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-slate-700">Confirmer le nouveau mot de passe *</label>
+              <label class="block text-xs font-semibold text-slate-700">{{ locale === 'en' ? 'Confirm new password *' : 'Confirmer le nouveau mot de passe *' }}</label>
               <div class="relative flex items-center">
                 <input
                   v-model="passwordForm.password_confirmation"
                   :type="showConfirmPassword ? 'text' : 'password'"
                   required
                   minlength="8"
-                  placeholder="Répétez le nouveau mot de passe"
+                  :placeholder="locale === 'en' ? 'Repeat new password' : 'Répétez le nouveau mot de passe'"
                   class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pr-10 text-xs text-slate-800 placeholder-slate-400 transition focus:border-[#0F9D58] focus:outline-none focus:ring-1 focus:ring-[#0F9D58]"
                   :class="{ 'border-rose-400': passwordFieldErrors.password_confirmation }"
                 />
@@ -913,10 +917,10 @@ function submitPasswordModal() {
 
             <!-- Rappel sécurité -->
             <div class="rounded-lg bg-slate-50 border border-slate-100 p-3 text-[11px] text-slate-500 space-y-1">
-              <p class="font-semibold text-slate-700">Recommandations de sécurité :</p>
+              <p class="font-semibold text-slate-700">{{ locale === 'en' ? 'Security recommendations:' : 'Recommandations de sécurité :' }}</p>
               <ul class="list-disc list-inside space-y-0.5 text-slate-600">
-                <li>Au moins 8 caractères requis</li>
-                <li>Doit être différent de l'actuel</li>
+                <li>{{ locale === 'en' ? 'At least 8 characters required' : 'Au moins 8 caractères requis' }}</li>
+                <li>{{ locale === 'en' ? 'Must be different from current password' : 'Doit être différent de l\'actuel' }}</li>
               </ul>
             </div>
 
@@ -928,7 +932,7 @@ function submitPasswordModal() {
                 @click="closePasswordModal"
                 :disabled="isSubmittingPassword"
               >
-                Annuler
+                {{ t('common.cancel', 'Annuler') }}
               </Button>
               <button
                 type="submit"
@@ -937,7 +941,7 @@ function submitPasswordModal() {
               >
                 <Loader2 v-if="isSubmittingPassword" class="h-4 w-4 animate-spin" />
                 <CheckCircle v-else class="h-4 w-4" />
-                <span>{{ isSubmittingPassword ? 'Modification...' : 'Modifier le mot de passe' }}</span>
+                <span>{{ isSubmittingPassword ? (locale === 'en' ? 'Updating...' : 'Modification...') : (locale === 'en' ? 'Change password' : 'Modifier le mot de passe') }}</span>
               </button>
             </div>
           </form>

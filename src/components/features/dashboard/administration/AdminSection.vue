@@ -4,11 +4,11 @@
     <!-- ALERTE D'ERREUR -->
     <div v-if="error" role="alert"
       class="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <span>Impossible de charger les données d'administration. Vérifiez la connexion puis réessayez.</span>
+      <span>{{ locale === 'en' ? 'Unable to load administration data. Check connection and retry.' : 'Impossible de charger les données d\'administration. Vérifiez la connexion puis réessayez.' }}</span>
       <button type="button"
         class="shrink-0 rounded border border-red-300 bg-white px-3 py-1 font-medium hover:bg-red-100 transition"
         @click="loadAllData">
-        Réessayer
+        {{ t('common.retry') || (locale === 'en' ? 'Retry' : 'Réessayer') }}
       </button>
     </div>
 
@@ -63,7 +63,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
       <!-- ÉVOLUTION DE L'ACTIVITÉ (AREA CHART) -->
-      <ChartCard title="Activité du système et connexions" class="xl:col-span-7 flex flex-col">
+      <ChartCard :title="locale === 'en' ? 'System activity and connections' : 'Activité du système et connexions'" class="xl:col-span-7 flex flex-col">
         <template #header-action>
           <div class="flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg text-xs font-medium">
             <button
@@ -74,7 +74,7 @@
               class="px-2.5 py-1 rounded-md transition-colors"
               :class="selectedDays === d ? 'bg-white text-gray-800 shadow-2xs font-semibold' : 'text-gray-500 hover:text-gray-900'"
             >
-              {{ d }} jours
+              {{ d }} {{ locale === 'en' ? 'days' : 'jours' }}
             </button>
           </div>
         </template>
@@ -92,7 +92,7 @@
       </ChartCard>
 
       <!-- RÉPARTITION DU PERSONNEL PAR DIRECTION (DONUT) -->
-      <ChartCard title="Répartition du personnel par direction" class="xl:col-span-5 flex flex-col">
+      <ChartCard :title="locale === 'en' ? 'Staff breakdown by department' : 'Répartition du personnel par direction'" class="xl:col-span-5 flex flex-col">
         <div v-if="!loading && directionSeries.length" class="flex-1 flex flex-col justify-center">
           <apexchart
             type="donut"
@@ -111,14 +111,14 @@
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
       <!-- JOURNAL D'AUDIT RÉCENT -->
-      <ChartCard title="Journal d'audit et activités récentes" class="xl:col-span-7 flex flex-col">
+      <ChartCard :title="locale === 'en' ? 'Audit log & recent activities' : 'Journal d\'audit et activités récentes'" class="xl:col-span-7 flex flex-col">
         <template #header-action>
           <button
             type="button"
             @click="router.push('/activity')"
             class="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
           >
-            <span>Voir tout le journal</span>
+            <span>{{ locale === 'en' ? 'View full log' : 'Voir tout le journal' }}</span>
             <ArrowRight :size="13" />
           </button>
         </template>
@@ -143,7 +143,7 @@
                   <p class="text-xs font-semibold text-gray-800 truncate">{{ log.title }}</p>
                   <p class="text-[11px] text-gray-500 line-clamp-1">{{ log.description }}</p>
                   <p class="text-[10px] text-gray-400 mt-0.5">
-                    Par <span class="font-medium text-gray-600">{{ log.user_name }}</span>
+                    {{ locale === 'en' ? 'By' : 'Par' }} <span class="font-medium text-gray-600">{{ log.user_name }}</span>
                   </p>
                 </div>
               </div>
@@ -154,20 +154,20 @@
             </div>
           </div>
           <div v-else class="h-48 flex items-center justify-center text-gray-400 text-sm">
-            Aucun événement d'audit récent.
+            {{ locale === 'en' ? 'No recent audit events.' : 'Aucun événement d\'audit récent.' }}
           </div>
         </div>
       </ChartCard>
 
       <!-- UTILISATEURS LES PLUS ACTIFS -->
-      <ChartCard title="Utilisateurs & Contributeurs actifs" class="xl:col-span-5 flex flex-col">
+      <ChartCard :title="locale === 'en' ? 'Active Users & Contributors' : 'Utilisateurs & Contributeurs actifs'" class="xl:col-span-5 flex flex-col">
         <template #header-action>
           <button
             type="button"
             @click="router.push('/users')"
             class="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
           >
-            <span>Gérer les comptes</span>
+            <span>{{ locale === 'en' ? 'Manage accounts' : 'Gérer les comptes' }}</span>
             <ArrowRight :size="13" />
           </button>
         </template>
@@ -177,9 +177,9 @@
           <table v-else class="min-w-full text-xs">
             <thead>
               <tr class="text-left text-gray-500 border-b border-gray-200">
-                <th class="py-2 pr-3 font-medium">Utilisateur</th>
-                <th class="py-2 pr-3 font-medium">Rôle</th>
-                <th class="py-2 text-right font-medium">Actions</th>
+                <th class="py-2 pr-3 font-medium">{{ t('table.user') || (locale === 'en' ? 'User' : 'Utilisateur') }}</th>
+                <th class="py-2 pr-3 font-medium">{{ t('table.role') || (locale === 'en' ? 'Role' : 'Rôle') }}</th>
+                <th class="py-2 text-right font-medium">{{ t('table.actions') || (locale === 'en' ? 'Actions' : 'Actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -201,7 +201,7 @@
                       class="px-2 py-0.5 rounded text-[10px] font-semibold"
                       :class="u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
                     >
-                      {{ u.role === 'ADMIN' ? 'Administrateur' : 'Utilisateur' }}
+                      {{ u.role === 'ADMIN' ? (locale === 'en' ? 'Administrator' : 'Administrateur') : (locale === 'en' ? 'User' : 'Utilisateur') }}
                     </span>
                   </td>
                   <td class="py-2.5 text-right font-bold text-gray-700 tabular-nums">
@@ -211,7 +211,7 @@
               </template>
               <tr v-else>
                 <td colspan="3" class="py-8 text-center text-gray-400">
-                  Aucun utilisateur trouvé.
+                  {{ locale === 'en' ? 'No user found.' : 'Aucun utilisateur trouvé.' }}
                 </td>
               </tr>
             </tbody>
@@ -227,6 +227,7 @@
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import {
   Users as UsersIcon,
   ShieldCheck,
@@ -239,6 +240,7 @@ import DashboardSkeleton from '../DashboardSkeleton.vue';
 import dashboardService from '../../../../core/services/dashboard.service';
 
 const router = useRouter();
+const { t, locale } = useI18n();
 
 /* Composant ChartCard avec slot d'action d'en-tête */
 const ChartCard = defineComponent({
@@ -296,7 +298,7 @@ const activityChartOptions = computed(() => ({
     categories: activityChartData.value.categories,
   },
   yaxis: {
-    title: { text: 'Actions / Connexions' },
+    title: { text: locale.value === 'en' ? 'Actions / Logins' : 'Actions / Connexions' },
   },
   legend: {
     position: 'bottom' as const,
@@ -342,7 +344,8 @@ const directionDonutOptions = computed(() => ({
       formatter: (val: number, opts: any) => {
         const total = opts.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
         const percent = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
-        return `${val} collaborateur${val > 1 ? 's' : ''} (${percent}%)`;
+        const noun = locale.value === 'en' ? (val > 1 ? 'staff members' : 'staff member') : (val > 1 ? 'collaborateurs' : 'collaborateur');
+        return `${val} ${noun} (${percent}%)`;
       },
     },
   },
@@ -367,7 +370,7 @@ const directionDonutOptions = computed(() => ({
           },
           total: {
             show: true,
-            label: 'Total Personnel',
+            label: locale.value === 'en' ? 'Total Staff' : 'Total Personnel',
             fontSize: '13px',
             fontWeight: 600,
             color: '#64748b',
@@ -387,17 +390,18 @@ const recentLogs = ref<any[]>([]);
 const topUsers = ref<any[]>([]);
 
 function formatLogType(type: string): string {
-  if (type === 'LOGIN') return 'Connexion';
-  if (type === 'LOGOUT') return 'Déconnexion';
-  if (type.startsWith('USER_')) return 'Utilisateur';
-  if (type.startsWith('PERSONNEL_')) return 'Personnel';
+  const isEn = locale.value === 'en';
+  if (type === 'LOGIN') return isEn ? 'Login' : 'Connexion';
+  if (type === 'LOGOUT') return isEn ? 'Logout' : 'Déconnexion';
+  if (type.startsWith('USER_')) return isEn ? 'User' : 'Utilisateur';
+  if (type.startsWith('PERSONNEL_')) return isEn ? 'Personnel' : 'Personnel';
   if (type.startsWith('CHECKLIST_')) return 'Checklist';
   if (type.startsWith('VMC_')) return 'VMC';
-  if (type.startsWith('FORMATION_')) return 'Formation';
+  if (type.startsWith('FORMATION_')) return isEn ? 'Training' : 'Formation';
   if (type.startsWith('PARTICIPANT_')) return 'Participant';
-  if (type.startsWith('DOCUMENT_') || type.startsWith('FOLDER_')) return 'GED';
+  if (type.startsWith('DOCUMENT_') || type.startsWith('FOLDER_')) return isEn ? 'DMS' : 'GED';
   if (type.startsWith('ACTION_')) return 'Action';
-  if (type.startsWith('EQUIPMENT_')) return 'Matériel';
+  if (type.startsWith('EQUIPMENT_')) return isEn ? 'Equipment' : 'Matériel';
   return type;
 }
 

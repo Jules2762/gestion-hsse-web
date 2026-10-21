@@ -89,7 +89,7 @@
                                 : 'bg-danger/10 text-danger ring-danger/20'">
                             <span class="h-1.5 w-1.5 rounded-full"
                                 :class="currentUser.status === 'ENABLED' ? 'bg-success' : 'bg-danger'"></span>
-                            {{ currentUser.status === 'ENABLED' ? 'Actif' : 'Désactivé' }}
+                            {{ currentUser.status === 'ENABLED' ? (locale === 'en' ? 'Active' : 'Actif') : (locale === 'en' ? 'Disabled' : 'Désactivé') }}
                         </span>
 
                         <span
@@ -97,7 +97,7 @@
                             :class="currentUser.role === 'ADMIN'
                                 ? 'bg-accent-dark/10 text-accent-dark ring-accent-dark/20'
                                 : 'bg-surface-alt text-text-secondary ring-border'">
-                            {{ currentUser.role === 'ADMIN' ? 'Administrateur' : 'Utilisateur' }}
+                            {{ currentUser.role === 'ADMIN' ? (locale === 'en' ? 'Administrator' : 'Administrateur') : (locale === 'en' ? 'User' : 'Utilisateur') }}
                         </span>
 
                     </div>
@@ -112,15 +112,15 @@
                     <div class="lg:col-span-1 self-start bg-white p-4 rounded sticky top-5">
                         <div class="flex flex-row items-center justify-between w-full">
                             <h2 class="text-base font-semibold text-text-primary">
-                                Rôle
+                                {{ locale === 'en' ? 'Role' : 'Rôle' }}
                             </h2>
                             <button type="button" @click="openRoleModal" v-if="my_info?.id!=currentUser.id"
-                                class="text-text-muted transition-colors hover:text-text-primary">
+                                class="text-text-muted transition-colors hover:text-text-primary cursor-pointer">
                                 <Edit2 :size="20" />
                             </button>
                         </div>
                         <p class="mt-1 text-sm text-text-secondary">
-                            Le rôle détermine le niveau d'accès général de l'utilisateur.
+                            {{ locale === 'en' ? 'The role determines the general access level of the user.' : 'Le rôle détermine le niveau d\'accès général de l\'utilisateur.' }}
                         </p>
 
                         <div class="mt-4 space-y-3">
@@ -138,7 +138,7 @@
 
                                         <div class="flex items-center justify-between gap-2">
                                             <p class="font-semibold text-text-primary">
-                                                {{ UserRoleDataJson.find(item=>item.value== currentUser?.role)?.label }}
+                                                {{ currentUser?.role === 'ADMIN' ? (locale === 'en' ? 'Administrator' : 'Administrateur') : (locale === 'en' ? 'User' : 'Utilisateur') }}
                                             </p>
                                             <CheckCircle2 class="h-5 w-5 shrink-0 text-primary" />
                                         </div>
@@ -166,30 +166,30 @@
                         <div class="flex w-full flex-row items-center justify-between">
                             <div>
                                 <h2 class="text-base font-semibold text-text-primary">
-                                    Permissions
+                                    {{ locale === 'en' ? 'Permissions' : 'Permissions' }}
                                 </h2>
                                 <p class="mt-1 text-sm text-text-secondary">
-                                    Actions que l'utilisateur est autorisé à effectuer sur les comptes utilisateurs.
+                                    {{ locale === 'en' ? 'Actions that the user is authorized to perform on user accounts.' : 'Actions que l\'utilisateur est autorisé à effectuer sur les comptes utilisateurs.' }}
                                 </p>
                             </div>
                             <button v-if="my_info?.id != currentUser.id" type="button" @click="openPermissionsModal"
-                                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark">
+                                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark cursor-pointer">
                                 <Pencil class="h-4 w-4" />
-                                Gérer
+                                {{ locale === 'en' ? 'Manage' : 'Gérer' }}
                             </button>
                         </div>
 
                         <div v-if="currentUser.role === 'ADMIN'"
                             class="mt-4 flex items-center gap-2 rounded-2xl border border-accent-dark/20 bg-accent-dark/5 p-4 text-sm text-accent-dark">
                             <ShieldCheck class="h-4 w-4 shrink-0" />
-                            Cet utilisateur est administrateur : il dispose de toutes les permissions.
+                            {{ locale === 'en' ? 'This user is an administrator: they have all permissions.' : 'Cet utilisateur est administrateur : il dispose de toutes les permissions.' }}
                         </div>
 
                         <div v-else-if="permissions.length === 0"
                             class="mt-4 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
                             <ShieldOff class="h-8 w-8 text-text-muted" />
                             <p class="text-sm text-text-secondary">
-                                Aucune permission assignée pour le moment.
+                                {{ locale === 'en' ? 'No permissions assigned at the moment.' : 'Aucune permission assignée pour le moment.' }}
                             </p>
                         </div>
 
@@ -224,7 +224,7 @@
 
                 <div>
                     <p class="font-semibold text-text-primary">
-                        Rôle mis à jour
+                        {{ locale === 'en' ? 'Role updated' : 'Rôle mis à jour' }}
                     </p>
                     <p class="mt-1 text-sm text-text-secondary">
                         {{ successMessage }}
@@ -232,7 +232,7 @@
                 </div>
 
                 <button type="button" @click="successMessage = ''"
-                    class="ml-2 text-text-muted hover:text-text-secondary">
+                    class="ml-2 text-text-muted hover:text-text-secondary cursor-pointer">
                     <X class="h-4 w-4" />
                 </button>
 
@@ -256,14 +256,14 @@
                         <div class="flex items-start justify-between gap-4 border-b border-border p-5">
                             <div>
                                 <h3 class="text-lg font-semibold text-text-primary">
-                                    Modifier le rôle
+                                    {{ locale === 'en' ? 'Edit role' : 'Modifier le rôle' }}
                                 </h3>
                                 <p class="mt-0.5 text-sm text-text-secondary">
-                                    Choisissez le niveau d'accès de {{ currentUser?.first_name }}.
+                                    {{ locale === 'en' ? `Choose the access level for ${currentUser?.first_name}.` : `Choisissez le niveau d'accès de ${currentUser?.first_name}.` }}
                                 </p>
                             </div>
                             <button type="button" @click="closeRoleModal"
-                                class="shrink-0 text-text-muted hover:text-text-secondary">
+                                class="shrink-0 text-text-muted hover:text-text-secondary cursor-pointer">
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -278,7 +278,7 @@
 
                             <button v-for="roleOption in UserRoleMeta" :key="roleOption.value" type="button"
                                 @click="modalSelectedRole = roleOption.value as UserRoleType"
-                                class="w-full rounded-2xl border p-4 text-left transition-all" :class="modalSelectedRole === roleOption.value
+                                class="w-full rounded-2xl border p-4 text-left transition-all cursor-pointer" :class="modalSelectedRole === roleOption.value
                                     ? 'border-primary bg-primary-light/60 ring-1 ring-primary/30'
                                     : 'border-border bg-white hover:border-primary/40 hover:bg-primary-light/20'">
 
@@ -294,7 +294,7 @@
 
                                         <div class="flex items-center justify-between gap-2">
                                             <p class="font-semibold text-text-primary">
-                                                {{ roleOption.label }}
+                                                {{ roleOption.value === 'ADMIN' ? (locale === 'en' ? 'Administrator' : 'Administrateur') : (locale === 'en' ? 'User' : 'Utilisateur') }}
                                             </p>
                                             <CheckCircle2 v-if="modalSelectedRole === roleOption.value"
                                                 class="h-5 w-5 shrink-0 text-primary" />
@@ -314,15 +314,15 @@
 
                         <div class="flex flex-col-reverse gap-3 border-t border-border p-5 sm:flex-row sm:justify-end">
                             <button type="button" :disabled="isSavingRole" @click="closeRoleModal"
-                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary shadow-sm transition-colors hover:bg-surface-alt disabled:opacity-60">
-                                Annuler
+                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary shadow-sm transition-colors hover:bg-surface-alt disabled:opacity-60 cursor-pointer">
+                                {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                             </button>
                             <button type="button" :disabled="isSavingRole || modalSelectedRole === currentUser?.role"
                                 @click="saveRoleModal"
-                                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:opacity-60">
+                                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:opacity-60 cursor-pointer">
                                 <Loader2 v-if="isSavingRole" class="h-4 w-4 animate-spin" />
                                 <Save v-else class="h-4 w-4" />
-                                {{ isSavingRole ? "Enregistrement..." : "Enregistrer" }}
+                                {{ isSavingRole ? (locale === 'en' ? "Saving..." : "Enregistrement...") : (locale === 'en' ? "Save" : "Enregistrer") }}
                             </button>
                         </div>
 
@@ -349,14 +349,14 @@
                         <div class="flex items-start justify-between gap-4 border-b border-border p-5">
                             <div>
                                 <h3 class="text-lg font-semibold text-text-primary">
-                                    Gérer les permissions
+                                    {{ locale === 'en' ? 'Manage permissions' : 'Gérer les permissions' }}
                                 </h3>
                                 <p class="mt-0.5 text-sm text-text-secondary">
-                                    Glissez une permission d'une colonne à l'autre, ou utilisez les flèches.
+                                    {{ locale === 'en' ? 'Drag a permission from one column to another, or use the arrows.' : 'Glissez une permission d\'une colonne à l\'autre, ou utilisez les flèches.' }}
                                 </p>
                             </div>
                             <button type="button" @click="closePermissionsModal"
-                                class="shrink-0 text-text-muted hover:text-text-secondary">
+                                class="shrink-0 text-text-muted hover:text-text-secondary cursor-pointer">
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -372,7 +372,7 @@
                             <!-- ASSIGNÉES (GAUCHE) -->
                             <div class="flex min-h-0 self-start sticky top-0 flex-col  gap-2">
                                 <p class="text-xs font-medium text-text-muted">
-                                    Permissions de {{ currentUser?.first_name }} ({{ modalAssigned.length }})
+                                    {{ locale === 'en' ? `Permissions of ${currentUser?.first_name} (${modalAssigned.length})` : `Permissions de ${currentUser?.first_name} (${modalAssigned.length})` }}
                                 </p>
                                 <div class="w-full">
                                     <InputFilter :icon="Search" v-model="search_left_permission" />
@@ -383,7 +383,7 @@
                                     @drop.prevent="handleDrop('assigned')">
 
                                     <p v-if="modalAssigned.length === 0" class="m-auto text-sm text-text-muted">
-                                        Déposez une permission ici
+                                        {{ locale === 'en' ? 'Drop a permission here' : 'Déposez une permission ici' }}
                                     </p>
 
                                     <div v-for="name in modalAssigned.filter(item=>item.toLowerCase().includes(search_left_permission.toLowerCase()))" :key="name" draggable="true"
@@ -395,7 +395,7 @@
                                             {{ name }}
                                         </span>
                                         <button type="button" @click="moveToAvailable(name)"
-                                            class="shrink-0 rounded-lg p-1 text-text-muted hover:bg-surface-alt hover:text-danger">
+                                            class="shrink-0 rounded-lg p-1 text-text-muted hover:bg-surface-alt hover:text-danger cursor-pointer">
                                             <ChevronRight class="h-4 w-4" />
                                         </button>
                                     </div>
@@ -406,7 +406,7 @@
                             <!-- DISPONIBLES (DROITE) -->
                             <div class="flex min-h-0 flex-col sticky top-0 self-start gap-2">
                                 <p class="text-xs font-medium text-text-muted">
-                                    Permissions disponibles ({{ modalAvailable.length }})
+                                    {{ locale === 'en' ? `Available permissions (${modalAvailable.length})` : `Permissions disponibles (${modalAvailable.length})` }}
                                 </p>
                                 <div class="w-full">
                                     <InputFilter :icon="Search"  v-model="search_right_permission"/>
@@ -417,7 +417,7 @@
                                     @drop.prevent="handleDrop('available')">
 
                                     <p v-if="modalAvailable.length === 0" class="m-auto text-sm text-text-muted">
-                                        Toutes les permissions sont assignées
+                                        {{ locale === 'en' ? 'All permissions are assigned' : 'Toutes les permissions sont assignées' }}
                                     </p>
 
                                     <div v-for="name in modalAvailable.filter(item => item.toLowerCase().includes(search_right_permission.toLowerCase()))" :key="name" draggable="true"
@@ -425,7 +425,7 @@
                                         @dragend="dragOverZone = null"
                                         class="flex cursor-grab items-center gap-2 rounded-xl border border-border bg-white p-3 text-sm shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing">
                                         <button type="button" @click="moveToAssigned(name)"
-                                            class="shrink-0 rounded-lg p-1 text-text-muted hover:bg-surface-alt hover:text-primary">
+                                            class="shrink-0 rounded-lg p-1 text-text-muted hover:bg-surface-alt hover:text-primary cursor-pointer">
                                             <ChevronLeft class="h-4 w-4" />
                                         </button>
                                         <span class="flex-1 text-text-primary">
@@ -441,14 +441,14 @@
 
                         <div class="flex flex-col-reverse gap-3 border-t border-border p-5 sm:flex-row sm:justify-end">
                             <button type="button" :disabled="isSavingPermissions" @click="closePermissionsModal"
-                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary shadow-sm transition-colors hover:bg-surface-alt disabled:opacity-60">
-                                Annuler
+                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text-secondary shadow-sm transition-colors hover:bg-surface-alt disabled:opacity-60 cursor-pointer">
+                                {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                             </button>
                             <button type="button" :disabled="isSavingPermissions" @click="savePermissionsModal"
-                                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:opacity-60">
+                                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:opacity-60 cursor-pointer">
                                 <Loader2 v-if="isSavingPermissions" class="h-4 w-4 animate-spin" />
                                 <Save v-else class="h-4 w-4" />
-                                {{ isSavingPermissions ? "Enregistrement..." : "Enregistrer" }}
+                                {{ isSavingPermissions ? (locale === 'en' ? "Saving..." : "Enregistrement...") : (locale === 'en' ? "Save" : "Enregistrer") }}
                             </button>
                         </div>
 
@@ -483,6 +483,7 @@
         X
     } from "@lucide/vue"
     import { computed, onMounted, onUnmounted, ref, watch } from "vue"
+    import { useI18n } from "vue-i18n"
     import Header from "../../../components/shared/Header.vue"
     import type {
         UserDataType,
@@ -491,8 +492,10 @@
     import { useRoute } from "vue-router"
     import { useUserService } from "../../../core/services/user.service.ts"
     import { UserRoleDataJson, UserRoleMeta } from "../../../@data/User.data.ts"
-import { AxiosError } from "axios"
-import InputFilter from "../../../components/ui/InputFilter.vue"
+    import { AxiosError } from "axios"
+    import InputFilter from "../../../components/ui/InputFilter.vue"
+
+    const { t, locale } = useI18n()
 
   
 

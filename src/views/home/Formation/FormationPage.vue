@@ -16,12 +16,13 @@
             <div class="bg-white border-b border-gray-200 sticky top-0">
                 <div class="h-16 px-4 flex flex-row items-center justify-between">
                     <div class="flex flex-row items-center gap-1">
-                        <ButtonFilter is-primary :text="t('formation.actions.add')" :icon="SquarePlusIcon"
-                            @click="router.push({ name: 'FORMATION_NEW' })" />
+                        <ButtonFilter is-primary :text="t('formation.actions.add')" :icon="SquarePlusIcon" @click="openAddModal" />
                         <ButtonFilter :text="t('formation.actions.import')"
                             @click="router.push({ name: 'FORMATION_IMPORT' })" :icon="CloudDownloadIcon" />
                         <ButtonFilter :text="t('formation.actions.export')" @click="exportData()"
                             :loading="loading_export" :icon="DownloadIcon" :badge="pagination.total.toString()" />
+                        <ButtonFilter :text="'Actualiser'" @click="fetchData()"
+                            :loading="loading_data" :icon="RefreshCw" />
                         <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
                         <!-- <ButtonFilter text="Personnels" :icon="Users" :badge="'100'" @click="router.push({
                             name:'PERSONNEL'
@@ -528,6 +529,208 @@
         </div>
     </CenterModal>
     <LoadingUI v-if="loading_fetch" />
+
+    <!-- ========================================================= -->
+    <!-- MODAL NOUVELLE FORMATION (IN-PAGE MODAL)                  -->
+    <!-- ========================================================= -->
+    <Teleport to="body">
+        <transition name="modal-fade">
+            <div
+                v-if="modal_add"
+                class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                @click.self="modal_add = false"
+            >
+                <div
+                    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                >
+                    <!-- En-tête Modal -->
+                    <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                <SquarePlusIcon :size="18" />
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-900">
+                                    {{ locale === 'en' ? 'New Training Session' : 'Planifier une nouvelle formation' }}
+                                </h4>
+                                <p class="text-[11px] text-gray-500">
+                                    {{ locale === 'en' ? 'Create a training session and define details for tracking.' : 'Créez une session de formation et définissez les paramètres de suivi.' }}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            @click="modal_add = false"
+                            class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                        >
+                            <XIcon :size="18" />
+                        </button>
+                    </div>
+
+                    <!-- Formulaire Modal -->
+                    <form @submit.prevent="submitAddFormation" class="flex flex-col flex-1 overflow-y-auto">
+                        <div class="p-5 space-y-4">
+                            <!-- Titre -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                    {{ locale === 'en' ? 'Training Title' : 'Titre de la formation' }} <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    v-model="newFormationForm.title"
+                                    type="text"
+                                    required
+                                    :placeholder="locale === 'en' ? 'Ex: Fire safety training, First aid...' : 'Ex: Formation sécurité incendie, SST, Risques chimiques...'"
+                                    class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                />
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <!-- Type -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Training Type' : 'Type de formation' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="newFormationForm.type"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                    >
+                                        <option v-for="t in FormationTypeJsonData" :key="t.value" :value="t.value">{{ t.label }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- Volet -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Pillar' : 'Volet HSSE' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="newFormationForm.volet"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                    >
+                                        <option v-for="v in VoletJsonData" :key="v.value" :value="v.value">{{ v.label }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <!-- Formateur -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Trainer' : 'Formateur' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newFormationForm.trainer"
+                                        required
+                                        list="formation_modal_trainers_datalist"
+                                        type="text"
+                                        :placeholder="locale === 'en' ? 'Enter trainer name...' : 'Entrez le nom du formateur...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                    <datalist id="formation_modal_trainers_datalist">
+                                        <option v-for="tr in trainerList" :key="tr" :value="tr">{{ tr }}</option>
+                                    </datalist>
+                                </div>
+
+                                <!-- Nombre de participants -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Number of participants' : 'Nombre de participants' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model.number="newFormationForm.participant"
+                                        type="number"
+                                        min="1"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <!-- Cible -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Target' : 'Cible' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newFormationForm.target"
+                                        type="text"
+                                        required
+                                        :placeholder="locale === 'en' ? 'Ex: Pompistes, Chefs de station, Tous...' : 'Ex: Pompistes, Chefs de station, Tous...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+
+                                <!-- Type de cible -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Target Type' : 'Type de cible' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newFormationForm.target_type"
+                                        type="text"
+                                        required
+                                        :placeholder="locale === 'en' ? 'Ex: Opérationnel, Administratif...' : 'Ex: Opérationnel, Administratif...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <!-- Date -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Date' : 'Date de la formation' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newFormationForm.date"
+                                        type="date"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+
+                                <!-- Durée -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Duration (hours)' : 'Durée (heures)' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newFormationForm.duration"
+                                        type="text"
+                                        placeholder="02:00 ou 2"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer d'actions -->
+                        <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                            <button
+                                type="button"
+                                @click="modal_add = false"
+                                class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                            >
+                                {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="loading_add || !newFormationForm.title || !newFormationForm.trainer || !newFormationForm.date"
+                                class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                            >
+                                <Loader v-if="loading_add" :size="13" class="animate-spin" />
+                                <span>{{ locale === 'en' ? 'Create Session' : 'Créer la formation' }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </transition>
+    </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -545,7 +748,7 @@
         Edit,
         Eye,
         Loader,
-
+        RefreshCw,
         SearchIcon,
         SquarePlusIcon,
         Trash2,
@@ -566,10 +769,89 @@
     import { exportUtils } from '../../../core/utils/export.utils.ts';
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
     import LoadingUI from '../../../components/ui/LoadingUI.vue';
-    import { FormationStatusJsonData } from '../../../@data/Formation.data.ts';
-import { VueDatePicker } from '@vuepic/vue-datepicker';
-    const headers = ["Ref", "DATE", "INTITULE", "TYPE", "VOLET", "FORMATEUR", "Durée (h)", "cible", "Status"]
+    import { FormationStatusJsonData, FormationTypeJsonData, VoletJsonData } from '../../../@data/Formation.data.ts';
+    import personnelService from '../../../core/services/personnel.service.ts';
+    import type { FormationFormType } from '../../../@types/Formation.type.ts';
+    import { VueDatePicker } from '@vuepic/vue-datepicker';
+
+    const { t, locale } = useI18n()
+
+    const modal_add = ref(false)
+    const loading_add = ref(false)
+    const trainerList = ref<string[]>([])
+
+    const newFormationForm = ref<FormationFormType>({
+        title: '',
+        type: 'Formation',
+        volet: 'Sécurité',
+        trainer: '',
+        target: '',
+        target_type: '',
+        participant: 1,
+        date: new Date().toISOString().split('T')[0],
+        duration: '02:00'
+    })
+
+    function openAddModal() {
+        newFormationForm.value = {
+            title: '',
+            type: 'Formation',
+            volet: 'Sécurité',
+            trainer: '',
+            target: '',
+            target_type: '',
+            participant: 1,
+            date: new Date().toISOString().split('T')[0],
+            duration: '02:00'
+        }
+        modal_add.value = true
+        loadTrainerSuggestions()
+    }
+
+    function loadTrainerSuggestions() {
+        if (trainerList.value.length === 0) {
+            personnelService.indexAll()
+                .then(res => {
+                    const raw = res.data?.data || res.data || []
+                    trainerList.value = raw.map((p: any) => {
+                        const name = `${p.first_name || ''} ${p.last_name || ''}`.trim()
+                        return name || p.email
+                    }).filter(Boolean)
+                })
+                .catch(err => console.error(err))
+        }
+    }
+
+    async function submitAddFormation() {
+        if (!newFormationForm.value.title || !newFormationForm.value.trainer || !newFormationForm.value.date) return
+        loading_add.value = true
+        try {
+            await formation.store(newFormationForm.value)
+            toast.success(locale.value === 'en' ? 'Training session created successfully!' : 'Session de formation créée avec succès !')
+            modal_add.value = false
+            fetchData()
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to create training session.' : 'Erreur lors de la création de la formation.')
+            toast.error(errorMsg)
+        } finally {
+            loading_add.value = false
+        }
+    }
+
+
+    const headers = computed(() => [
+        t('table.ref'),
+        t('table.date'),
+        t('table.title'),
+        t('table.type'),
+        t('table.section'),
+        t('table.trainer'),
+        locale.value === 'en' ? 'Duration (h)' : 'Durée (h)',
+        t('table.target'),
+        t('table.status'),
+    ])
     const data = ref<FormationDataType[]>([])
+
 
     const selectedFormation = ref<FormationDataType | null>()
     const modal_delete = ref(false)
@@ -663,8 +945,8 @@ import { VueDatePicker } from '@vuepic/vue-datepicker';
         },
     ]
 
-    const { t } = useI18n()
     const formation = useFormationService()
+
     type FilterKey = 'type' | 'volet' | 'trainer' | 'target'
     const filterableKeys: FilterKey[] = ['type', 'volet', 'trainer', 'target']
     const columnLabels: Record<FilterKey, string> = {

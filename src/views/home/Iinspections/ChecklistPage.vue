@@ -20,11 +20,10 @@
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter text="Ajouter" :icon="Plus" is-primary @click="router.push({
-                            name: 'CHECKLIST_NEW'
-                        })" />
+                        <ButtonFilter text="Ajouter" :icon="Plus" is-primary @click="openAddModal" />
                         <ButtonFilter text="Importer" :icon="UploadCloud" />
                         <ButtonFilter text="Export" :icon="Download" :badge="String(pagination.total)" :loading="loading_export" @click="handleExport" />
+                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
                         <ButtonFilter text="Templates" :icon="LayoutTemplateIcon" @click="router.push({
                             name: 'TEMPLATE'
                         })" />
@@ -43,7 +42,7 @@
                 <!-- INDICATEUR DE CHARGEMENT -->
                 <div v-if="loading" class="p-16 flex flex-col items-center justify-center gap-3 text-gray-500">
                     <Loader2 :size="32" class="animate-spin text-primary" />
-                    <span class="text-sm">Chargement des checklists...</span>
+                    <span class="text-sm">{{ locale === 'en' ? 'Loading checklists...' : 'Chargement des checklists...' }}</span>
                 </div>
 
                 <!-- AUCUN RÉSULTAT -->
@@ -51,21 +50,21 @@
                     <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
                         <ClipboardList :size="28" />
                     </div>
-                    <h5 class="text-gray-700 font-semibold mb-1">Aucune checklist enregistrée</h5>
+                    <h5 class="text-gray-700 font-semibold mb-1">{{ locale === 'en' ? 'No checklists recorded' : 'Aucune checklist enregistrée' }}</h5>
                     <p class="text-sm text-gray-500 max-w-sm">
-                        Aucune inspection ne correspond aux critères de filtre sélectionnés.
+                        {{ locale === 'en' ? 'No inspection matches the selected filter criteria.' : 'Aucune inspection ne correspond aux critères de filtre sélectionnés.' }}
                     </p>
                     <div class="flex gap-2 mt-4">
                         <button
                             v-if="search || filters.type.length || filters.status.length || filters.inspector.length || dateRange.from || dateRange.to"
                             @click="clearFilters"
                             class="px-4 py-2 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition">
-                            Réinitialiser les filtres
+                            {{ t('common.reset_filters') }}
                         </button>
                         <button
-                            @click="router.push({ name: 'CHECKLIST_NEW' })"
+                            @click="openAddModal"
                             class="px-4 py-2 text-xs font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition">
-                            Créer une checklist
+                            {{ locale === 'en' ? 'Create a checklist' : 'Créer une checklist' }}
                         </button>
                     </div>
                 </div>
@@ -75,12 +74,12 @@
                     <table>
                         <thead>
                             <tr>
-                                <th class="w-16 text-center">REF</th>
-                                <th>TITRE</th>
-                                <th>SITE</th>
-                                <th>LIEU</th>
-                                <th>STATUT</th>
-                                <th>DATE</th>
+                                <th class="w-16 text-center">{{ t('table.ref') }}</th>
+                                <th>{{ t('table.title') }}</th>
+                                <th>{{ t('table.site') }}</th>
+                                <th>{{ t('table.location') }}</th>
+                                <th>{{ t('table.status') }}</th>
+                                <th>{{ t('table.date') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -103,7 +102,7 @@
                                 <td colspan="6" class="w-full p-4 border-t border-gray-200">
                                     <div class="flex flex-row items-center justify-between text-sm">
                                         <span class="text-xs text-gray-500 font-medium">
-                                            Affichage de {{ pagination.to }} sur {{ pagination.total }} checklists
+                                            {{ t('common.displaying') }} {{ pagination.to }} {{ t('common.of') }} {{ pagination.total }} checklists
                                         </span>
                                         <vue-awesome-paginate @click="(page: number) => { pagination.current_page = page }"
                                             :hide-prev-next-when-ends="true" :total-items="pagination.total" :items-per-page="15"
@@ -113,6 +112,7 @@
                             </tr>
                         </tfoot>
                     </table>
+
                 </div>
             </div>
 
@@ -128,7 +128,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 flex-1">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                            Checklist n° {{ selected_checklist?.id }}
+                            {{ locale === 'en' ? 'Checklist #' : 'Checklist n°' }} {{ selected_checklist?.id }}
                         </p>
                         <h4 class="mt-1 font-bold text-gray-900 truncate">
                             {{ selected_checklist?.title }}
@@ -140,7 +140,7 @@
 
                     <button
                         type="button"
-                        aria-label="Fermer l'aperçu"
+                        :aria-label="t('common.close')"
                         class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                         @click="selected_checklist = undefined">
                         <XIcon :size="18" />
@@ -176,7 +176,7 @@
                 ">
                     {{
                         selected_checklist?.description ||
-                        'Aucune description disponible.'
+                        t('common.no_description')
                     }}
                 </p>
             </div>
@@ -199,7 +199,7 @@
                         text-xs
                         text-gray-500
                     ">
-                        Sections
+                        {{ t('common.sections') }}
                     </p>
 
                     <h5>
@@ -220,7 +220,7 @@
                         text-xs
                         text-gray-500
                     ">
-                        Questions
+                        {{ t('common.questions') }}
                     </p>
 
                     <h5>
@@ -243,7 +243,7 @@
                         text-xs
                         text-gray-500
                     ">
-                        Actions
+                        {{ t('common.actions') }}
                     </p>
 
                     <h5>
@@ -274,7 +274,7 @@
                     mb-4
                     text-gray-500
                 ">
-                    Informations générales
+                    {{ t('common.general_info') }}
                 </h6>
 
                 <div class="
@@ -287,7 +287,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Type
+                            {{ t('table.type') }}
                         </p>
 
                         <p>
@@ -302,7 +302,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Site
+                            {{ t('table.site') }}
                         </p>
 
                         <p>
@@ -317,7 +317,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Lieu
+                            {{ t('table.location') }}
                         </p>
 
                         <p>
@@ -332,7 +332,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Date
+                            {{ t('table.date') }}
                         </p>
 
                         <p>
@@ -347,7 +347,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Heure
+                            {{ t('table.time') }}
                         </p>
 
                         <p>
@@ -368,7 +368,7 @@
                 pt-5
             ">
                 <h6 class="mb-4">
-                    Intervenants
+                    {{ t('common.stakeholders') }}
                 </h6>
 
                 <div class="
@@ -381,16 +381,16 @@
                             text-xs
                             text-gray-500
                         ">
-                            Inspecteur
+                            {{ t('table.inspector') }}
                         </p>
 
                         <p>
                             {{
                                 selected_checklist?.inspector
                                     ? (typeof selected_checklist.inspector === 'object'
-                                        ? `${selected_checklist.inspector.first_name || ''} ${selected_checklist.inspector.last_name || ''}`.trim() || 'Non assigné'
+                                        ? `${selected_checklist.inspector.first_name || ''} ${selected_checklist.inspector.last_name || ''}`.trim() || t('common.not_assigned')
                                         : selected_checklist.inspector)
-                                    : 'Non assigné'
+                                    : t('common.not_assigned')
                             }}
                         </p>
                     </div>
@@ -400,7 +400,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Accompagnateur
+                            {{ t('common.accompanying') }}
                         </p>
 
                         <p>
@@ -416,7 +416,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Responsable
+                            {{ t('common.manager') }}
                         </p>
 
                         <p>
@@ -431,7 +431,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Contact
+                            {{ t('common.contact') }}
                         </p>
 
                         <p>
@@ -454,7 +454,7 @@
                 pt-5
             ">
                 <h6 class="mb-3">
-                    Commentaire
+                    {{ t('common.comment') }}
                 </h6>
 
                 <div class="
@@ -489,11 +489,11 @@
                             },
                         })
                         ">
-                        Voir la checklist
+                        {{ locale === 'en' ? 'View checklist' : 'Voir la checklist' }}
                     </Button>
 
                     <Button variant="outline" class="w-full" @click="router.push({ name: 'ACTION' })">
-                        Voir les actions
+                        {{ locale === 'en' ? 'View actions' : 'Voir les actions' }}
                     </Button>
                 </div>
             </div>
@@ -501,27 +501,186 @@
 
         <CenterModal
             :is-open="modal_delete"
-            title="Supprimer la checklist ?"
+            :title="locale === 'en' ? 'Delete checklist?' : 'Supprimer la checklist ?'"
             confirm-variant="danger"
             :confirm-loading="loading_delete"
             @close="modal_delete = false"
             @confirm="deleteChecklist"
         >
             <p class="text-sm text-gray-600">
-                Êtes-vous sûr de vouloir supprimer définitivement l'inspection
+                {{ locale === 'en' ? 'Are you sure you want to permanently delete inspection' : 'Êtes-vous sûr de vouloir supprimer définitivement l\'inspection' }}
                 <strong>« {{ item_to_delete?.title || ('#' + item_to_delete?.id) }} »</strong> ?
-                Cette action supprimera également tous les contrôles et actions associés.
+                {{ locale === 'en' ? 'This action will also delete all associated checks and actions.' : 'Cette action supprimera également tous les contrôles et actions associés.' }}
             </p>
         </CenterModal>
+
+        <!-- ========================================================= -->
+        <!-- MODAL NOUVELLE INSPECTION CHECKLIST (IN-PAGE MODAL)        -->
+        <!-- ========================================================= -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="modal_add"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="modal_add = false"
+                >
+                    <div
+                        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                        <!-- En-tête Modal -->
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                    <ClipboardCheck :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'New inspection checklist' : 'Planifier une nouvelle checklist' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        {{ locale === 'en' ? 'Select template type, site and assign an inspector.' : 'Sélectionnez le type d\'audit, le site et l\'inspecteur assigné.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="modal_add = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <XIcon :size="18" />
+                            </button>
+                        </div>
+
+                        <!-- Formulaire Modal -->
+                        <form @submit.prevent="submitAddChecklist" class="flex flex-col flex-1 overflow-y-auto">
+                            <div class="p-5 space-y-4">
+                                <!-- Type d'inspection -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Checklist template / Type' : 'Type de checklist / Audit' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="newChecklistForm.type"
+                                        required
+                                        @change="onChecklistTypeChange"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                    >
+                                        <option value="" disabled>{{ locale === 'en' ? 'Select checklist type...' : 'Sélectionner un type de checklist...' }}</option>
+                                        <option v-for="t in dynamicTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Site / Station -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Galana Site / Station' : 'Site / Station Galana' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            v-model="newChecklistForm.site"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                        >
+                                            <option value="" disabled>{{ locale === 'en' ? 'Select site...' : 'Sélectionner un site...' }}</option>
+                                            <option v-for="s in dynamicSites" :key="s.value" :value="s.value">{{ s.label }}</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Inspecteur assigné -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Assigned inspector' : 'Inspecteur assigné' }}
+                                        </label>
+                                        <select
+                                            v-model="newChecklistForm.inspector_id"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                        >
+                                            <option :value="undefined">{{ locale === 'en' ? 'Default (Unassigned / Yourself)' : 'Par défaut (Non assigné / Vous-même)' }}</option>
+                                            <option v-for="usr in users" :key="usr.id" :value="usr.id">
+                                                {{ usr.first_name ? (usr.first_name + ' ' + (usr.last_name || '')).trim() : (usr.name || usr.email) }} {{ usr.job ? '(' + usr.job + ')' : '' }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Localisation précise -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Precise location / Zone' : 'Localisation précise / Zone' }}
+                                    </label>
+                                    <input
+                                        v-model="newChecklistForm.location"
+                                        type="text"
+                                        :placeholder="locale === 'en' ? 'Ex: Piste de distribution, Boutique, Dépôt...' : 'Ex: Piste de distribution, Boutique, Dépôt...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Date -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Date' : 'Date de contrôle' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newChecklistForm.date"
+                                            type="date"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Heure -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Time' : 'Heure de contrôle' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newChecklistForm.time"
+                                            type="time"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer d'actions -->
+                            <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="modal_add = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="loading_add || !newChecklistForm.type || !newChecklistForm.site || !newChecklistForm.date || !newChecklistForm.time"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                >
+                                    <Loader2 v-if="loading_add" :size="13" class="animate-spin" />
+                                    <span>{{ locale === 'en' ? 'Create Inspection' : 'Créer l\'inspection' }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
     </div>
 </template>
 <script setup lang="ts">
-    import { ClipboardList, Download, Edit, Eye, LayoutTemplateIcon, Loader2, Plus, Search, Trash2, UploadCloud, X as XIcon } from '@lucide/vue';
+    import { ClipboardList, Download, Edit, Eye, LayoutTemplateIcon, Loader2, Plus, RefreshCw, Search, Trash2, UploadCloud, X as XIcon } from '@lucide/vue';
+    import { useI18n } from 'vue-i18n';
     import Header from '../../../components/shared/Header.vue';
     import Button from '../../../components/ui/Button.vue';
     import { computed, onMounted, ref, watch, type ComputedRef } from 'vue';
 
-    import { ChecklistsData, ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
+    import { ChecklistsData, ChecklistStatusJsonData, ChecklistTypeData, SiteTypeDataJson } from '../../../@data/Checklist.data.ts';
+    import { useTemplateService } from '../../../core/services/template.service.ts';
+    import { useUserService } from '../../../core/services/user.service.ts';
+    import type { CheckllistFormType } from '../../../@types/Checklist.type.ts';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { router } from '../../../router/index.ts';
@@ -533,17 +692,129 @@
     import InputFilter from '../../../components/ui/InputFilter.vue';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
     import { useChecklistService } from '../../../core/services/checklist.service.ts';
+    import siteService from '../../../core/services/site.service.ts';
     import CenterModal from '../../../components/ui/centerModal.vue';
     import { exportUtils } from '../../../core/utils/export.utils.ts';
     import { toast } from 'vue3-toastify';
 
+    const { t, locale } = useI18n()
     const route = useRoute()
     const data = ref<Checklistype[]>()
     const loading = ref(false)
     const loading_export = ref(false)
     const modal_delete = ref(false)
     const loading_delete = ref(false)
+
     const item_to_delete = ref<Checklistype | null>(null)
+
+    const modal_add = ref(false)
+    const loading_add = ref(false)
+    const users = ref<any[]>([])
+    const templateService = useTemplateService()
+    const userService = useUserService()
+    const dynamicTypes = ref<{ label: string; value: string; site?: string }[]>([...ChecklistTypeData])
+    const dynamicSites = ref<{ label: string; value: string }[]>([...SiteTypeDataJson])
+
+    const newChecklistForm = ref<CheckllistFormType>({
+        type: undefined,
+        site: undefined,
+        location: '',
+        inspector_id: undefined,
+        date: '',
+        time: ''
+    })
+
+    function openAddModal() {
+        const now = new Date()
+        const todayStr = now.toISOString().split('T')[0]
+        const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+        newChecklistForm.value = {
+            type: dynamicTypes.value[0]?.value || undefined,
+            site: dynamicSites.value[0]?.value || undefined,
+            location: '',
+            inspector_id: undefined,
+            date: todayStr,
+            time: timeStr
+        }
+        modal_add.value = true
+        loadTemplatesAndUsers()
+    }
+
+    function onChecklistTypeChange() {
+        const found = dynamicTypes.value.find(item => newChecklistForm.value.type === item.value)
+        if (found?.site) {
+            newChecklistForm.value.site = found.site as any
+        }
+    }
+
+    function loadTemplatesAndUsers() {
+        if (users.value.length === 0) {
+            userService.index()
+                .then((res: any) => {
+                    users.value = res.data?.data || res.data || []
+                })
+                .catch((err: any) => console.error('Erreur chargement utilisateurs:', err))
+        }
+
+        templateService.index()
+            .then(res => {
+                if (res.data?.data && res.data.data.length > 0) {
+                    dynamicTypes.value = res.data.data.map((tpl: any) => ({
+                        label: tpl.title,
+                        value: tpl.type || tpl.title,
+                        site: tpl.site
+                    }))
+                }
+            })
+            .catch(err => console.error(err))
+
+        checklistService.getFilters()
+            .then(res => {
+                if (res.data?.type && res.data.type.length > 0) {
+                    for (const ft of res.data.type) {
+                        if (!dynamicTypes.value.some(dt => dt.value === ft)) {
+                            dynamicTypes.value.push({ label: ft, value: ft })
+                        }
+                    }
+                }
+                if (res.data?.site && res.data.site.length > 0) {
+                    for (const ss of res.data.site) {
+                        if (!dynamicSites.value.some(ds => ds.value === ss)) {
+                            dynamicSites.value.push({ label: ss, value: ss })
+                        }
+                    }
+                }
+            })
+            .catch(err => console.error(err))
+
+        siteService.all()
+            .then(res => {
+                const sList = res.data?.data || res.data || []
+                for (const s of sList) {
+                    if (s.name && !dynamicSites.value.some(ds => ds.value === s.name)) {
+                        dynamicSites.value.push({ label: s.name, value: s.name })
+                    }
+                }
+            })
+            .catch(() => {})
+    }
+
+    async function submitAddChecklist() {
+        if (!newChecklistForm.value.type || !newChecklistForm.value.site || !newChecklistForm.value.date || !newChecklistForm.value.time) return
+        loading_add.value = true
+        try {
+            await checklistService.store(newChecklistForm.value)
+            toast.success(locale.value === 'en' ? 'Inspection created successfully!' : 'Inspection créée avec succès !')
+            modal_add.value = false
+            fetchData()
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to create inspection.' : 'Erreur lors de la création de l\'inspection.')
+            toast.error(errorMsg)
+        } finally {
+            loading_add.value = false
+        }
+    }
+
 
     const pagination = ref({
         current_page: 1,

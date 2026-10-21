@@ -16,7 +16,7 @@
                         @click="router.push({ name: 'VMC' })"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer">
                         <ArrowLeft :size="15" />
-                        Retour à la liste
+                        {{ locale === 'en' ? 'Back to list' : 'Retour à la liste' }}
                     </button>
                     <span class="text-sm font-bold text-gray-800 truncate" v-if="vmc">
                         VMC #{{ vmc.id }} — {{ vmc.title || vmc.type }}
@@ -30,14 +30,14 @@
                         @click="markCompleted"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer">
                         <CheckCircle2 :size="15" />
-                        Clôturer la visite
+                        {{ locale === 'en' ? 'Close visit' : 'Clôturer la visite' }}
                     </button>
 
                     <button
                         @click="handlePrint"
                         class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#0F9D58] hover:bg-[#0F9D58]/90 rounded-lg shadow-sm transition-colors cursor-pointer">
                         <Printer :size="16" />
-                        Télécharger en PDF
+                        {{ locale === 'en' ? 'Download PDF' : 'Télécharger en PDF' }}
                     </button>
                 </div>
             </div>
@@ -46,7 +46,7 @@
         <!-- CHARGEMENT -->
         <div v-if="loading" class="p-20 flex flex-col items-center justify-center gap-3 text-gray-500 print:hidden">
             <Loader :size="32" class="animate-spin text-primary" />
-            <span class="text-sm font-medium">Chargement du document officiel Galana HSSE...</span>
+            <span class="text-sm font-medium">{{ locale === 'en' ? 'Loading official Galana HSSE document...' : 'Chargement du document officiel Galana HSSE...' }}</span>
         </div>
 
         <!-- ERREUR -->
@@ -54,8 +54,8 @@
             <p class="font-semibold">{{ errorMessage }}</p>
             <button
                 @click="router.push({ name: 'VMC' })"
-                class="mt-4 px-4 py-2 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700">
-                Retour à la liste des VMC
+                class="mt-4 px-4 py-2 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 cursor-pointer">
+                {{ locale === 'en' ? 'Back to VMC list' : 'Retour à la liste des VMC' }}
             </button>
         </div>
 
@@ -604,10 +604,10 @@
                     <div>
                         <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
                             <ShieldAlert :size="18" class="text-amber-500" />
-                            Plan d'actions correctives VMC
+                            {{ locale === 'en' ? 'VMC corrective action plan' : "Plan d'actions correctives VMC" }}
                         </h3>
                         <p class="text-xs text-gray-500 mt-0.5">
-                            Suivi des actions correctives issues des écarts ou observations de cette visite VMC.
+                            {{ locale === 'en' ? 'Tracking corrective actions from deviations or observations of this VMC visit.' : 'Suivi des actions correctives issues des écarts ou observations de cette visite VMC.' }}
                         </p>
                     </div>
 
@@ -617,15 +617,15 @@
                         @click="openAddActionModal()"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs cursor-pointer transition-colors">
                         <Plus :size="14" />
-                        Nouvelle action corrective
+                        {{ locale === 'en' ? 'New corrective action' : 'Nouvelle action corrective' }}
                     </button>
                 </div>
 
                 <!-- LISTE DES ACTIONS / ÉCARTS -->
                 <div v-if="vmcActionItems.length === 0" class="py-8 text-center text-gray-400 text-xs">
                     <CheckCircle2 :size="28" class="mx-auto text-emerald-500 mb-2" />
-                    <p class="font-semibold text-gray-700">Aucun écart ou action corrective enregistrée</p>
-                    <p class="text-gray-400 mt-0.5">Toutes les vérifications sont conformes ou aucune action n'a été planifiée.</p>
+                    <p class="font-semibold text-gray-700">{{ locale === 'en' ? 'No deviation or corrective action recorded' : 'Aucun écart ou action corrective enregistrée' }}</p>
+                    <p class="text-gray-400 mt-0.5">{{ locale === 'en' ? 'All checks are compliant or no action was scheduled.' : 'Toutes les vérifications sont conformes ou aucune action n\'a été planifiée.' }}</p>
                 </div>
 
                 <div v-else class="mt-4 space-y-3">
@@ -639,12 +639,12 @@
                                     <span
                                         :class="isNo(item.answer) ? 'bg-red-100 text-red-700 border-red-200' : 'bg-amber-100 text-amber-700 border-amber-200'"
                                         class="px-2 py-0.5 text-[10px] font-bold rounded-full border">
-                                        {{ isNo(item.answer) ? 'NON CONFORME' : 'OBSERVATION' }}
+                                        {{ isNo(item.answer) ? (locale === 'en' ? 'NON-COMPLIANT' : 'NON CONFORME') : (locale === 'en' ? 'OBSERVATION' : 'OBSERVATION') }}
                                     </span>
                                     <h4 class="text-xs font-bold text-gray-800">{{ item.title }}</h4>
                                 </div>
                                 <p v-if="item.observation" class="text-[11px] text-gray-500 mt-1 italic">
-                                    Observation : {{ item.observation }}
+                                    {{ locale === 'en' ? 'Observation:' : 'Observation :' }} {{ item.observation }}
                                 </p>
                             </div>
 
@@ -657,10 +657,10 @@
                         <!-- DÉTAILS DE L'ACTION -->
                         <div v-if="item.action" class="mt-3 pt-3 border-t border-gray-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
                             <div class="flex-1 min-w-[220px]">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block">Action définie</span>
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block">{{ locale === 'en' ? 'Defined action' : 'Action définie' }}</span>
                                 <p class="font-semibold text-gray-800 mt-0.5">{{ item.action.description }}</p>
                                 <p v-if="item.action.person_in_charge" class="text-[11px] text-gray-500 mt-0.5">
-                                    Responsable : <span class="font-medium text-gray-700">{{ getPersonInChargeName(item.action) }}</span>
+                                    {{ locale === 'en' ? 'Person in charge:' : 'Responsable :' }} <span class="font-medium text-gray-700">{{ getPersonInChargeName(item.action) }}</span>
                                     <span v-if="item.action.person_in_charge?.fonction"> ({{ item.action.person_in_charge.fonction }})</span>
                                 </p>
                             </div>
@@ -671,29 +671,29 @@
                                     type="button"
                                     @click="updateVmcActionStatus(item.action, 'IN_PROGRESS')"
                                     class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer">
-                                    Prendre en charge
+                                    {{ locale === 'en' ? 'Take charge' : 'Prendre en charge' }}
                                 </button>
                                 <button
                                     v-if="item.action.status === 'IN_PROGRESS'"
                                     type="button"
                                     @click="updateVmcActionStatus(item.action, 'FINISHED')"
                                     class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg cursor-pointer">
-                                    Clôturer
+                                    {{ locale === 'en' ? 'Close' : 'Clôturer' }}
                                 </button>
                                 <button
                                     v-if="item.action.status === 'FINISHED'"
                                     type="button"
                                     @click="updateVmcActionStatus(item.action, 'PENDING')"
                                     class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg cursor-pointer">
-                                    Réouvrir
+                                    {{ locale === 'en' ? 'Reopen' : 'Réouvrir' }}
                                 </button>
 
                                 <button
                                     type="button"
                                     @click="notifyVmcAction(item.action, item)"
                                     :disabled="sendingEmailActionId === item.action.id"
-                                    class="p-1.5 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 border border-gray-200 disabled:opacity-40"
-                                    :title="item.action.email_status === 'SENT' ? 'Réenvoyer l\'e-mail officiel' : 'Notifier par e-mail'">
+                                    class="p-1.5 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 border border-gray-200 disabled:opacity-40 cursor-pointer"
+                                    :title="item.action.email_status === 'SENT' ? (locale === 'en' ? 'Resend official email' : 'Réenvoyer l\'e-mail officiel') : (locale === 'en' ? 'Notify by email' : 'Notifier par e-mail')">
                                     <Loader2 v-if="sendingEmailActionId === item.action.id" :size="14" class="animate-spin text-blue-600" />
                                     <Mail v-else :size="14" />
                                 </button>
@@ -701,8 +701,8 @@
                                 <button
                                     type="button"
                                     @click="openEditActionModal(item)"
-                                    class="p-1.5 text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-100 border border-gray-200"
-                                    title="Modifier l'action">
+                                    class="p-1.5 text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-100 border border-gray-200 cursor-pointer"
+                                    :title="locale === 'en' ? 'Edit action' : 'Modifier l\'action'">
                                     <Edit :size="14" />
                                 </button>
                             </div>
@@ -710,12 +710,12 @@
 
                         <!-- SI AUCUNE ACTION ENCORE DÉFINIE -->
                         <div v-else class="mt-3 pt-2 border-t border-gray-200/80 flex items-center justify-between text-xs">
-                            <span class="text-amber-700 text-[11px] italic">Aucune action corrective enregistrée pour cet écart.</span>
+                            <span class="text-amber-700 text-[11px] italic">{{ locale === 'en' ? 'No corrective action recorded for this deviation.' : 'Aucune action corrective enregistrée pour cet écart.' }}</span>
                             <button
                                 type="button"
                                 @click="openEditActionModal(item)"
                                 class="px-2.5 py-1 text-[11px] font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg cursor-pointer">
-                                + Définir une action
+                                {{ locale === 'en' ? '+ Define action' : '+ Définir une action' }}
                             </button>
                         </div>
                     </div>
@@ -728,9 +728,9 @@
             <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-200">
                     <h4 class="text-sm font-bold text-gray-900">
-                        {{ actionModal.isEdit ? 'Modifier l\'action corrective' : 'Nouvelle action corrective' }}
+                        {{ actionModal.isEdit ? (locale === 'en' ? 'Edit corrective action' : 'Modifier l\'action corrective') : (locale === 'en' ? 'New corrective action' : 'Nouvelle action corrective') }}
                     </h4>
-                    <button @click="actionModal.isOpen = false" class="text-gray-400 hover:text-gray-600 p-1">
+                    <button @click="actionModal.isOpen = false" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
                         <X :size="18" />
                     </button>
                 </div>
@@ -738,7 +738,7 @@
                 <div class="mt-4 space-y-4 text-xs">
                     <!-- Point de contrôle sélectionné -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Point de contrôle concerné</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Concerned checkpoint' : 'Point de contrôle concerné' }}</label>
                         <select
                             v-model="actionModal.itemId"
                             :disabled="actionModal.isEdit"
@@ -751,36 +751,36 @@
 
                     <!-- Description de l'action corrective -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Description de l'action corrective *</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Corrective action description *' : 'Description de l\'action corrective *' }}</label>
                         <textarea
                             v-model="actionModal.description"
                             rows="3"
-                            placeholder="Décrivez précisément l'action corrective à mener..."
+                            :placeholder="locale === 'en' ? 'Describe precisely the corrective action to take...' : 'Décrivez précisément l\'action corrective à mener...'"
                             class="w-full p-2.5 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary resize-none"></textarea>
                     </div>
 
                     <!-- Responsable (Personnel) -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Responsable assigné</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Assigned person' : 'Responsable assigné' }}</label>
                         <select
                             v-model="actionModal.personInCharge"
                             class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option :value="null">-- Aucun responsable assigné --</option>
+                            <option :value="null">{{ locale === 'en' ? '-- No person assigned --' : '-- Aucun responsable assigné --' }}</option>
                             <option v-for="p in personnelsList" :key="p.id" :value="p.id">
-                                {{ p.first_name }} {{ p.last_name || '' }} — {{ p.fonction || p.direction || 'Personnel' }}
+                                {{ p.first_name }} {{ p.last_name || '' }} — {{ p.fonction || p.direction || (locale === 'en' ? 'Personnel' : 'Personnel') }}
                             </option>
                         </select>
                     </div>
 
                     <!-- Statut -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">Statut initial</label>
+                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Initial status' : 'Statut initial' }}</label>
                         <select
                             v-model="actionModal.status"
                             class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option value="PENDING">En attente</option>
-                            <option value="IN_PROGRESS">En cours</option>
-                            <option value="FINISHED">Terminée</option>
+                            <option value="PENDING">{{ locale === 'en' ? 'Pending' : 'En attente' }}</option>
+                            <option value="IN_PROGRESS">{{ locale === 'en' ? 'In progress' : 'En cours' }}</option>
+                            <option value="FINISHED">{{ locale === 'en' ? 'Completed' : 'Terminée' }}</option>
                         </select>
                     </div>
                 </div>
@@ -790,7 +790,7 @@
                         type="button"
                         @click="actionModal.isOpen = false"
                         class="px-4 py-2 font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-                        Annuler
+                        {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                     </button>
                     <button
                         type="button"
@@ -798,7 +798,7 @@
                         :disabled="!actionModal.description || !actionModal.itemId || actionModal.saving"
                         class="px-4 py-2 font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5">
                         <Loader2 v-if="actionModal.saving" :size="14" class="animate-spin" />
-                        <span>Enregistrer l'action</span>
+                        <span>{{ actionModal.saving ? (locale === 'en' ? 'Saving...' : 'Enregistrement...') : (locale === 'en' ? 'Save action' : 'Enregistrer l\'action') }}</span>
                     </button>
                 </div>
             </div>
@@ -822,6 +822,7 @@
     } from '@lucide/vue';
     import { computed, onMounted, ref } from 'vue';
     import { useRoute } from 'vue-router';
+    import { useI18n } from 'vue-i18n';
     import Header from '../../../components/shared/Header.vue';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import ActionStatus from '../../../components/features/action/ActionStatus.vue';
@@ -833,6 +834,8 @@
     import personnelService from '../../../core/services/personnel.service.ts';
     import { router } from '../../../router/index.ts';
     import { toast } from 'vue3-toastify';
+
+    const { t, locale } = useI18n();
 
     const route = useRoute()
     const loading = ref<boolean>(true)

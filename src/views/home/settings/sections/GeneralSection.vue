@@ -4,14 +4,16 @@
         <div class="border-b border-border p-5">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-base font-bold text-text-primary">Identité & Paramètres Généraux</h3>
+                    <h3 class="text-base font-bold text-text-primary">
+                        {{ locale === 'en' ? 'Identity & General Settings' : 'Identité & Paramètres Généraux' }}
+                    </h3>
                     <p class="mt-1 text-xs text-text-secondary">
-                        Coordonnées institutionnelles de l'entité Galana, fuseau horaire et conventions d'affichage.
+                        {{ locale === 'en' ? 'Galana institutional contact details, timezone and display conventions.' : "Coordonnées institutionnelles de l'entité Galana, fuseau horaire et conventions d'affichage." }}
                     </p>
                 </div>
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-[#0F9D58] ring-1 ring-[#0F9D58]/20">
                     <Building2 class="h-3.5 w-3.5" />
-                    Entité Opérationnelle
+                    {{ locale === 'en' ? 'Operating Entity' : 'Entité Opérationnelle' }}
                 </span>
             </div>
         </div>
@@ -21,10 +23,12 @@
             <div class="mb-4">
                 <div class="flex items-center gap-2">
                     <Building2 class="h-4 w-4 text-[#0F9D58]" />
-                    <h5 class="text-xs font-bold text-text-primary">Identité de l'Organisation</h5>
+                    <h5 class="text-xs font-bold text-text-primary">
+                        {{ locale === 'en' ? 'Organization Identity' : "Identité de l'Organisation" }}
+                    </h5>
                 </div>
                 <p class="mt-0.5 text-xs text-text-secondary">
-                    Ces informations et le logo figurent sur les fiches VMC, les rapports d'inspection et les exports PDF.
+                    {{ locale === 'en' ? 'This information and logo appear on VMC sheets, inspection reports, and PDF exports.' : "Ces informations et le logo figurent sur les fiches VMC, les rapports d'inspection et les exports PDF." }}
                 </p>
             </div>
 
@@ -33,7 +37,7 @@
                 <div class="relative h-20 w-20 shrink-0">
                     <div
                         class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white border border-border shadow-2xs ring-4 ring-[#0F9D58]/10">
-                        <img v-if="logoPreview" :src="logoPreview" alt="Logo de l'organisation"
+                        <img v-if="logoPreview" :src="logoPreview" :alt="locale === 'en' ? 'Organization logo' : 'Logo de l\'organisation'"
                             class="h-full w-full object-contain p-1" />
                         <div v-else class="flex flex-col items-center justify-center text-[#0F9D58]">
                             <Building2 class="h-8 w-8" />
@@ -43,7 +47,7 @@
 
                     <label
                         class="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[#0F9D58] text-white shadow-sm transition hover:bg-[#0c8248]"
-                        title="Changer le logo"
+                        :title="locale === 'en' ? 'Change logo' : 'Changer le logo'"
                     >
                         <Camera class="h-3.5 w-3.5" />
                         <input type="file" accept="image/*" class="hidden" @change="handleLogoChange" />
@@ -53,29 +57,29 @@
                 <div class="flex-1">
                     <div class="flex items-center gap-2">
                         <p class="text-xs font-semibold text-text-primary">
-                            Logo officiel de la société
+                            {{ locale === 'en' ? 'Official company logo' : 'Logo officiel de la société' }}
                         </p>
                         <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-text-muted">
-                            PNG, JPG ou SVG (Max 5 Mo)
+                            {{ locale === 'en' ? 'PNG, JPG or SVG (Max 5 MB)' : 'PNG, JPG ou SVG (Max 5 Mo)' }}
                         </span>
                     </div>
                     <p class="mt-1 text-[11px] text-text-secondary">
-                        Recommandé : image transparente avec un ratio 1:1 ou rectangulaire pour un affichage optimal sur les en-têtes.
+                        {{ locale === 'en' ? 'Recommended: transparent image with 1:1 or rectangular ratio for optimal display on headers.' : 'Recommandé : image transparente avec un ratio 1:1 ou rectangulaire pour un affichage optimal sur les en-têtes.' }}
                     </p>
                     <div class="mt-2 flex items-center gap-3">
                         <button v-if="logoPreview" type="button" @click="removeLogo"
                             class="text-xs font-medium text-danger hover:underline">
-                            Retirer le logo personnalisé
+                            {{ locale === 'en' ? 'Remove custom logo' : 'Retirer le logo personnalisé' }}
                         </button>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input v-model="form.organization_name" label="Nom de l'organisation" :icon="Building2" placeholder="Galana Madagascar S.A." />
-                <Input v-model="form.headquarters_site" label="Site d'exploitation / Siège" :icon="MapPin" placeholder="Terminal Pétrolier Toamasina" />
-                <Input v-model="form.support_email" type="email" label="E-mail de support technique" :icon="MailIcon" placeholder="support.hsse@galana.mg" />
-                <Input v-model="form.organization_phone" label="Téléphone standard" :icon="Phone" placeholder="+261 20 22 224 00" />
+                <Input v-model="form.organization_name" :label="locale === 'en' ? 'Organization Name' : 'Nom de l\'organisation'" :icon="Building2" placeholder="Galana Madagascar S.A." />
+                <Input v-model="form.headquarters_site" :label="locale === 'en' ? 'Operating Site / Headquarters' : 'Site d\'exploitation / Siège'" :icon="MapPin" placeholder="Terminal Pétrolier Toamasina" />
+                <Input v-model="form.support_email" type="email" :label="locale === 'en' ? 'Technical Support Email' : 'E-mail de support technique'" :icon="MailIcon" placeholder="support.hsse@galana.mg" />
+                <Input v-model="form.organization_phone" :label="locale === 'en' ? 'Main Phone' : 'Téléphone standard'" :icon="Phone" placeholder="+261 20 22 224 00" />
             </div>
         </div>
 
@@ -84,20 +88,22 @@
             <div class="mb-4">
                 <div class="flex items-center gap-2">
                     <Globe class="h-4 w-4 text-[#0F9D58]" />
-                    <h5 class="text-xs font-bold text-text-primary">Régionalisation, Langue & Date</h5>
+                    <h5 class="text-xs font-bold text-text-primary">
+                        {{ locale === 'en' ? 'Regional Settings, Language & Date' : 'Régionalisation, Langue & Date' }}
+                    </h5>
                 </div>
                 <p class="mt-0.5 text-xs text-text-secondary">
-                    Détermine la langue par défaut de l'interface, le fuseau horaire de journalisation et le formatage temporel.
+                    {{ locale === 'en' ? 'Sets default interface language, logging timezone, and date formatting.' : "Détermine la langue par défaut de l'interface, le fuseau horaire de journalisation et le formatage temporel." }}
                 </p>
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <Select v-model="form.language" label="Langue de l'interface" :icon="Languages"
+                <Select v-model="form.language" :label="locale === 'en' ? 'Interface language' : 'Langue de l\'interface'" :icon="Languages"
                     :options="languageOptions" />
 
-                <Select v-model="form.timezone" label="Fuseau horaire de référence" :icon="Clock" :options="timezoneOptions" />
+                <Select v-model="form.timezone" :label="locale === 'en' ? 'Reference timezone' : 'Fuseau horaire de référence'" :icon="Clock" :options="timezoneOptions" />
 
-                <Select v-model="form.date_format" label="Format de date standard" :icon="CalendarDays"
+                <Select v-model="form.date_format" :label="locale === 'en' ? 'Standard date format' : 'Format de date standard'" :icon="CalendarDays"
                     :options="dateFormatOptions" />
             </div>
 
@@ -105,12 +111,12 @@
             <div class="mt-4 flex items-center justify-between rounded-xl border border-dashed border-border bg-surface-alt/40 p-3">
                 <div class="flex items-center gap-2 text-xs text-text-secondary">
                     <CalendarDays class="h-4 w-4 text-[#0F9D58]" />
-                    <span>Exemple de date formatée :</span>
+                    <span>{{ locale === 'en' ? 'Sample formatted date:' : 'Exemple de date formatée :' }}</span>
                     <strong class="text-text-primary">{{ formattedPreviewDate }}</strong>
                 </div>
                 <div class="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                     <span class="h-1.5 w-1.5 rounded-full bg-[#0F9D58] animate-pulse"></span>
-                    <span>Heure serveur : GMT+3 (Toamasina / Tana)</span>
+                    <span>{{ locale === 'en' ? 'Server time: GMT+3 (Toamasina / Tana)' : 'Heure serveur : GMT+3 (Toamasina / Tana)' }}</span>
                 </div>
             </div>
         </div>
@@ -122,14 +128,14 @@
             <button type="button" :disabled="!hasChanges || isSaving" @click="resetForm"
                 class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50">
                 <RotateCcw class="h-3.5 w-3.5" />
-                Annuler
+                {{ t('common.cancel') }}
             </button>
 
             <button type="button" :disabled="!hasChanges || isSaving" @click="save"
                 class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0F9D58] px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#0c8248] disabled:opacity-50">
                 <Loader2 v-if="isSaving" class="h-3.5 w-3.5 animate-spin" />
                 <Save v-else class="h-3.5 w-3.5" />
-                Enregistrer les paramètres généraux
+                {{ locale === 'en' ? 'Save general settings' : 'Enregistrer les paramètres généraux' }}
             </button>
         </div>
     </div>
@@ -157,28 +163,30 @@ import Select from '../../../../components/ui/Select.vue'
 import settingService from '../../../../core/services/setting.service'
 import { toast } from 'vue3-toastify'
 
+const { t, locale } = useI18n()
+
 /*
 |--------------------------------------------------------------------------
 | OPTIONS
 |--------------------------------------------------------------------------
 */
 
-const languageOptions = [
-    { label: "Français (Madagascar / Officiel)", value: "fr" },
-    { label: "English (International)", value: "en" }
-]
+const languageOptions = computed(() => [
+    { label: locale.value === 'en' ? "Français (Madagascar / Officiel)" : "Français (Madagascar / Officiel)", value: "fr" },
+    { label: locale.value === 'en' ? "English (International)" : "English (International)", value: "en" }
+])
 
-const timezoneOptions = [
-    { label: "Antananarivo (UTC+3)", value: "Indian/Antananarivo" },
-    { label: "UTC (Temps Universel)", value: "UTC" },
-    { label: "Paris (UTC+1 / +2)", value: "Europe/Paris" }
-]
+const timezoneOptions = computed(() => [
+    { label: locale.value === 'en' ? "Antananarivo (UTC+3)" : "Antananarivo (UTC+3)", value: "Indian/Antananarivo" },
+    { label: locale.value === 'en' ? "UTC (Universal Coordinated Time)" : "UTC (Temps Universel)", value: "UTC" },
+    { label: locale.value === 'en' ? "Paris (UTC+1 / +2)" : "Paris (UTC+1 / +2)", value: "Europe/Paris" }
+])
 
-const dateFormatOptions = [
-    { label: "JJ/MM/AAAA (ex: 12/10/2026)", value: "DD/MM/YYYY" },
-    { label: "AAAA-MM-JJ (ex: 2026-10-12)", value: "YYYY-MM-DD" },
-    { label: "MM/JJ/AAAA (ex: 10/12/2026)", value: "MM/DD/YYYY" }
-]
+const dateFormatOptions = computed(() => [
+    { label: locale.value === 'en' ? "DD/MM/YYYY (e.g. 12/10/2026)" : "JJ/MM/AAAA (ex: 12/10/2026)", value: "DD/MM/YYYY" },
+    { label: locale.value === 'en' ? "YYYY-MM-DD (e.g. 2026-10-12)" : "AAAA-MM-JJ (ex: 2026-10-12)", value: "YYYY-MM-DD" },
+    { label: locale.value === 'en' ? "MM/DD/YYYY (e.g. 10/12/2026)" : "MM/JJ/AAAA (ex: 10/12/2026)", value: "MM/DD/YYYY" }
+])
 
 /*
 |--------------------------------------------------------------------------
@@ -284,8 +292,6 @@ function resetForm() {
     removeLogo()
 }
 
-const { locale } = useI18n()
-
 function save() {
     isSaving.value = true
     settingService.update({
@@ -304,10 +310,10 @@ function save() {
             locale.value = form.language
             localStorage.setItem('language', form.language)
         }
-        toast.success("Paramètres généraux enregistrés avec succès !")
+        toast.success(locale.value === 'en' ? "General settings saved successfully!" : "Paramètres généraux enregistrés avec succès !")
     })
     .catch(() => {
-        toast.error("Erreur lors de l'enregistrement des paramètres.")
+        toast.error(locale.value === 'en' ? "Error saving parameters." : "Erreur lors de l'enregistrement des paramètres.")
     })
     .finally(() => {
         isSaving.value = false

@@ -1,5 +1,6 @@
-<script setup lang="ts">
+<script lang="ts" setup >
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { router } from '../../../router/index.ts';
 import Header from '../../../components/shared/Header.vue';
@@ -24,6 +25,7 @@ import { UserRoleDataJson } from '../../../@data/User.data.ts';
 
 const route = useRoute();
 const userService = useUserService();
+const { t, locale } = useI18n();
 
 const isLoading = ref(true);
 const isSubmitting = ref(false);
@@ -49,7 +51,7 @@ const errors = ref<Record<string, string[]>>({});
 
 const fullName = computed(() => {
     const name = `${form.first_name || ''} ${form.last_name || ''}`.trim();
-    return name.length > 0 ? name : 'Utilisateur Galana';
+    return name.length > 0 ? name : (locale.value === 'en' ? 'Galana User' : 'Utilisateur Galana');
 });
 
 const userInitials = computed(() => {
@@ -59,8 +61,12 @@ const userInitials = computed(() => {
 });
 
 const roleLabel = computed(() => {
+    const isEn = locale.value === 'en';
+    const r = (userReadOnly.role || '').toUpperCase();
+    if (r === 'ADMIN') return isEn ? 'Administrator' : 'Administrateur';
+    if (r === 'USER') return isEn ? 'User' : 'Utilisateur';
     const found = UserRoleDataJson.find(r => r.value === userReadOnly.role);
-    return found ? found.label : (userReadOnly.role || 'Utilisateur');
+    return found ? found.label : (userReadOnly.role || (isEn ? 'User' : 'Utilisateur'));
 });
 
 async function loadProfile() {
@@ -138,13 +144,13 @@ onMounted(() => {
             <!-- CHARGEMENT -->
             <div v-if="isLoading" class="p-16 flex flex-col items-center justify-center gap-3 text-gray-500">
                 <Loader2 :size="36" class="animate-spin text-primary" />
-                <span class="text-sm font-medium">Chargement des informations du profil...</span>
+                <span class="text-sm font-medium">{{ locale === 'en' ? 'Loading profile information...' : 'Chargement des informations du profil...' }}</span>
             </div>
 
             <!-- ERREUR -->
             <div v-else-if="loadError" class="p-6 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm flex items-center justify-between">
                 <span>{{ loadError }}</span>
-                <Button variant="outline" size="sm" @click="loadProfile">Réessayer</Button>
+                <Button variant="outline" size="sm" @click="loadProfile">{{ locale === 'en' ? 'Retry' : 'Réessayer' }}</Button>
             </div>
 
             <!-- FORMULAIRE -->
@@ -153,12 +159,12 @@ onMounted(() => {
                 <form class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-6 shadow-sm" @submit.prevent="handleSubmit">
                     <div class="border-b border-gray-100 pb-4 flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900">Coordonnées personnelles</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Modifiez vos informations d'identité et de contact</p>
+                            <h3 class="text-lg font-bold text-gray-900">{{ locale === 'en' ? 'Personal Details' : 'Coordonnées personnelles' }}</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ locale === 'en' ? 'Modify your identity and contact information' : 'Modifiez vos informations d\'identité et de contact' }}</p>
                         </div>
                         <button type="button" @click="router.back()" class="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 cursor-pointer">
                             <ArrowLeft :size="14" />
-                            <span>Retour</span>
+                            <span>{{ locale === 'en' ? 'Back' : 'Retour' }}</span>
                         </button>
                     </div>
 
@@ -166,8 +172,8 @@ onMounted(() => {
                         <div>
                             <Input
                                 v-model="form.first_name"
-                                label="Prénom"
-                                placeholder="ex: Jean"
+                                :label="locale === 'en' ? 'First name *' : 'Prénom *'"
+                                :placeholder="locale === 'en' ? 'e.g. Jean' : 'ex: Jean'"
                                 :icon="UserRound"
                                 required
                             />
@@ -176,8 +182,8 @@ onMounted(() => {
                         <div>
                             <Input
                                 v-model="form.last_name"
-                                label="Nom"
-                                placeholder="ex: RAKOTO"
+                                :label="locale === 'en' ? 'Last name' : 'Nom'"
+                                :placeholder="locale === 'en' ? 'e.g. RAKOTO' : 'ex: RAKOTO'"
                                 :icon="UserRound"
                             />
                             <p v-if="errors.last_name" class="text-xs text-red-500 mt-1">{{ errors.last_name[0] }}</p>
@@ -188,7 +194,7 @@ onMounted(() => {
                         <div>
                             <Input
                                 v-model="form.phone_number"
-                                label="Numéro de téléphone"
+                                :label="locale === 'en' ? 'Phone number' : 'Numéro de téléphone'"
                                 placeholder="ex: +261 34 00 000 00"
                                 :icon="Phone"
                             />
@@ -197,33 +203,33 @@ onMounted(() => {
                         <div>
                             <Input
                                 :model-value="userReadOnly.email"
-                                label="Adresse e-mail (non modifiable)"
+                                :label="locale === 'en' ? 'Email address (read-only)' : 'Adresse e-mail (non modifiable)'"
                                 :icon="MailIcon"
                                 disabled
                             />
-                            <p class="text-[11px] text-gray-400 mt-1">L'adresse e-mail est gérée par l'administrateur système.</p>
+                            <p class="text-[11px] text-gray-400 mt-1">{{ locale === 'en' ? 'Email address is managed by the system administrator.' : 'L\'adresse e-mail est gérée par l\'administrateur système.' }}</p>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
                             <FileText :size="14" class="text-gray-400" />
-                            <span>Biographie / Note HSSE</span>
+                            <span>{{ locale === 'en' ? 'Biography / HSSE Note' : 'Biographie / Note HSSE' }}</span>
                         </label>
                         <textarea
                             v-model="form.bio"
                             rows="4"
                             class="w-full text-xs rounded-xl border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-none"
-                            placeholder="Décrivez brièvement vos responsabilités ou attributions HSSE..."
+                            :placeholder="locale === 'en' ? 'Briefly describe your responsibilities or HSSE missions...' : 'Décrivez brièvement vos responsabilités ou attributions HSSE...'"
                         ></textarea>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
                         <Button variant="outline" type="button" @click="router.back()">
-                            Annuler
+                            {{ t('common.cancel', 'Annuler') }}
                         </Button>
                         <Button type="submit" :loading="isSubmitting" is-primary>
-                            Enregistrer les modifications
+                            {{ locale === 'en' ? 'Save changes' : 'Enregistrer les modifications' }}
                         </Button>
                     </div>
                 </form>

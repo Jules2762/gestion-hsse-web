@@ -9,7 +9,7 @@
             <img src="/logo/logo-galana.webp" alt="Galana" class="w-10 min-w-10 object-contain" />
             <h4 class="text-nowrap font-semibold text-gray-800 transition-opacity duration-200"
                 :class="sidebar.isShow ? 'opacity-100' : 'opacity-0'">
-                {{ t('sidebar.hsse management') }}
+                Galana HSSE
             </h4>
         </div>
 
@@ -70,8 +70,9 @@
 
         <!-- Footer -->
         <div class="flex flex-col gap-y-2 px-3 py-4 border-t border-gray-100 shrink-0">
-            <button type="button" :title="!sidebar.isShow ? t('sidebar.help center') : undefined"
-                class="w-full h-10 flex items-center gap-x-3 px-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+            <button type="button" @click="router.push({ name: 'HELP_CENTER' })" :title="!sidebar.isShow ? t('sidebar.help center') : undefined"
+                class="w-full h-10 flex items-center gap-x-3 px-2.5 rounded-lg text-sm transition-colors cursor-pointer"
+                :class="route.name === 'HELP_CENTER' ? 'bg-primary/10 text-primary font-bold' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                 <HelpCircleIcon :size="20" class="shrink-0" />
                 <span class="text-nowrap" v-if="sidebar.isShow">{{ t('sidebar.help center') }}</span>
             </button>
@@ -81,34 +82,67 @@
                 <span class="text-nowrap" v-if="sidebar.isShow">{{ t('sidebar.logout') }}</span>
             </button>
         </div>
+    </aside>
 
-        <CenterModal :is-open="logout_modal" :title="t('confirm logout')" @close="logout_modal = false">
-            <p class="w-100">
+    <CenterModal
+        :is-open="logout_modal"
+        :title="t('confirm logout')"
+        :confirm-title="t('sidebar.logout')"
+        :cancel-title="t('common.cancel')"
+        title-variant="danger"
+        confirm-variant="danger"
+        :confirm-loading="isLoggingOut"
+        @confirm="handleLogout"
+        @close="logout_modal = false"
+    >
+        <div class="space-y-3 py-2 text-slate-700">
+            <p class="text-sm font-medium">
                 {{ t('logout message') }}
-                <br><br>
+            </p>
+            <p class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                 {{ t('logout warning') }}
             </p>
-        </CenterModal>
-    </aside>
+        </div>
+    </CenterModal>
 </template>
 
 <script setup lang="ts">
     import { onMounted, onBeforeUnmount, ref } from 'vue';
     import { useI18n } from 'vue-i18n';
+    import { useRoute } from 'vue-router';
     import { ChevronDown, HelpCircleIcon, LogOutIcon } from '@lucide/vue';
 
     import { sidebar_routes as route_data } from '../../@data/sidebar.data';
     import { router } from '../../router';
     import { useSidebarStore } from '../../services/useSidebarStore.';
     import { useSidebarNotification, type SidebarCountsType } from '../../services/useSidebarNotification';
+    import { useAuthService } from '../../core/services/auth.service';
     import CenterModal from '../ui/centerModal.vue';
 
     const { t } = useI18n()
+    const route = useRoute()
 
     const sidebar_routes = ref([...route_data])
     const sidebar = useSidebarStore()
     const sidebar_notification = useSidebarNotification()
+    const authService = useAuthService()
     const logout_modal = ref(false)
+    const isLoggingOut = ref(false)
+
+    async function handleLogout() {
+        isLoggingOut.value = true
+        try {
+            await authService.logout()
+        } catch (err) {
+            console.error('Erreur lors de la déconnexion :', err)
+        } finally {
+            isLoggingOut.value = false
+            logout_modal.value = false
+            sessionStorage.removeItem('gestion-hsse-token')
+            localStorage.removeItem('gestion-hsse-token')
+            router.push({ name: 'LOGIN' })
+        }
+    }
 
     const currentName = () => router.currentRoute.value.name
 

@@ -2,11 +2,11 @@
   <div class="p-4 flex flex-col gap-y-4">
     <div v-if="error" role="alert"
       class="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <span>Impossible de charger les indicateurs. Vérifie ta connexion puis réessaie.</span>
+      <span>{{ locale === 'en' ? 'Unable to load indicators. Check connection and retry.' : 'Impossible de charger les indicateurs. Vérifie ta connexion puis réessaie.' }}</span>
       <button type="button"
         class="shrink-0 rounded border border-red-300 bg-white px-3 py-1 font-medium hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         @click="fetchKPIs">
-        Réessayer
+        {{ t('common.retry') || (locale === 'en' ? 'Retry' : 'Réessayer') }}
       </button>
     </div>
 
@@ -14,26 +14,26 @@
 
     <!-- Personnes formées par direction -->
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-      <ChartCard title="Personnes formées par direction">
+      <ChartCard :title="locale === 'en' ? 'Trained staff by department' : 'Personnes formées par direction'">
         <apexchart v-if="direction_series_data.length" :key="`bar-${direction_series_data.map((s) => s.name).join('-')}`" type="bar" height="320" :options="direction_options" :series="direction_series" />
         <DashboardSkeleton v-else type="chart" :height="320" />
       </ChartCard>
 
-      <ChartCard title="Répartition des personnes formées par direction">
+      <ChartCard :title="locale === 'en' ? 'Distribution of trained staff by department' : 'Répartition des personnes formées par direction'">
         <apexchart v-if="direction_series_data.length" :key="pie_chart_key" type="donut" height="320" :options="pie_options" :series="pie_series" />
         <DashboardSkeleton v-else type="donut" :height="320" />
       </ChartCard>
     </div>
 
     <!-- Tableau -->
-    <ChartCard title="Détail par direction">
+    <ChartCard :title="locale === 'en' ? 'Department breakdown' : 'Détail par direction'">
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead>
             <tr class="text-left text-gray-500 border-b border-gray-200">
-              <th class="py-2 pr-4 font-medium w-fit">Direction</th>
-              <th class="py-2 font-medium">personnes formées</th>
-              <th class="py-2 font-medium w-8/12">Taux de personnes formées</th>
+              <th class="py-2 pr-4 font-medium w-fit">{{ t('table.direction') || (locale === 'en' ? 'Department' : 'Direction') }}</th>
+              <th class="py-2 font-medium">{{ locale === 'en' ? 'Trained staff' : 'personnes formées' }}</th>
+              <th class="py-2 font-medium w-8/12">{{ locale === 'en' ? 'Trained staff rate' : 'Taux de personnes formées' }}</th>
             </tr>
           </thead>
           <tbody>
@@ -59,7 +59,7 @@
             </tr>
             <tr v-else>
               <td colspan="3" class="py-8 text-center text-gray-400">
-                Aucune donnée disponible pour le moment.
+                {{ locale === 'en' ? 'No data available at this time.' : 'Aucune donnée disponible pour le moment.' }}
               </td>
             </tr>
           </tbody>
@@ -68,7 +68,7 @@
     </ChartCard>
     <ChartCard title="">
       <div class="flex flex-row items-center justify-between">
-        <h5 class="text-base font-semibold text-gray-800 mb-3">Nombre de formations par mois</h5>
+        <h5 class="text-base font-semibold text-gray-800 mb-3">{{ locale === 'en' ? 'Number of training sessions per month' : 'Nombre de formations par mois' }}</h5>
        <select v-model="currentYear" class="border border-gray-300 rounded px-2 py-1 w-24 text-sm">
           <option v-for="year in years" :key="year" :value="year">
             {{ year }}
@@ -79,7 +79,7 @@
       <DashboardSkeleton v-else type="chart" :height="320" />
     </ChartCard>
     <!-- Sessions : barres horizontales pour que les intitulés longs restent lisibles -->
-    <ChartCard title="Nombre de personnes formées par session">
+    <ChartCard :title="locale === 'en' ? 'Number of people trained per session' : 'Nombre de personnes formées par session'">
       <apexchart v-if="sessions.length" :key="`sessions-${sessions.length}`" type="bar" :height="session_height" :options="session_options" :series="session_series" />
       <DashboardSkeleton v-else type="chart" :height="session_height" />
     </ChartCard>
@@ -88,10 +88,13 @@
 
 <script setup lang="ts">
   import { computed, defineComponent, h, onMounted, ref, watch, type ComputedRef } from 'vue';
+  import { useI18n } from 'vue-i18n';
   import type { DashboardTrainingPlanChartDirectionType, DashboardTrainingPlanChartSessionType, DashboardTrainingPlanKPIs, DashboardTrainingPlanTableDirectionType } from '../../../../@types/Dashboard.type.ts';
   import dashboardService from '../../../../core/services/dashboard.service.ts';
   import KPICards from './KPICards.vue';
   import DashboardSkeleton from '../DashboardSkeleton.vue';
+
+  const { t, locale } = useI18n();
 
   /* Carte réutilisable : un seul style pour tous les blocs */
   const ChartCard = defineComponent({
@@ -129,7 +132,7 @@
   /* ---------- Personnes formées par direction ---------- */
   const direction_series_data = ref<DashboardTrainingPlanChartDirectionType[]>([]);
   const direction_series = computed(() => [
-    { name: 'Personnes formées', data: direction_series_data.value.map((s) => s.trained) },
+    { name: locale.value === 'en' ? 'Trained staff' : 'Personnes formées', data: direction_series_data.value.map((s) => s.trained) },
   ]);
   const direction_options = computed(() => ({
     chart: { ...baseChart, type: 'bar' as const },
@@ -138,7 +141,7 @@
     dataLabels: { enabled: true },
     grid: { borderColor: '#f1f1f1' },
     xaxis: { categories: direction_series_data.value.map((s) => s.name) },
-    yaxis: { title: { text: 'Personnes' } },
+    yaxis: { title: { text: locale.value === 'en' ? 'People' : 'Personnes' } },
   }));
 
   /* ---------- Répartition (donut) ---------- */
@@ -170,7 +173,8 @@
         formatter: (val: number, opts: any) => {
           const total = opts.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
           const percent = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
-          return `${val} personne${val > 1 ? 's' : ''} (${percent}%)`;
+          const noun = locale.value === 'en' ? (val > 1 ? 'people' : 'person') : (val > 1 ? 'personnes' : 'personne');
+          return `${val} ${noun} (${percent}%)`;
         },
       },
     },
@@ -195,7 +199,7 @@
             },
             total: {
               show: true,
-              label: 'Total formés',
+              label: locale.value === 'en' ? 'Total trained' : 'Total formés',
               fontSize: '13px',
               fontWeight: 600,
               color: '#64748b',
@@ -238,7 +242,7 @@
     data: monthlyChartDataType[]
   }
   const session_series = computed(() => [
-    { name: 'Personnes formées', data: sessions.value.map((s) => s.count) },
+    { name: locale.value === 'en' ? 'Trained staff' : 'Personnes formées', data: sessions.value.map((s) => s.count) },
   ]);
   const session_height = computed(() => Math.max(300, sessions.value.length * 36));
   const session_options = computed(() => ({
@@ -250,7 +254,7 @@
     grid: { borderColor: '#f1f1f1' },
     xaxis: { categories: sessions.value.map((s) => s.name) },
     yaxis: { labels: { maxWidth: 280 } },
-    tooltip: { y: { formatter: (val: number) => `${val} personnes` } },
+    tooltip: { y: { formatter: (val: number) => `${val} ${locale.value === 'en' ? 'people' : 'personnes'}` } },
   }));
 
   /* ---------- KPIs ---------- */
@@ -273,9 +277,9 @@
     xaxis: { categories: data_monthly_chart.value.data.map((item)=>item.month_name) }
   }));
   const monthly_series = computed(() => [
-    { name: 'Terminés', data: data_monthly_chart.value.data.map((item)=>item.count) },
-    { name: 'Plannifiés', data: data_monthly_chart.value.data.map((item)=>item.planned_count) },
-    { name: 'Annulés', data: data_monthly_chart.value.data.map((item)=>item.canceled_count) }
+    { name: locale.value === 'en' ? 'Completed' : 'Terminés', data: data_monthly_chart.value.data.map((item)=>item.count) },
+    { name: locale.value === 'en' ? 'Planned' : 'Plannifiés', data: data_monthly_chart.value.data.map((item)=>item.planned_count) },
+    { name: locale.value === 'en' ? 'Cancelled' : 'Annulés', data: data_monthly_chart.value.data.map((item)=>item.canceled_count) }
   ])
   const loading = ref(false);
   const error = ref(false);

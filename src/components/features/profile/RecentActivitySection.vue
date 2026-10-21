@@ -14,12 +14,15 @@ import {
   FileText
 } from '@lucide/vue'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Button from '../../ui/Button.vue'
 import activityApi from '../../../core/api/activity.api.ts'
 
 const props = defineProps<{
   userId?: string | number
 }>()
+
+const { t, locale } = useI18n()
 
 interface Activity {
   id: string | number
@@ -68,14 +71,26 @@ const TYPE_CONFIG: Record<
 }
 
 function getConfig(type: string) {
-  return (
-    TYPE_CONFIG[type] ?? {
-      icon: FileText,
-      bg: 'bg-slate-50 border-slate-200',
-      text: 'text-slate-600',
-      label: 'Activité'
-    }
-  )
+  const isEn = locale.value === 'en'
+  const labels: Record<string, { fr: string; en: string }> = {
+    CHECKLIST_CREATED: { fr: 'Nouvelle Checklist', en: 'New Checklist' },
+    CHECKLIST_COMPLETED: { fr: 'Inspection Validée', en: 'Validated Inspection' },
+    USER_CREATED: { fr: 'Création Compte', en: 'Account Creation' },
+    PROFILE_UPDATED: { fr: 'Mise à jour Profil', en: 'Profile Update' },
+    ROLE_UPDATED: { fr: 'Changement de Rôle', en: 'Role Change' }
+  }
+
+  const base = TYPE_CONFIG[type] ?? {
+    icon: FileText,
+    bg: 'bg-slate-50 border-slate-200',
+    text: 'text-slate-600',
+    label: isEn ? 'Activity' : 'Activité'
+  }
+
+  return {
+    ...base,
+    label: labels[type] ? (isEn ? labels[type].en : labels[type].fr) : base.label
+  }
 }
 
 function timeAgo(dateString: string): string {
@@ -83,33 +98,41 @@ function timeAgo(dateString: string): string {
   if (isNaN(date.getTime())) return ''
 
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  const isEn = locale.value === 'en'
 
-  const ranges: [number, string][] = [
-    [60, 'seconde'],
-    [60, 'minute'],
-    [24, 'heure'],
-    [7, 'jour'],
-    [4.345, 'semaine'],
-    [12, 'mois'],
-    [Number.POSITIVE_INFINITY, 'an']
+  const ranges: [number, string, string][] = [
+    [60, 'seconde', 'second'],
+    [60, 'minute', 'minute'],
+    [24, 'heure', 'hour'],
+    [7, 'jour', 'day'],
+    [4.345, 'semaine', 'week'],
+    [12, 'mois', 'month'],
+    [Number.POSITIVE_INFINITY, 'an', 'year']
   ]
 
   let value = seconds
-  let unit = 'seconde'
+  let unitFr = 'seconde'
+  let unitEn = 'second'
 
-  for (const [limit, label] of ranges) {
+  for (const [limit, lFr, lEn] of ranges) {
     if (value < limit) {
-      unit = label
+      unitFr = lFr
+      unitEn = lEn
       break
     }
     value = Math.floor(value / limit)
-    unit = label
+    unitFr = lFr
+    unitEn = lEn
   }
 
   const rounded = Math.max(1, Math.floor(value))
-  const plural = rounded > 1 && unit !== 'mois' ? 's' : ''
-
-  return `il y a ${rounded} ${unit}${plural}`
+  if (isEn) {
+    const plural = rounded > 1 ? 's' : ''
+    return `${rounded} ${unitEn}${plural} ago`
+  } else {
+    const plural = rounded > 1 && unitFr !== 'mois' ? 's' : ''
+    return `il y a ${rounded} ${unitFr}${plural}`
+  }
 }
 
 const activities = ref<Activity[]>([])
@@ -146,7 +169,7 @@ function getActivities(isLoadMore = false) {
       hasMore.value = activities.value.length < total
     })
     .catch(() => {
-      loadError.value = 'Impossible de charger le journal des activités.'
+      loadError.value = locale.value === 'en' ? 'Unable to load activity logs.' : 'Impossible de charger le journal des activités.'
     })
     .finally(() => {
       isLoading.value = false
@@ -184,15 +207,15 @@ onMounted(() => {
           <ActivityIcon class="h-4 w-4" />
         </div>
         <div>
-          <h4 class="text-sm font-bold text-slate-800">Activités Récentes</h4>
-          <p class="text-[11px] text-slate-500">Historique des actions de l'utilisateur</p>
+          <h4 class="text-sm font-bold text-slate-800">{{ locale === 'en' ? 'Recent Activity' : 'Activités Récentes' }}</h4>
+          <p class="text-[11px] text-slate-500">{{ locale === 'en' ? 'User action audit history' : 'Historique des actions de l\'utilisateur' }}</p>
         </div>
       </div>
 
       <button
         type="button"
         @click="getActivities(false)"
-        title="Actualiser la liste"
+        :title="locale === 'en' ? 'Refresh list' : 'Actualiser la liste'"
         :disabled="isLoading"
         class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
       >
@@ -203,7 +226,7 @@ onMounted(() => {
     <!-- CHARGEMENT INITIAL -->
     <div v-if="isLoading" class="flex flex-col items-center justify-center py-12 text-slate-400">
       <Loader2 class="h-6 w-6 animate-spin text-[#0F9D58]" />
-      <span class="mt-2 text-xs font-medium">Chargement des événements...</span>
+      <span class="mt-2 text-xs font-medium">{{ locale === 'en' ? 'Loading events...' : 'Chargement des événements...' }}</span>
     </div>
 
     <!-- ERREUR -->
@@ -216,9 +239,9 @@ onMounted(() => {
       <div class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-2">
         <Inbox class="h-6 w-6" />
       </div>
-      <p class="text-xs font-semibold text-slate-700">Aucune activité récente</p>
+      <p class="text-xs font-semibold text-slate-700">{{ locale === 'en' ? 'No recent activity' : 'Aucune activité récente' }}</p>
       <p class="text-[11px] text-slate-500 max-w-[200px] mt-0.5">
-        Les futures inspections, fiches VMC et modifications apparaîtront ici.
+        {{ locale === 'en' ? 'Future inspections, VMC cards and changes will appear here.' : 'Les futures inspections, fiches VMC et modifications apparaîtront ici.' }}
       </p>
     </div>
 
@@ -255,7 +278,7 @@ onMounted(() => {
           <div class="mt-2 flex items-center justify-between border-t border-slate-200/60 pt-1.5 text-[10px] text-slate-500">
             <span class="font-medium text-slate-600">{{ getConfig(act.type).label }}</span>
             <span class="flex items-center gap-1 text-emerald-600 font-medium">
-              <CheckCircle class="h-3 w-3" /> Enregistré
+              <CheckCircle class="h-3 w-3" /> {{ locale === 'en' ? 'Recorded' : 'Enregistré' }}
             </span>
           </div>
         </div>
@@ -272,7 +295,7 @@ onMounted(() => {
         class="w-full text-xs text-slate-600 hover:text-slate-900"
       >
         <Loader2 v-if="isLoadingMore" class="h-3.5 w-3.5 animate-spin mr-1.5" />
-        {{ isLoadingMore ? 'Chargement...' : 'Afficher plus d’activités' }}
+        {{ isLoadingMore ? (locale === 'en' ? 'Loading...' : 'Chargement...') : (locale === 'en' ? 'Show more activities' : 'Afficher plus d’activités') }}
       </Button>
     </div>
   </div>

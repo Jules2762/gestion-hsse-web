@@ -21,45 +21,45 @@
             <form @submit.prevent="onSubmit()"
                 class="col-span-8 grid grid-cols-2 p-6 bg-white rounded border border-gray-200 gap-4">
                 <div class="col-span-2 flex flex-col gap-y-1">
-                    <h4 class="font-semibold text-gray-800 text-lg">Informations de la VMC</h4>
-                    <p class="text-sm text-gray-500">Sélectionnez le type de visite puis renseignez la date, le site et l'inspecteur.</p>
+                    <h4 class="font-semibold text-gray-800 text-lg">{{ locale === 'en' ? 'VMC Information' : 'Informations de la VMC' }}</h4>
+                    <p class="text-sm text-gray-500">{{ locale === 'en' ? 'Select visit type then enter date, site and inspector.' : 'Sélectionnez le type de visite puis renseignez la date, le site et l\'inspecteur.' }}</p>
                 </div>
 
                 <div v-if="errorMessage" class="col-span-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
                     {{ errorMessage }}
                 </div>
 
-                <Select required :options="VMCTypeData" v-model="data.type" label="Type de VMC" class="col-span-2" />
+                <Select required :options="VMCTypeData" v-model="data.type" :label="locale === 'en' ? 'VMC Type' : 'Type de VMC'" class="col-span-2" />
                 
-                <Input label="Titre de la VMC (Optionnel)" v-model="data.title" placeholder="Ex: VMC Station-Service Ankorondrano" class="col-span-2" />
+                <Input :label="locale === 'en' ? 'VMC Title (Optional)' : 'Titre de la VMC (Optionnel)'" v-model="data.title" :placeholder="locale === 'en' ? 'Ex: VMC Service-Station Ankorondrano' : 'Ex: VMC Station-Service Ankorondrano'" class="col-span-2" />
 
-                <Input label="Date" type="date" v-model="data.date" required />
+                <Input :label="locale === 'en' ? 'Date' : 'Date'" type="date" v-model="data.date" required />
 
                 <!-- Site avec liste de suggestions -->
                 <Input
-                    label="Site"
+                    :label="locale === 'en' ? 'Site' : 'Site'"
                     v-model="data.site"
-                    placeholder="Ex: Station Ankorondrano, Dépôt, ..."
+                    :placeholder="locale === 'en' ? 'Ex: Ankorondrano Station, Depot, ...' : 'Ex: Station Ankorondrano, Dépôt, ...'"
                     :lists="siteList"
                     list_id="sites_datalist"
                 />
 
                 <!-- Inspecteur : Input avec choix liste affichant Nom complet - Direction - Fonction -->
                 <Input
-                    label="Inspecteur / Responsable"
+                    :label="locale === 'en' ? 'Inspector / Person in charge' : 'Inspecteur / Responsable'"
                     v-model="data.inspector"
-                    placeholder="Saisissez ou choisissez un inspecteur..."
+                    :placeholder="locale === 'en' ? 'Type or choose an inspector...' : 'Saisissez ou choisissez un inspecteur...'"
                     :lists="personnelList"
                     list_id="inspectors_datalist"
                 />
 
-                <Input label="Personne accompagnante" v-model="data.accompanying_person" placeholder="Nom de l'accompagnant..." />
+                <Input :label="locale === 'en' ? 'Accompanying person' : 'Personne accompagnante'" v-model="data.accompanying_person" :placeholder="locale === 'en' ? 'Name of accompanying person...' : 'Nom de l\'accompagnant...'" />
 
                 <div class="flex flex-row items-center col-span-2 justify-end gap-x-3 mt-2">
                     <Button variant="outline" @click="router.back()" type="button"
-                        :disabled="loading_submit">Annuler</Button>
+                        :disabled="loading_submit">{{ locale === 'en' ? 'Cancel' : 'Annuler' }}</Button>
                     <Button :left-icon="Save" :loading="loading_submit" :disabled="disabled_submit || loading_submit"
-                        type="submit">Créer la VMC</Button>
+                        type="submit">{{ locale === 'en' ? 'Create VMC' : 'Créer la VMC' }}</Button>
                 </div>
             </form>
 
@@ -73,15 +73,15 @@
 
                             <div class="min-w-0">
                                 <p class="text-xs uppercase tracking-widest text-gray-400">
-                                    Aperçu
+                                    {{ locale === 'en' ? 'Preview' : 'Aperçu' }}
                                 </p>
 
                                 <h4 class="mt-1 font-semibold text-gray-800 truncate">
-                                    {{ data.title || 'Nouvelle VMC' }}
+                                    {{ data.title || (locale === 'en' ? 'New VMC' : 'Nouvelle VMC') }}
                                 </h4>
 
                                 <p class="mt-1 text-sm text-gray-500">
-                                    Vérifiez les informations avant de créer la VMC.
+                                    {{ locale === 'en' ? 'Check details before creating VMC.' : 'Vérifiez les informations avant de créer la VMC.' }}
                                 </p>
                             </div>
 
@@ -97,7 +97,7 @@
                     <div class="p-5 border-b border-gray-200">
 
                         <p class="text-xs uppercase tracking-wider text-gray-400 mb-3 font-semibold">
-                            Type de VMC
+                            {{ locale === 'en' ? 'VMC Type' : 'Type de VMC' }}
                         </p>
 
                         <div v-if="data.type" class="flex items-center gap-3">
@@ -111,13 +111,13 @@
                                 </p>
 
                                 <p class="text-xs text-gray-500">
-                                    Type sélectionné
+                                    {{ locale === 'en' ? 'Selected type' : 'Type sélectionné' }}
                                 </p>
                             </div>
                         </div>
 
                         <div v-else class="text-sm text-gray-400">
-                            Aucun type sélectionné
+                            {{ locale === 'en' ? 'No type selected' : 'Aucun type sélectionné' }}
                         </div>
 
                     </div>
@@ -126,7 +126,7 @@
                     <div class="p-5 border-b border-gray-200">
 
                         <p class="text-xs uppercase tracking-wider text-gray-400 mb-4 font-semibold">
-                            Détails de visite
+                            {{ locale === 'en' ? 'Visit details' : 'Détails de visite' }}
                         </p>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -134,7 +134,7 @@
                             <!-- SITE -->
                             <div class="col-span-2">
                                 <p class="text-xs text-gray-500">
-                                    Site
+                                    {{ locale === 'en' ? 'Site' : 'Site' }}
                                 </p>
 
                                 <p v-if="data.site" class="mt-1 font-medium text-gray-800">
@@ -142,14 +142,14 @@
                                 </p>
 
                                 <p v-else class="mt-1 text-sm text-gray-400">
-                                    Non renseigné
+                                    {{ locale === 'en' ? 'Not provided' : 'Non renseigné' }}
                                 </p>
                             </div>
 
                             <!-- DATE -->
                             <div>
                                 <p class="text-xs text-gray-500">
-                                    Date
+                                    {{ locale === 'en' ? 'Date' : 'Date' }}
                                 </p>
 
                                 <p v-if="data.date" class="mt-1 font-medium text-gray-800">
@@ -157,14 +157,14 @@
                                 </p>
 
                                 <p v-else class="mt-1 text-sm text-gray-400">
-                                    Non renseignée
+                                    {{ locale === 'en' ? 'Not provided' : 'Non renseignée' }}
                                 </p>
                             </div>
 
                             <!-- INSPECTEUR -->
                             <div>
                                 <p class="text-xs text-gray-500">
-                                    Inspecteur
+                                    {{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}
                                 </p>
 
                                 <p v-if="cleanInspectorName" class="mt-1 font-medium truncate text-gray-800">
@@ -176,14 +176,14 @@
                                 </p>
 
                                 <p v-else-if="!cleanInspectorName" class="mt-1 text-sm text-gray-400">
-                                    Non renseigné
+                                    {{ locale === 'en' ? 'Not provided' : 'Non renseigné' }}
                                 </p>
                             </div>
 
                             <!-- ACCOMPAGNANT -->
                             <div class="col-span-2">
                                 <p class="text-xs text-gray-500">
-                                    Personne accompagnante
+                                    {{ locale === 'en' ? 'Accompanying person' : 'Personne accompagnante' }}
                                 </p>
 
                                 <p v-if="data.accompanying_person" class="mt-1 font-medium text-gray-800">
@@ -191,7 +191,7 @@
                                 </p>
 
                                 <p v-else class="mt-1 text-sm text-gray-400">
-                                    Non renseignée
+                                    {{ locale === 'en' ? 'Not provided' : 'Non renseignée' }}
                                 </p>
                             </div>
 
@@ -202,7 +202,7 @@
                     <div class="p-5">
 
                         <p class="text-xs uppercase tracking-wider text-gray-400 mb-4 font-semibold">
-                            Résumé
+                            {{ locale === 'en' ? 'Summary' : 'Résumé' }}
                         </p>
 
                         <div class="rounded-xl bg-slate-50 border border-slate-100 p-4">
@@ -235,8 +235,8 @@
                             <span>
                                 {{
                                     disabled_submit
-                                        ? 'Informations incomplètes (type et date requis)'
-                                        : 'VMC prête à être créée'
+                                        ? (locale === 'en' ? 'Incomplete information (type and date required)' : 'Informations incomplètes (type et date requis)')
+                                        : (locale === 'en' ? 'VMC ready to be created' : 'VMC prête à être créée')
                                 }}
                             </span>
                         </div>
@@ -251,6 +251,7 @@
 </template>
 <script setup lang="ts">
     import { ClipboardCheck, Save } from '@lucide/vue';
+    import { useI18n } from 'vue-i18n';
     import Header from '../../../components/shared/Header.vue';
     import Button from '../../../components/ui/Button.vue';
     import Input from '../../../components/ui/Input.vue';
@@ -260,6 +261,8 @@
     import type { VMCFormType } from '../../../@types/VMC.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
     import personnelService from '../../../core/services/personnel.service.ts';
+
+    const { t, locale } = useI18n();
 
     const VMCTypeData: { label: string, value: string }[] = [
         { label: 'Station-Service', value: 'Station-Service' },
@@ -350,15 +353,15 @@
         if (!data.value.date) return ''
         const date = new Date(data.value.date)
         if (Number.isNaN(date.getTime())) return data.value.date
-        return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'UTC' }).format(date)
+        return new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'fr-FR', { dateStyle: 'long', timeZone: 'UTC' }).format(date)
     })
 
     const summaryRows = computed(() => [
-        { label: 'Type', value: data.value.type },
-        { label: 'Site', value: data.value.site },
-        { label: 'Date', value: formattedDate.value },
-        { label: 'Inspecteur', value: cleanInspectorName.value || data.value.inspector },
-        { label: 'Accompagnant', value: data.value.accompanying_person },
+        { label: locale.value === 'en' ? 'Type' : 'Type', value: data.value.type },
+        { label: locale.value === 'en' ? 'Site' : 'Site', value: data.value.site },
+        { label: locale.value === 'en' ? 'Date' : 'Date', value: formattedDate.value },
+        { label: locale.value === 'en' ? 'Inspector' : 'Inspecteur', value: cleanInspectorName.value || data.value.inspector },
+        { label: locale.value === 'en' ? 'Accompanying' : 'Accompagnant', value: data.value.accompanying_person },
     ])
 
     function onSubmit() {

@@ -17,18 +17,18 @@
 
                 <div class="max-w-xl">
                     <h1 class="text-2xl font-semibold text-text-primary">
-                        Importer le registre de formation
+                        {{ locale === 'en' ? 'Import training registry' : 'Importer le registre de formation' }}
                     </h1>
                     <p class="mt-1.5 text-sm text-text-secondary">
-                        Chargez votre fichier Excel, contrôlez les données, puis lancez l'importation.
+                        {{ locale === 'en' ? 'Upload your Excel file, verify data, then launch import.' : 'Chargez votre fichier Excel, contrôlez les données, puis lancez l\'importation.' }}
                     </p>
                 </div>
 
-                <ol class="flex items-center" aria-label="Progression de l'importation">
+                <ol class="flex items-center" :aria-label="locale === 'en' ? 'Import progress' : 'Progression de l\'importation'">
                     <template v-for="(step, i) in [
-                        { n: 1, label: 'Fichier', state: hasFile ? 'done' : 'active' },
-                        { n: 2, label: 'Prévisualisation', state: canImport ? 'done' : hasFile ? 'active' : 'todo' },
-                        { n: 3, label: 'Importation', state: canImport ? 'active' : 'todo' }
+                        { n: 1, label: locale === 'en' ? 'File' : 'Fichier', state: hasFile ? 'done' : 'active' },
+                        { n: 2, label: locale === 'en' ? 'Preview' : 'Prévisualisation', state: canImport ? 'done' : hasFile ? 'active' : 'todo' },
+                        { n: 3, label: locale === 'en' ? 'Import' : 'Importation', state: canImport ? 'active' : 'todo' }
                     ]" :key="step.n">
 
                         <li class="flex items-center gap-2.5"
@@ -84,22 +84,21 @@
                             </div>
 
                             <h2 class="text-lg font-semibold text-text-primary">
-                                Glissez votre fichier Excel ici
+                                {{ locale === 'en' ? 'Drag and drop your Excel file here' : 'Glissez votre fichier Excel ici' }}
                             </h2>
 
                             <p class="mt-1.5 max-w-sm text-sm text-text-secondary">
-                                ou sélectionnez-le depuis votre ordinateur. Le fichier est lu dans votre navigateur,
-                                rien n'est enregistré avant la dernière étape.
+                                {{ locale === 'en' ? 'or select it from your computer. The file is read in your browser, nothing is saved before the final step.' : 'ou sélectionnez-le depuis votre ordinateur. Le fichier est lu dans votre navigateur, rien n\'est enregistré avant la dernière étape.' }}
                             </p>
 
                             <span
                                 class="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-primary-dark">
                                 <Upload class="h-4 w-4" />
-                                Choisir un fichier
+                                {{ locale === 'en' ? 'Choose a file' : 'Choisir un fichier' }}
                             </span>
 
                             <div class="mt-6 flex items-center gap-2 text-xs text-text-muted">
-                                <span>Formats acceptés</span>
+                                <span>{{ locale === 'en' ? 'Supported formats' : 'Formats acceptés' }}</span>
                                 <span v-for="ext in ['XLSX', 'XLS', 'CSV']" :key="ext"
                                     class="rounded-md bg-surface-alt px-2 py-0.5 font-medium text-text-secondary">
                                     {{ ext }}
@@ -108,7 +107,7 @@
 
                         </div>
 
-                        <input ref="fileInput" type="file" title="" aria-label="Choisir un fichier Excel"
+                        <input ref="fileInput" type="file" title="" :aria-label="locale === 'en' ? 'Choose Excel file' : 'Choisir un fichier Excel'"
                             class="absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".xlsx,.xls,.csv"
                             @change="handleFile" />
 
@@ -121,28 +120,28 @@
 
                         <div class="rounded-2xl border border-border bg-surface p-5">
                             <h2 class="text-base font-semibold text-text-primary">
-                                Pas encore de fichier ?
+                                {{ locale === 'en' ? 'No file yet?' : 'Pas encore de fichier ?' }}
                             </h2>
                             <p class="mt-1.5 text-sm text-text-secondary">
-                                Le modèle contient les bons en-têtes, une ligne d'exemple et une feuille d'instructions.
+                                {{ locale === 'en' ? 'The template contains the correct headers, an example row and instructions.' : 'Le modèle contient les bons en-têtes, une ligne d\'exemple et une feuille d\'instructions.' }}
                             </p>
                             <button type="button" @click="downloadTemplate"
                                 class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light">
                                 <Download class="h-4 w-4" />
-                                Télécharger le modèle
+                                {{ locale === 'en' ? 'Download template' : 'Télécharger le modèle' }}
                             </button>
                         </div>
 
                         <div class="rounded-2xl border border-border bg-surface p-5">
-                            <h3 class="text-sm font-semibold text-text-primary">Avant d'importer</h3>
+                            <h3 class="text-sm font-semibold text-text-primary">{{ locale === 'en' ? 'Before importing' : 'Avant d\'importer' }}</h3>
                             <ul class="mt-3 space-y-3 text-sm text-text-secondary">
                                 <li class="flex gap-2.5">
                                     <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
-                                    <span>Seule la première feuille du classeur est lue.</span>
+                                    <span>{{ locale === 'en' ? 'Only the first worksheet is read.' : 'Seule la première feuille du classeur est lue.' }}</span>
                                 </li>
                                 <li class="flex gap-2.5">
                                     <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
-                                    <span>Date au format AAAA-MM-JJ ou JJ/MM/AAAA.</span>
+                                    <span>{{ locale === 'en' ? 'Date format: YYYY-MM-DD or DD/MM/YYYY.' : 'Date au format AAAA-MM-JJ ou JJ/MM/AAAA.' }}</span>
                                 </li>
                                 <li class="flex gap-2.5">
                                     <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
@@ -216,25 +215,23 @@
                                     {{ formatFileSize(fileSize) }}
                                 </span>
                                 <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
-                                    {{ rows.length }} ligne(s)
+                                    {{ rows.length }} {{ locale === 'en' ? 'row(s)' : 'ligne(s)' }}
                                 </span>
                                 <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
-                                    {{ headers.length }} colonne(s)
+                                    {{ headers.length }} {{ locale === 'en' ? 'column(s)' : 'colonne(s)' }}
                                 </span>
 
                                 <span v-if="canImport"
                                     class="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 font-semibold text-success">
-                                    <CheckCircle2 class="h-3.5 w-3.5" /> Prêt à importer
+                                    <CheckCircle2 class="h-3.5 w-3.5" /> {{ locale === 'en' ? 'Ready to import' : 'Prêt à importer' }}
                                 </span>
                                 <span v-else-if="missingColumns.length"
                                     class="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2.5 py-0.5 font-semibold text-danger">
-                                    <CircleAlert class="h-3.5 w-3.5" /> {{ missingColumns.length }} colonne(s)
-                                    manquante(s)
+                                    <CircleAlert class="h-3.5 w-3.5" /> {{ missingColumns.length }} {{ locale === 'en' ? 'missing column(s)' : 'colonne(s) manquante(s)' }}
                                 </span>
                                 <span v-else
                                     class="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2.5 py-0.5 font-semibold text-warning">
-                                    <CircleAlert class="h-3.5 w-3.5" /> {{ validationErrors.length }} erreur(s) à
-                                    corriger
+                                    <CircleAlert class="h-3.5 w-3.5" /> {{ validationErrors.length }} {{ locale === 'en' ? 'error(s) to fix' : 'erreur(s) à corriger' }}
                                 </span>
                             </div>
                         </div>
@@ -246,13 +243,13 @@
                         <button type="button" @click="downloadTemplate"
                             class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-light">
                             <Download class="h-4 w-4" />
-                            Modèle
+                            {{ locale === 'en' ? 'Template' : 'Modèle' }}
                         </button>
 
                         <button type="button" @click="removeFile()"
                             class="inline-flex items-center gap-2 rounded-xl border border-danger/30 px-3 py-2 text-sm font-semibold text-danger transition-colors hover:bg-danger/10">
                             <Trash2 class="h-4 w-4" />
-                            Supprimer
+                            {{ locale === 'en' ? 'Remove' : 'Supprimer' }}
                         </button>
 
                         <button type="button" :disabled="!canImport && loading_btn" @click="prepareImport"
@@ -262,7 +259,7 @@
                                 : 'bg-linear-to-r from-success to-primary-dark text-white hover:-translate-y-0.5 hover:shadow-md'">
                             <Upload class="h-4 w-4" v-if="loading_btn == false" />
                             <Loader class="h-4 w-4 animate-spin" v-else />
-                            Préparer l'importation
+                            {{ locale === 'en' ? 'Prepare import' : 'Préparer l\'importation' }}
                         </button>
 
                     </div>
@@ -529,6 +526,8 @@
     import { toast } from "vue3-toastify"
     import { useI18n } from "vue-i18n"
 
+    const { t, locale } = useI18n()
+
 
     /*
     |--------------------------------------------------------------------------
@@ -573,6 +572,7 @@
         "Exercice d'urgence",
         "Formation",
         "Induction",
+        "Réunion",
         "Sensibilisation"
     ]
 
@@ -1343,7 +1343,6 @@
     */
 
     const isImporting = ref(false)
-    const { t } = useI18n()
     const importErrors = ref<string[]>([])
 
     async function prepareImport() {

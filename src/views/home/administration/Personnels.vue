@@ -11,18 +11,19 @@
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter
-                            is-primary
-                            :text="t('formation.actions.add')"
-                            :icon="SquarePlusIcon"
-                            @click="router.push({ name: 'PERSONNEL_ADD' })"
-                        />
+                        <ButtonFilter is-primary :text="t('formation.actions.add')" :icon="SquarePlusIcon" @click="openAddModal" />
                         <ButtonFilter
                             text="Exporter"
                             :icon="DownloadIcon"
                             :badge="String(pagination.total)"
                             :loading="loading_export"
                             @click="handleExport"
+                        />
+                        <ButtonFilter
+                            text="Actualiser"
+                            :icon="RefreshCw"
+                            :loading="loading"
+                            @click="fetchData()"
                         />
                     </div>
                     <div class="flex flex-row items-center gap-2">
@@ -51,28 +52,28 @@
                 <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
                     <Users :size="28" />
                 </div>
-                <h5 class="text-gray-700 font-semibold mb-1">Aucun personnel trouvé</h5>
+                <h5 class="text-gray-700 font-semibold mb-1">{{ locale === 'en' ? 'No personnel found' : 'Aucun personnel trouvé' }}</h5>
                 <p class="text-sm text-gray-500 max-w-sm">
-                    Aucun enregistrement ne correspond aux critères de filtre sélectionnés.
+                    {{ locale === 'en' ? 'No record matches the selected filter criteria.' : 'Aucun enregistrement ne correspond aux critères de filtre sélectionnés.' }}
                 </p>
                 <button
                     v-if="searchQuery || filters.direction.length || filters.fonction.length || filters.entity.length"
                     @click="clearFilters"
                     class="mt-4 px-4 py-2 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition"
                 >
-                    Réinitialiser les filtres
+                    {{ t('common.reset_filters') }}
                 </button>
             </div>
 
             <table v-else>
                 <thead>
                     <tr>
-                        <th class="w-16">REF</th>
-                        <th>NOM ET PRÉNOM</th>
-                        <th>E-MAIL</th>
-                        <th>FONCTION</th>
-                        <th>DIRECTION</th>
-                        <th>ENTITÉ</th>
+                        <th class="w-16">{{ t('table.ref') }}</th>
+                        <th>{{ t('table.first_and_last_name') }}</th>
+                        <th>{{ t('table.email') }}</th>
+                        <th>{{ t('table.function') }}</th>
+                        <th>{{ t('table.direction') }}</th>
+                        <th>{{ t('table.entity') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -219,19 +220,177 @@
                 de la base du personnel ?
             </p>
         </CenterModal>
+
+        <!-- ========================================================= -->
+        <!-- MODAL NOUVEAU MEMBRE DU PERSONNEL (IN-PAGE MODAL)         -->
+        <!-- ========================================================= -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="modal_add"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="modal_add = false"
+                >
+                    <div
+                        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                        <!-- En-tête Modal -->
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                    <Users :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'Add Personnel Member' : 'Ajouter un membre du personnel' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        {{ locale === 'en' ? 'Fill in personal information, role, direction and entity.' : 'Renseignez l\'identité, la fonction, la direction et l\'entité.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="modal_add = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <X :size="18" />
+                            </button>
+                        </div>
+
+                        <!-- Formulaire Modal -->
+                        <form @submit.prevent="submitAddPersonnel" class="flex flex-col flex-1 overflow-y-auto">
+                            <div class="p-5 space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Prénom -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'First Name' : 'Prénom' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newPersonnelForm.first_name"
+                                            type="text"
+                                            required
+                                            :placeholder="locale === 'en' ? 'First name' : 'Prénom'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Nom -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Last Name' : 'Nom' }}
+                                        </label>
+                                        <input
+                                            v-model="newPersonnelForm.last_name"
+                                            type="text"
+                                            :placeholder="locale === 'en' ? 'Last name' : 'Nom de famille'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Email' : 'Adresse e-mail' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="newPersonnelForm.email"
+                                        type="email"
+                                        required
+                                        placeholder="nom.prenom@galana.mg"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                                    <!-- Fonction -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Position / Job' : 'Fonction' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newPersonnelForm.fonction"
+                                            list="personnel_modal_jobs_datalist"
+                                            type="text"
+                                            required
+                                            :placeholder="locale === 'en' ? 'Ex: Inspecteur HSSE' : 'Ex: Inspecteur HSSE, Chef de Station...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                        <datalist id="personnel_modal_jobs_datalist">
+                                            <option v-for="j in jobSuggestions" :key="j" :value="j">{{ j }}</option>
+                                        </datalist>
+                                    </div>
+
+                                    <!-- Direction -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Direction' : 'Direction' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newPersonnelForm.direction"
+                                            type="text"
+                                            required
+                                            :placeholder="locale === 'en' ? 'Ex: Direction HSSE' : 'Ex: Direction HSSE, Opérations...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Entité -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Entity' : 'Entité' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="newPersonnelForm.entity"
+                                            type="text"
+                                            required
+                                            :placeholder="locale === 'en' ? 'Ex: Galana Distribution' : 'Ex: Galana Distribution, Raffinerie...'"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer d'actions -->
+                            <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="modal_add = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="loading_add || !newPersonnelForm.first_name || !newPersonnelForm.email || !newPersonnelForm.fonction || !newPersonnelForm.direction || !newPersonnelForm.entity"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                >
+                                    <Loader2 v-if="loading_add" :size="13" class="animate-spin" />
+                                    <span>{{ locale === 'en' ? 'Add Member' : 'Ajouter le membre' }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import ButtonFilter from '../../../components/ui/ButtonFilter.vue';
-import { DownloadIcon, Search, SquarePlusIcon, Users, Loader2, X, Edit, Trash2 } from '@lucide/vue';
+import { DownloadIcon, Search, SquarePlusIcon, Users, Loader2, RefreshCw, X, Edit, Trash2 } from '@lucide/vue';
 import { router } from '../../../router/index.ts';
 import Header from '../../../components/shared/Header.vue';
 import { computed, onMounted, ref, watch, type ComputedRef } from 'vue';
 import InputFilter from '../../../components/ui/InputFilter.vue';
 import type { PersonnelDataType } from '../../../@types/Personnel.type.ts';
 import personnelService from '../../../core/services/personnel.service.ts';
+import jobService from '../../../core/services/job.service.ts';
+import type { PersonnelFormType } from '../../../@types/Personnel.type.ts';
 import ChipFilter from '../../../components/ui/ChipFilter.vue';
 import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
 import CenterModal from '../../../components/ui/centerModal.vue';
@@ -240,13 +399,75 @@ import { exportUtils } from '../../../core/utils/export.utils.ts';
 import { toast } from 'vue3-toastify';
 import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
 
 const loading = ref(false);
 const loading_export = ref(false);
 const loading_delete = ref(false);
 const modal_delete = ref(false);
 const item_to_delete = ref<PersonnelDataType | null>(null);
+
+
+const modal_add = ref(false);
+const loading_add = ref(false);
+const jobSuggestions = ref<string[]>([]);
+
+const newPersonnelForm = ref<PersonnelFormType>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    fonction: '',
+    direction: '',
+    entity: '',
+});
+
+function openAddModal() {
+    newPersonnelForm.value = {
+        first_name: '',
+        last_name: '',
+        email: '',
+        fonction: '',
+        direction: '',
+        entity: '',
+    };
+    modal_add.value = true;
+    loadJobSuggestions();
+}
+
+function loadJobSuggestions() {
+    if (jobSuggestions.value.length === 0) {
+        jobService.getNames()
+            .then(res => {
+                jobSuggestions.value = res.data || [];
+            })
+            .catch(err => console.error(err));
+    }
+}
+
+async function submitAddPersonnel() {
+    if (!newPersonnelForm.value.first_name || !newPersonnelForm.value.email || !newPersonnelForm.value.fonction || !newPersonnelForm.value.direction || !newPersonnelForm.value.entity) return;
+    loading_add.value = true;
+    try {
+        const payload: PersonnelFormType = {
+            first_name: newPersonnelForm.value.first_name.trim(),
+            last_name: newPersonnelForm.value.last_name?.trim() || undefined,
+            email: newPersonnelForm.value.email.trim().toLowerCase(),
+            fonction: newPersonnelForm.value.fonction.trim(),
+            direction: newPersonnelForm.value.direction.trim(),
+            entity: newPersonnelForm.value.entity.trim(),
+        };
+        await personnelService.store(payload);
+        toast.success(locale.value === 'en' ? 'Personnel member added successfully!' : 'Membre du personnel ajouté avec succès !');
+        modal_add.value = false;
+        fetchData();
+    } catch (err: any) {
+        const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to add personnel member.' : 'Erreur lors de l\'enregistrement.');
+        toast.error(errorMsg);
+    } finally {
+        loading_add.value = false;
+    }
+}
 
 const selected_personnel = ref<PersonnelDataType>();
 const data = ref<PersonnelDataType[]>([]);

@@ -87,12 +87,12 @@
                 <input
                     type="text"
                     v-model="searchQuery"
-                    :placeholder="`Rechercher dans : ${currentFolderName}...`"
+                    :placeholder="locale === 'en' ? `Search in: ${currentFolderName}...` : `Rechercher dans : ${currentFolderName}...`"
                     class="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 focus:border-[#0F9D58] focus:ring-2 focus:ring-[#0F9D58]/20 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-800 placeholder-slate-400 transition-all outline-none" />
                 <button
                     v-if="searchQuery"
                     @click="searchQuery = ''"
-                    title="Effacer la recherche"
+                    :title="locale === 'en' ? 'Clear search' : 'Effacer la recherche'"
                     class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer">
                     <X :size="14" />
                 </button>
@@ -111,7 +111,7 @@
                         @click.stop="toggleMenu('new')"
                         class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0F9D58] hover:bg-[#0c854a] text-white font-semibold transition-colors cursor-pointer shadow-xs">
                         <FolderPlus :size="15" />
-                        <span>Nouveau</span>
+                        <span>{{ locale === 'en' ? 'New' : 'Nouveau' }}</span>
                         <ChevronDown :size="13" />
                     </button>
 
@@ -125,8 +125,8 @@
                             class="flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-100 transition-colors cursor-pointer">
                             <FolderPlus :size="16" class="text-amber-500" />
                             <div class="flex-1">
-                                <span class="font-medium text-slate-800">Dossier</span>
-                                <span class="text-[10px] text-slate-400 block">Créer un nouveau sous-dossier</span>
+                                <span class="font-medium text-slate-800">{{ locale === 'en' ? 'Folder' : 'Dossier' }}</span>
+                                <span class="text-[10px] text-slate-400 block">{{ locale === 'en' ? 'Create a new subfolder' : 'Créer un nouveau sous-dossier' }}</span>
                             </div>
                         </button>
                         <div class="border-t border-slate-100 my-0.5"></div>
@@ -135,8 +135,8 @@
                             class="flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-100 transition-colors cursor-pointer">
                             <FilePlus :size="16" class="text-[#0F9D58]" />
                             <div class="flex-1">
-                                <span class="font-medium text-slate-800">Téléverser des fichiers</span>
-                                <span class="text-[10px] text-slate-400 block">Glisser-déposer ou parcourir</span>
+                                <span class="font-medium text-slate-800">{{ locale === 'en' ? 'Upload files' : 'Téléverser des fichiers' }}</span>
+                                <span class="text-[10px] text-slate-400 block">{{ locale === 'en' ? 'Drag & drop or browse' : 'Glisser-déposer ou parcourir' }}</span>
                             </div>
                         </button>
                     </div>
@@ -146,7 +146,7 @@
 
                 <!-- Actions contextuelles rapides -->
                 <button
-                    title="Copier le nom"
+                    :title="locale === 'en' ? 'Copy name' : 'Copier le nom'"
                     :disabled="!hasSelection"
                     @click="copySelectedName"
                     class="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer text-slate-700">
@@ -154,7 +154,7 @@
                 </button>
 
                 <button
-                    title="Renommer (F2)"
+                    :title="locale === 'en' ? 'Rename (F2)' : 'Renommer (F2)'"
                     :disabled="!canRenameSingle"
                     @click="triggerRenameSelected"
                     class="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer text-slate-700">
@@ -162,7 +162,7 @@
                 </button>
 
                 <button
-                    title="Supprimer (Suppr)"
+                    :title="locale === 'en' ? 'Delete (Del)' : 'Supprimer (Suppr)'"
                     :disabled="!hasSelection"
                     @click="triggerDeleteSelected"
                     class="p-1.5 rounded-lg hover:bg-red-50 text-slate-700 hover:text-red-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:text-slate-700 transition-colors cursor-pointer">
@@ -170,7 +170,7 @@
                 </button>
 
                 <button
-                    title="Télécharger le fichier"
+                    :title="locale === 'en' ? 'Download file' : 'Télécharger le fichier'"
                     :disabled="!selectedDocument"
                     @click="selectedDocument && downloadDocument(selectedDocument)"
                     class="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer text-slate-700">
@@ -185,7 +185,7 @@
                         @click.stop="toggleMenu('sort')"
                         class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-medium text-slate-700">
                         <SlidersHorizontal :size="15" />
-                        <span>Trier</span>
+                        <span>{{ locale === 'en' ? 'Sort' : 'Trier' }}</span>
                         <ChevronDown :size="12" />
                     </button>
 
@@ -194,7 +194,7 @@
                         v-if="activeMenu === 'sort'"
                         class="absolute left-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-xs"
                         @click.stop>
-                        <div class="px-2.5 py-1 font-semibold text-slate-400 text-[10px] uppercase">Trier par</div>
+                        <div class="px-2.5 py-1 font-semibold text-slate-400 text-[10px] uppercase">{{ locale === 'en' ? 'Sort by' : 'Trier par' }}</div>
                         <button
                             v-for="s in sortOptions"
                             :key="s.key"
@@ -207,13 +207,13 @@
                         <button
                             @click="sortAsc = true; activeMenu = null"
                             class="flex items-center justify-between w-full px-3 py-1.5 hover:bg-slate-100 transition-colors cursor-pointer text-left">
-                            <span>Croissant</span>
+                            <span>{{ locale === 'en' ? 'Ascending' : 'Croissant' }}</span>
                             <Check v-if="sortAsc" :size="13" class="text-[#0F9D58]" />
                         </button>
                         <button
                             @click="sortAsc = false; activeMenu = null"
                             class="flex items-center justify-between w-full px-3 py-1.5 hover:bg-slate-100 transition-colors cursor-pointer text-left">
-                            <span>Décroissant</span>
+                            <span>{{ locale === 'en' ? 'Descending' : 'Décroissant' }}</span>
                             <Check v-if="!sortAsc" :size="13" class="text-[#0F9D58]" />
                         </button>
                     </div>
@@ -225,7 +225,7 @@
                         @click.stop="toggleMenu('view')"
                         class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer font-medium text-slate-700">
                         <component :is="viewModeIcon" :size="15" />
-                        <span>Afficher</span>
+                        <span>{{ locale === 'en' ? 'View' : 'Afficher' }}</span>
                         <ChevronDown :size="12" />
                     </button>
 
@@ -234,13 +234,13 @@
                         v-if="activeMenu === 'view'"
                         class="absolute left-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30 text-xs"
                         @click.stop>
-                        <div class="px-2.5 py-1 font-semibold text-slate-400 text-[10px] uppercase">Modes d'affichage</div>
+                        <div class="px-2.5 py-1 font-semibold text-slate-400 text-[10px] uppercase">{{ locale === 'en' ? 'View modes' : 'Modes d\'affichage' }}</div>
                         <button
                             @click="viewMode = 'details'; activeMenu = null"
                             class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer text-left">
                             <div class="flex items-center gap-2">
                                 <List :size="15" />
-                                <span>Détails (Tableau)</span>
+                                <span>{{ locale === 'en' ? 'Details (Table)' : 'Détails (Tableau)' }}</span>
                             </div>
                             <Check v-if="viewMode === 'details'" :size="14" class="text-[#0F9D58]" />
                         </button>
@@ -249,7 +249,7 @@
                             class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer text-left">
                             <div class="flex items-center gap-2">
                                 <Grid :size="15" />
-                                <span>Grandes icônes</span>
+                                <span>{{ locale === 'en' ? 'Large icons' : 'Grandes icônes' }}</span>
                             </div>
                             <Check v-if="viewMode === 'icons'" :size="14" class="text-[#0F9D58]" />
                         </button>
@@ -258,7 +258,7 @@
                             class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer text-left">
                             <div class="flex items-center gap-2">
                                 <Columns :size="15" />
-                                <span>Liste compacte</span>
+                                <span>{{ locale === 'en' ? 'Compact list' : 'Liste compacte' }}</span>
                             </div>
                             <Check v-if="viewMode === 'list'" :size="14" class="text-[#0F9D58]" />
                         </button>
@@ -270,12 +270,12 @@
             <!-- Bouton Volet d'aperçu / Détails à droite -->
             <div class="flex items-center gap-2">
                 <button
-                    title="Afficher/masquer le volet des détails (Alt + P)"
+                    :title="locale === 'en' ? 'Show/hide details pane (Alt + P)' : 'Afficher/masquer le volet des détails (Alt + P)'"
                     @click="right_sidebar = !right_sidebar"
                     class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium transition-colors cursor-pointer"
                     :class="right_sidebar ? 'bg-[#0F9D58]/10 text-[#0F9D58] border-[#0F9D58]/30 font-semibold' : 'hover:bg-slate-100 text-slate-700'">
                     <PanelRight :size="15" />
-                    <span>Détails</span>
+                    <span>{{ locale === 'en' ? 'Details' : 'Détails' }}</span>
                 </button>
             </div>
         </div>
@@ -410,7 +410,7 @@
                                         @click="setSort('name')"
                                         class="py-2 px-3 hover:bg-slate-100 rounded-md cursor-pointer transition-colors">
                                         <div class="flex items-center gap-1.5">
-                                            <span>Nom</span>
+                                            <span>{{ locale === 'en' ? 'Name' : 'Nom' }}</span>
                                             <span v-if="sortField === 'name'" class="text-[#0F9D58]">
                                                 {{ sortAsc ? '▲' : '▼' }}
                                             </span>
@@ -420,7 +420,7 @@
                                         @click="setSort('updated_at')"
                                         class="py-2 px-3 w-44 hover:bg-slate-100 rounded-md cursor-pointer transition-colors">
                                         <div class="flex items-center gap-1.5">
-                                            <span>Modifié le</span>
+                                            <span>{{ locale === 'en' ? 'Date modified' : 'Modifié le' }}</span>
                                             <span v-if="sortField === 'updated_at'" class="text-[#0F9D58]">
                                                 {{ sortAsc ? '▲' : '▼' }}
                                             </span>
@@ -430,7 +430,7 @@
                                         @click="setSort('type')"
                                         class="py-2 px-3 w-48 hover:bg-slate-100 rounded-md cursor-pointer transition-colors">
                                         <div class="flex items-center gap-1.5">
-                                            <span>Type</span>
+                                            <span>{{ locale === 'en' ? 'Type' : 'Type' }}</span>
                                             <span v-if="sortField === 'type'" class="text-[#0F9D58]">
                                                 {{ sortAsc ? '▲' : '▼' }}
                                             </span>
@@ -440,7 +440,7 @@
                                         @click="setSort('size')"
                                         class="py-2 px-3 w-28 text-right hover:bg-slate-100 rounded-md cursor-pointer transition-colors">
                                         <div class="flex items-center justify-end gap-1.5">
-                                            <span>Taille</span>
+                                            <span>{{ locale === 'en' ? 'Size' : 'Taille' }}</span>
                                             <span v-if="sortField === 'size'" class="text-[#0F9D58]">
                                                 {{ sortAsc ? '▲' : '▼' }}
                                             </span>
@@ -650,17 +650,17 @@
                         <FolderOpen :size="64" class="text-slate-300 stroke-[1.5]" />
                         <div class="text-center">
                             <p class="text-sm font-semibold text-slate-700">
-                                {{ searchQuery ? 'Aucun résultat trouvé' : 'Ce dossier est vide' }}
+                                {{ searchQuery ? (locale === 'en' ? 'No results found' : 'Aucun résultat trouvé') : (locale === 'en' ? 'This folder is empty' : 'Ce dossier est vide') }}
                             </p>
                             <p class="text-xs text-slate-400 mt-1">
-                                {{ searchQuery ? `Aucun élément ne correspond à « ${searchQuery} »` : 'Glissez-déposez des fichiers ici ou cliquez sur « Nouveau ».' }}
+                                {{ searchQuery ? (locale === 'en' ? `No items matching "${searchQuery}"` : `Aucun élément ne correspond à « ${searchQuery} »`) : (locale === 'en' ? 'Drag and drop files here or click "New".' : 'Glissez-déposez des fichiers ici ou cliquez sur « Nouveau ».') }}
                             </p>
                         </div>
                         <button
                             v-if="!searchQuery"
                             @click="openFilePicker(currentFolderId)"
                             class="mt-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#0F9D58] hover:bg-[#0c854a] rounded-lg transition-colors cursor-pointer shadow-xs">
-                            Téléverser des fichiers
+                            {{ locale === 'en' ? 'Upload files' : 'Téléverser des fichiers' }}
                         </button>
                     </div>
 
@@ -675,7 +675,7 @@
                 
                 <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
                     <h5 class="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Volet des détails
+                        {{ locale === 'en' ? 'Details pane' : 'Volet des détails' }}
                     </h5>
                     <button
                         @click="right_sidebar = false"
@@ -690,14 +690,14 @@
                     <div class="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                         <div v-if="previewLoading" class="h-44 flex items-center justify-center text-xs text-slate-400">
                             <RotateCw :size="18" class="animate-spin text-[#0F9D58] mr-2" />
-                            Chargement de l'aperçu...
+                            {{ locale === 'en' ? 'Loading preview...' : 'Chargement de l\'aperçu...' }}
                         </div>
 
                         <img
                             v-else-if="previewKind === 'image' && previewUrl"
                             :src="previewUrl"
                             :alt="selectedDocument.name"
-                            title="Cliquer pour ouvrir"
+                            :title="locale === 'en' ? 'Click to open' : 'Cliquer pour ouvrir'"
                             class="max-h-56 w-full object-contain cursor-pointer"
                             @click="openDocumentFile(selectedDocument)" />
 
@@ -740,23 +740,23 @@
                     <!-- Métadonnées Windows Explorer -->
                     <div class="space-y-3 text-xs">
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Nom du fichier</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'File name' : 'Nom du fichier' }}</span>
                             <p class="font-semibold text-slate-800 break-all mt-0.5">{{ selectedDocument.name }}</p>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Type</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Type' : 'Type' }}</span>
                             <p class="text-slate-700 mt-0.5">{{ formatDocType(selectedDocument) }}</p>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Taille</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Size' : 'Taille' }}</span>
                             <p class="text-slate-700 font-mono mt-0.5">{{ formatSize(selectedDocument.size) }}</p>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Date de modification</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Date modified' : 'Date de modification' }}</span>
                             <p class="text-slate-700 mt-0.5">{{ formatDate(selectedDocument.created_at) }}</p>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Emplacement</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Location' : 'Emplacement' }}</span>
                             <p class="text-slate-700 break-all mt-0.5">{{ currentPathLabel }}</p>
                         </div>
                     </div>
@@ -767,13 +767,13 @@
                             @click="openDocumentFile(selectedDocument)"
                             class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-[#0F9D58] hover:bg-[#0c854a] rounded-lg transition-colors cursor-pointer shadow-xs">
                             <Eye :size="15" />
-                            Ouvrir le document
+                            {{ locale === 'en' ? 'Open document' : 'Ouvrir le document' }}
                         </button>
                         <button
                             @click="downloadDocument(selectedDocument)"
                             class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
                             <Download :size="15" />
-                            Télécharger
+                            {{ locale === 'en' ? 'Download' : 'Télécharger' }}
                         </button>
                     </div>
                 </template>
@@ -787,15 +787,15 @@
 
                     <div class="space-y-3 text-xs">
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Type</span>
-                            <p class="text-slate-700 mt-0.5">Dossier de fichiers</p>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Type' : 'Type' }}</span>
+                            <p class="text-slate-700 mt-0.5">{{ locale === 'en' ? 'File folder' : 'Dossier de fichiers' }}</p>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Date de création</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Date created' : 'Date de création' }}</span>
                             <p class="text-slate-700 mt-0.5">{{ formatDate(selected_folder.created_at) }}</p>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400">Emplacement</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">{{ locale === 'en' ? 'Location' : 'Emplacement' }}</span>
                             <p class="text-slate-700 break-all mt-0.5">{{ currentPathLabel }}</p>
                         </div>
                     </div>
@@ -805,7 +805,7 @@
                             @click="openFolder(selected_folder)"
                             class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-[#0F9D58] hover:bg-[#0c854a] rounded-lg transition-colors cursor-pointer shadow-xs">
                             <FolderOpen :size="15" />
-                            Ouvrir le dossier
+                            {{ locale === 'en' ? 'Open folder' : 'Ouvrir le dossier' }}
                         </button>
                     </div>
                 </template>
@@ -813,7 +813,7 @@
                 <!-- Aucun élément sélectionné -->
                 <div v-else class="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs text-center p-4">
                     <Info :size="32" class="text-slate-300 mb-2" />
-                    <span>Sélectionnez un dossier ou un fichier pour afficher ses propriétés et son aperçu.</span>
+                    <span>{{ locale === 'en' ? 'Select a folder or file to view its properties and preview.' : 'Sélectionnez un dossier ou un fichier pour afficher ses propriétés et son aperçu.' }}</span>
                 </div>
             </div>
 
@@ -824,12 +824,12 @@
         <!-- ========================================================================= -->
         <div class="bg-slate-100 border-t border-slate-200 px-4 py-1.5 flex items-center justify-between text-[11px] text-slate-600 font-medium">
             <div class="flex items-center gap-4">
-                <span>{{ totalItemsCount }} élément(s)</span>
+                <span>{{ totalItemsCount }} {{ locale === 'en' ? 'item(s)' : 'élément(s)' }}</span>
                 <span v-if="searchQuery" class="text-amber-600 font-semibold">
-                    (Recherche active)
+                    {{ locale === 'en' ? '(Active search)' : '(Recherche active)' }}
                 </span>
                 <span v-if="selectedCount > 0" class="text-slate-900 font-bold border-l border-slate-300 pl-4">
-                    {{ selectedCount }} élément(s) sélectionné(s)
+                    {{ selectedCount }} {{ locale === 'en' ? 'item(s) selected' : 'élément(s) sélectionné(s)' }}
                     <span v-if="selectedTotalSize > 0" class="font-mono text-slate-500 font-normal">
                         ({{ formatSize(selectedTotalSize) }})
                     </span>
@@ -839,21 +839,21 @@
             <!-- Boutons de vue rapides à droite de la barre d'état -->
             <div class="flex items-center gap-1 text-slate-500">
                 <button
-                    title="Affichage Détails"
+                    :title="locale === 'en' ? 'Details view' : 'Affichage Détails'"
                     @click="viewMode = 'details'"
                     class="p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
                     :class="{ 'text-[#0F9D58] bg-slate-200 font-bold': viewMode === 'details' }">
                     <List :size="14" />
                 </button>
                 <button
-                    title="Affichage Grandes icônes"
+                    :title="locale === 'en' ? 'Large icons view' : 'Affichage Grandes icônes'"
                     @click="viewMode = 'icons'"
                     class="p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
                     :class="{ 'text-[#0F9D58] bg-slate-200 font-bold': viewMode === 'icons' }">
                     <Grid :size="14" />
                 </button>
                 <button
-                    title="Affichage Liste compacte"
+                    :title="locale === 'en' ? 'Compact list view' : 'Affichage Liste compacte'"
                     @click="viewMode = 'list'"
                     class="p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
                     :class="{ 'text-[#0F9D58] bg-slate-200 font-bold': viewMode === 'list' }">
@@ -883,10 +883,10 @@
             :confirm-loading="loading_create_folder"
             @confirm="createFolder"
             @close="closeCreateModal"
-            title="Nouveau dossier">
+            :title="locale === 'en' ? 'New folder' : 'Nouveau dossier'">
             <Input
-                label="Nom du dossier"
-                placeholder="Nouveau dossier"
+                :label="locale === 'en' ? 'Folder name' : 'Nom du dossier'"
+                :placeholder="locale === 'en' ? 'New folder' : 'Nouveau dossier'"
                 v-model="data_create.folder_name"
                 autofocus />
         </CenterModal>
@@ -896,9 +896,9 @@
             :is-open="modal.rename"
             @confirm="renameFolder"
             @close="modal.rename = false"
-            title="Renommer le dossier">
+            :title="locale === 'en' ? 'Rename folder' : 'Renommer le dossier'">
             <Input
-                label="Nouveau nom du dossier"
+                :label="locale === 'en' ? 'New folder name' : 'Nouveau nom du dossier'"
                 v-model="data_rename.folder_name"
                 autofocus />
         </CenterModal>
@@ -907,13 +907,13 @@
         <CenterModal
             :is-open="modal.delete"
             @close="modal.delete = false"
-            title="Supprimer le dossier"
+            :title="locale === 'en' ? 'Delete folder' : 'Supprimer le dossier'"
             :title-variant="'danger'"
             :confirm-variant="'danger'"
             :confirm-loading="loading_delete_folder"
             @confirm="deleteFolder">
             <p class="text-xs text-slate-700">
-                Êtes-vous sûr de vouloir supprimer ce dossier ? Tous les sous-dossiers et fichiers qu'il contient seront également supprimés. Cette action est irréversible.
+                {{ locale === 'en' ? 'Are you sure you want to delete this folder? All subfolders and files inside will also be deleted. This action cannot be undone.' : 'Êtes-vous sûr de vouloir supprimer ce dossier ? Tous les sous-dossiers et fichiers qu\'il contient seront également supprimés. Cette action est irréversible.' }}
             </p>
         </CenterModal>
 
@@ -923,25 +923,54 @@
             :confirm-loading="loading_rename_document"
             @confirm="renameDocument"
             @close="modal.rename_document = false"
-            title="Renommer le document">
-            <Input
-                label="Nouveau nom du document"
-                v-model="data_rename_document.name"
-                autofocus />
+            :title="locale === 'en' ? 'Rename document' : 'Renommer le document'">
+            <div class="space-y-2 py-1">
+                <label class="block text-xs font-semibold text-gray-700">
+                    {{ locale === 'en' ? 'New document name' : 'Nouveau nom du document' }}
+                </label>
+
+                <!-- Champ de saisie avec extension verrouillée non modifiable -->
+                <div class="flex items-center rounded-lg border border-gray-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden bg-white transition">
+                    <input
+                        type="text"
+                        v-model="data_rename_document.base_name"
+                        required
+                        autofocus
+                        class="flex-1 h-9 px-3 text-xs outline-none bg-transparent font-medium text-gray-900"
+                        :placeholder="locale === 'en' ? 'Document name' : 'Nom du document'"
+                        @keydown.enter.prevent="renameDocument"
+                    />
+
+                    <!-- Extension protégée non modifiable -->
+                    <div
+                        v-if="data_rename_document.extension"
+                        class="h-9 px-3 bg-slate-100 border-l border-gray-200 text-slate-600 font-mono text-xs font-bold flex items-center gap-1.5 select-none shrink-0"
+                        :title="locale === 'en' ? 'The file extension is protected and cannot be modified' : 'L\'extension du fichier est protégée et ne peut pas être modifiée'"
+                    >
+                        <Lock :size="12" class="text-slate-400" />
+                        <span>.{{ data_rename_document.extension }}</span>
+                    </div>
+                </div>
+
+                <p v-if="data_rename_document.extension" class="text-[10px] text-gray-500 flex items-center gap-1">
+                    <Lock :size="10" class="text-slate-400" />
+                    <span>{{ locale === 'en' ? 'Extension' : 'Extension' }} <strong class="font-mono text-slate-700">.{{ data_rename_document.extension }}</strong> {{ locale === 'en' ? 'is preserved automatically' : 'conservée automatiquement (non modifiable)' }}.</span>
+                </p>
+            </div>
         </CenterModal>
 
         <!-- MODAL SUPPRESSION DOCUMENT -->
         <CenterModal
             :is-open="modal.delete_document"
             @close="modal.delete_document = false"
-            title="Supprimer le document"
+            :title="locale === 'en' ? 'Delete document' : 'Supprimer le document'"
             :title-variant="'danger'"
             :confirm-variant="'danger'"
             :confirm-loading="loading_delete_document"
             @confirm="deleteDocument">
             <p class="text-xs text-slate-700">
-                Êtes-vous sûr de vouloir supprimer le document
-                <strong>{{ contextMenuDocument.document?.name }}</strong> ? Cette action est irréversible.
+                {{ locale === 'en' ? 'Are you sure you want to delete document' : 'Êtes-vous sûr de vouloir supprimer le document' }}
+                <strong>{{ contextMenuDocument.document?.name }}</strong>{{ locale === 'en' ? '? This action cannot be undone.' : ' ? Cette action est irréversible.' }}
             </p>
         </CenterModal>
 
@@ -952,7 +981,9 @@
             @click.self="modal.properties_document = false">
             <div class="w-full max-w-md rounded-xl border border-slate-300 bg-white p-5 shadow-2xl" @click.stop>
                 <div class="mb-4 flex items-center justify-between pb-2 border-b border-slate-200">
-                    <h5 class="text-sm font-bold text-slate-800">Propriétés de {{ propertiesDocument.name }}</h5>
+                    <h5 class="text-sm font-bold text-slate-800">
+                        {{ locale === 'en' ? `Properties of ${propertiesDocument.name}` : `Propriétés de ${propertiesDocument.name}` }}
+                    </h5>
                     <button class="text-slate-400 hover:text-slate-700 cursor-pointer" @click="modal.properties_document = false">
                         <X :size="18" />
                     </button>
@@ -970,22 +1001,22 @@
                 </div>
 
                 <dl class="grid grid-cols-3 gap-x-3 gap-y-2.5 text-xs">
-                    <dt class="text-slate-500 font-medium">Type :</dt>
+                    <dt class="text-slate-500 font-medium">{{ locale === 'en' ? 'Type:' : 'Type :' }}</dt>
                     <dd class="col-span-2 text-slate-800">{{ propertiesDocument.mime_type }}</dd>
 
-                    <dt class="text-slate-500 font-medium">Taille :</dt>
-                    <dd class="col-span-2 text-slate-800 font-mono">{{ formatSize(propertiesDocument.size) }} ({{ propertiesDocument.size }} octets)</dd>
+                    <dt class="text-slate-500 font-medium">{{ locale === 'en' ? 'Size:' : 'Taille :' }}</dt>
+                    <dd class="col-span-2 text-slate-800 font-mono">{{ formatSize(propertiesDocument.size) }} ({{ propertiesDocument.size }} {{ locale === 'en' ? 'bytes' : 'octets' }})</dd>
 
-                    <dt class="text-slate-500 font-medium">Emplacement :</dt>
+                    <dt class="text-slate-500 font-medium">{{ locale === 'en' ? 'Location:' : 'Emplacement :' }}</dt>
                     <dd class="col-span-2 text-slate-800 break-all">{{ currentPathLabel }}</dd>
 
-                    <dt class="text-slate-500 font-medium">Nom d'origine :</dt>
+                    <dt class="text-slate-500 font-medium">{{ locale === 'en' ? 'Original name:' : 'Nom d\'origine :' }}</dt>
                     <dd class="col-span-2 text-slate-800 break-all">{{ propertiesDocument.original_name }}</dd>
 
-                    <dt class="text-slate-500 font-medium">Créé le :</dt>
+                    <dt class="text-slate-500 font-medium">{{ locale === 'en' ? 'Created on:' : 'Créé le :' }}</dt>
                     <dd class="col-span-2 text-slate-800">{{ formatDate(propertiesDocument.created_at) }}</dd>
 
-                    <dt class="text-slate-500 font-medium">Version :</dt>
+                    <dt class="text-slate-500 font-medium">{{ locale === 'en' ? 'Version:' : 'Version :' }}</dt>
                     <dd class="col-span-2 text-slate-800">{{ propertiesDocument.version }}</dd>
                 </dl>
 
@@ -993,13 +1024,13 @@
                     <button
                         class="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                         @click="modal.properties_document = false">
-                        Fermer
+                        {{ locale === 'en' ? 'Close' : 'Fermer' }}
                     </button>
                     <button
                         class="flex items-center gap-1.5 rounded-lg bg-[#0F9D58] hover:bg-[#0c854a] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
                         @click="downloadDocument(propertiesDocument)">
                         <Download :size="14" />
-                        Télécharger
+                        {{ locale === 'en' ? 'Download' : 'Télécharger' }}
                     </button>
                 </div>
             </div>
@@ -1010,7 +1041,7 @@
             v-if="uploads.length"
             class="fixed bottom-10 right-5 z-50 w-80 rounded-xl border border-slate-200 bg-white shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-100 px-4 py-2 bg-slate-50 rounded-t-xl">
-                <span class="text-xs font-bold text-slate-800">Téléversement en cours</span>
+                <span class="text-xs font-bold text-slate-800">{{ locale === 'en' ? 'Upload in progress' : 'Téléversement en cours' }}</span>
                 <button class="text-slate-400 hover:text-slate-700 cursor-pointer" @click="uploads = []">
                     <X :size="14" />
                 </button>
@@ -1020,8 +1051,8 @@
                     <div class="flex justify-between gap-2">
                         <span class="truncate font-medium text-slate-800">{{ u.name }}</span>
                         <span v-if="u.status === 'uploading'" class="font-mono text-[#0F9D58]">{{ u.progress }}%</span>
-                        <span v-else-if="u.status === 'done'" class="text-emerald-600 font-semibold">Terminé</span>
-                        <span v-else-if="u.status === 'error'" class="text-red-600 font-semibold">Erreur</span>
+                        <span v-else-if="u.status === 'done'" class="text-emerald-600 font-semibold">{{ locale === 'en' ? 'Completed' : 'Terminé' }}</span>
+                        <span v-else-if="u.status === 'error'" class="text-red-600 font-semibold">{{ locale === 'en' ? 'Error' : 'Erreur' }}</span>
                     </div>
                     <div class="mt-1 h-1.5 w-full overflow-hidden rounded bg-slate-100">
                         <div
@@ -1072,9 +1103,11 @@
         FileImage,
         FileSpreadsheet,
         Presentation,
+        Lock,
     } from '@lucide/vue'
 
     import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+    import { useI18n } from 'vue-i18n'
     import Header from '../../../components/shared/Header.vue'
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue'
     import CenterModal from '../../../components/ui/centerModal.vue'
@@ -1086,6 +1119,8 @@
         FolderType,
     } from '../../../@types/DocumentLibrary.type.ts'
     import documentService from '../../../core/services/document.service.ts'
+
+    const { t, locale } = useI18n()
 
     // ============================================================
     // ÉTAT DE NAVIGATION & HISTORIQUE (WINDOWS EXPLORER)
@@ -1119,12 +1154,12 @@
     type SortKey = 'name' | 'updated_at' | 'type' | 'size'
     const sortField = ref<SortKey>('name')
     const sortAsc = ref<boolean>(true)
-    const sortOptions = [
-        { key: 'name' as SortKey, label: 'Nom' },
-        { key: 'updated_at' as SortKey, label: 'Date de modification' },
-        { key: 'type' as SortKey, label: 'Type' },
-        { key: 'size' as SortKey, label: 'Taille' },
-    ]
+    const sortOptions = computed(() => [
+        { key: 'name' as SortKey, label: locale.value === 'en' ? 'Name' : 'Nom' },
+        { key: 'updated_at' as SortKey, label: locale.value === 'en' ? 'Date modified' : 'Date de modification' },
+        { key: 'type' as SortKey, label: locale.value === 'en' ? 'Type' : 'Type' },
+        { key: 'size' as SortKey, label: locale.value === 'en' ? 'Size' : 'Taille' },
+    ])
 
     function setSort(field: SortKey) {
         if (sortField.value === field) {
@@ -1169,7 +1204,7 @@
 
     const data_create = ref({ folder_id: '' as string | number, folder_name: '' })
     const data_rename = ref({ folder_id: '' as string | number, folder_name: '' })
-    const data_rename_document = ref({ id: '' as string | number, name: '' })
+    const data_rename_document = ref({ id: '' as string | number, name: '', base_name: '', extension: '' })
     const propertiesDocument = ref<DocumentType | null>(null)
 
     const loading_create_folder = ref<boolean>(false)
@@ -1501,7 +1536,7 @@
         contextMenu.value.contextMenu = e as unknown as contextMenuType
         contextMenu.value.actions = [
             {
-                label: 'Ouvrir',
+                label: locale.value === 'en' ? 'Open' : 'Ouvrir',
                 icon: FolderOpen,
                 onClick() {
                     openFolder(folder)
@@ -1509,7 +1544,7 @@
                 },
             },
             {
-                label: 'Nouveau sous-dossier',
+                label: locale.value === 'en' ? 'New subfolder' : 'Nouveau sous-dossier',
                 icon: FolderPlus,
                 onClick() {
                     data_create.value.folder_id = folder.id
@@ -1519,7 +1554,7 @@
                 },
             },
             {
-                label: 'Téléverser des fichiers',
+                label: locale.value === 'en' ? 'Upload files' : 'Téléverser des fichiers',
                 icon: FilePlus,
                 onClick() {
                     openFilePicker(folder.id)
@@ -1527,7 +1562,7 @@
                 },
             },
             {
-                label: 'Renommer (F2)',
+                label: locale.value === 'en' ? 'Rename (F2)' : 'Renommer (F2)',
                 icon: Pencil,
                 onClick() {
                     data_rename.value.folder_id = folder.id
@@ -1539,7 +1574,7 @@
         ]
         contextMenu.value.bottom_actions = [
             {
-                label: 'Supprimer (Suppr)',
+                label: locale.value === 'en' ? 'Delete (Del)' : 'Supprimer (Suppr)',
                 icon: Trash2,
                 variant: 'DANGER',
                 onClick() {
@@ -1559,7 +1594,7 @@
         contextMenuDocument.value.contextMenu = e as unknown as contextMenuType
         contextMenuDocument.value.actions = [
             {
-                label: 'Ouvrir',
+                label: locale.value === 'en' ? 'Open' : 'Ouvrir',
                 icon: Eye,
                 onClick() {
                     openDocumentFile(doc)
@@ -1567,7 +1602,7 @@
                 },
             },
             {
-                label: 'Télécharger',
+                label: locale.value === 'en' ? 'Download' : 'Télécharger',
                 icon: Download,
                 onClick() {
                     downloadDocument(doc)
@@ -1575,17 +1610,15 @@
                 },
             },
             {
-                label: 'Renommer (F2)',
+                label: locale.value === 'en' ? 'Rename (F2)' : 'Renommer (F2)',
                 icon: Pencil,
                 onClick() {
-                    data_rename_document.value.id = doc.id
-                    data_rename_document.value.name = doc.name
-                    modal.value.rename_document = true
+                    prepareDocumentRename(doc)
                     contextMenuDocument.value.isOpen = false
                 },
             },
             {
-                label: 'Propriétés',
+                label: locale.value === 'en' ? 'Properties' : 'Propriétés',
                 icon: Info,
                 onClick() {
                     propertiesDocument.value = doc
@@ -1596,7 +1629,7 @@
         ]
         contextMenuDocument.value.bottom_actions = [
             {
-                label: 'Supprimer (Suppr)',
+                label: locale.value === 'en' ? 'Delete (Del)' : 'Supprimer (Suppr)',
                 icon: Trash2,
                 variant: 'DANGER',
                 onClick() {
@@ -1614,7 +1647,7 @@
         contextMenu.value.contextMenu = e as unknown as contextMenuType
         contextMenu.value.actions = [
             {
-                label: 'Nouveau dossier',
+                label: locale.value === 'en' ? 'New folder' : 'Nouveau dossier',
                 icon: FolderPlus,
                 onClick() {
                     triggerCreateFolder()
@@ -1622,7 +1655,7 @@
                 },
             },
             {
-                label: 'Téléverser des fichiers',
+                label: locale.value === 'en' ? 'Upload files' : 'Téléverser des fichiers',
                 icon: FilePlus,
                 onClick() {
                     openFilePicker(currentFolderId.value)
@@ -1630,7 +1663,7 @@
                 },
             },
             {
-                label: 'Actualiser (F5)',
+                label: locale.value === 'en' ? 'Refresh (F5)' : 'Actualiser (F5)',
                 icon: RotateCw,
                 onClick() {
                     refreshExplorer()
@@ -1653,11 +1686,23 @@
         data_create.value.folder_name = ''
     }
 
+    function prepareDocumentRename(doc: DocumentType) {
+        data_rename_document.value.id = doc.id
+        data_rename_document.value.name = doc.name
+        const lastDotIndex = doc.name.lastIndexOf('.')
+        if (lastDotIndex > 0) {
+            data_rename_document.value.base_name = doc.name.substring(0, lastDotIndex)
+            data_rename_document.value.extension = doc.name.substring(lastDotIndex + 1)
+        } else {
+            data_rename_document.value.base_name = doc.name
+            data_rename_document.value.extension = ''
+        }
+        modal.value.rename_document = true
+    }
+
     function triggerRenameSelected() {
         if (selectedDocument.value) {
-            data_rename_document.value.id = selectedDocument.value.id
-            data_rename_document.value.name = selectedDocument.value.name
-            modal.value.rename_document = true
+            prepareDocumentRename(selectedDocument.value)
         } else if (selected_folder.value) {
             data_rename.value.folder_id = selected_folder.value.id
             data_rename.value.folder_name = selected_folder.value.name
@@ -1776,16 +1821,20 @@
     // OPÉRATIONS SUR LES DOCUMENTS
     // ============================================================
     function renameDocument() {
-        const name = data_rename_document.value.name.trim()
-        if (!name) return
+        const baseName = data_rename_document.value.base_name.trim()
+        if (!baseName) return
+
+        const finalName = data_rename_document.value.extension
+            ? `${baseName}.${data_rename_document.value.extension}`
+            : baseName
 
         loading_rename_document.value = true
         documentService
-            .renameDocument(data_rename_document.value.id, name)
+            .renameDocument(data_rename_document.value.id, finalName)
             .then(() => {
                 modal.value.rename_document = false
                 if (selectedDocument.value?.id === data_rename_document.value.id) {
-                    selectedDocument.value.name = name
+                    selectedDocument.value.name = finalName
                 }
                 getFolderContents(currentFolderId.value)
             })
@@ -2044,16 +2093,17 @@
     }
 
     function formatDocType(doc: DocumentType): string {
+        const isEn = locale.value === 'en'
         const ext = (doc.name || '').split('.').pop()?.toLowerCase() || ''
-        if (['pdf'].includes(ext)) return 'Document Adobe Acrobat (PDF)'
-        if (['xlsx', 'xls', 'csv'].includes(ext)) return 'Feuille de calcul Microsoft Excel'
-        if (['docx', 'doc'].includes(ext)) return 'Document Microsoft Word'
-        if (['pptx', 'ppt'].includes(ext)) return 'Présentation PowerPoint'
-        if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) return `Fichier image ${ext.toUpperCase()}`
-        if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv', '3gp'].includes(ext)) return `Fichier vidéo ${ext.toUpperCase()}`
-        if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'].includes(ext)) return `Fichier audio ${ext.toUpperCase()}`
-        if (['txt'].includes(ext)) return 'Document texte'
-        return doc.mime_type || 'Fichier'
+        if (['pdf'].includes(ext)) return isEn ? 'Adobe Acrobat Document (PDF)' : 'Document Adobe Acrobat (PDF)'
+        if (['xlsx', 'xls', 'csv'].includes(ext)) return isEn ? 'Microsoft Excel Spreadsheet' : 'Feuille de calcul Microsoft Excel'
+        if (['docx', 'doc'].includes(ext)) return isEn ? 'Microsoft Word Document' : 'Document Microsoft Word'
+        if (['pptx', 'ppt'].includes(ext)) return isEn ? 'PowerPoint Presentation' : 'Présentation PowerPoint'
+        if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) return isEn ? `${ext.toUpperCase()} Image File` : `Fichier image ${ext.toUpperCase()}`
+        if (['mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv', '3gp'].includes(ext)) return isEn ? `${ext.toUpperCase()} Video File` : `Fichier vidéo ${ext.toUpperCase()}`
+        if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma'].includes(ext)) return isEn ? `${ext.toUpperCase()} Audio File` : `Fichier audio ${ext.toUpperCase()}`
+        if (['txt'].includes(ext)) return isEn ? 'Text Document' : 'Document texte'
+        return doc.mime_type || (isEn ? 'File' : 'Fichier')
     }
 
     function fileIcon(doc: DocumentType) {

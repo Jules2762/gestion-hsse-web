@@ -13,7 +13,7 @@
             <!-- CHARGEMENT INITIAL -->
             <div v-if="loadingInitial" class="p-16 flex flex-col items-center justify-center text-center text-gray-400 gap-2">
                 <Loader :size="28" class="animate-spin text-primary" />
-                <span class="text-xs font-medium">Chargement des données du contrôle...</span>
+                <span class="text-xs font-medium">{{ locale === 'en' ? 'Loading inspection data...' : 'Chargement des données du contrôle...' }}</span>
             </div>
 
             <div v-else class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
@@ -32,10 +32,10 @@
                                 </div>
                                 <div>
                                     <h2 class="text-base font-bold text-gray-900">
-                                        Modification du suivi n° {{ monitoringId }}
+                                        {{ locale === 'en' ? 'Edit inspection #' : 'Modification du suivi n°' }} {{ monitoringId }}
                                     </h2>
                                     <p class="text-xs text-gray-500">
-                                        Mettez à jour les informations du contrôle et les équipements relevés.
+                                        {{ locale === 'en' ? 'Update inspection details and surveyed equipment.' : 'Mettez à jour les informations du contrôle et les équipements relevés.' }}
                                     </p>
                                 </div>
                             </div>
@@ -45,31 +45,31 @@
                         <div class="p-6 border-b border-gray-100 space-y-4">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
-                                <h3 class="font-bold text-gray-800 text-sm">Informations générales & Planification</h3>
+                                <h3 class="font-bold text-gray-800 text-sm">{{ locale === 'en' ? 'General information & Planning' : 'Informations générales & Planification' }}</h3>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                                        Site / Station <span class="text-red-500">*</span>
+                                        {{ locale === 'en' ? 'Site / Station' : 'Site / Station' }} <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model="form.site_name"
                                         list="sites-update-datalist"
                                         type="text"
-                                        placeholder="Sélectionner ou saisir un site..."
+                                        :placeholder="locale === 'en' ? 'Select or type a site...' : 'Sélectionner ou saisir un site...'"
                                         class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                         :class="errors?.site_name ? 'border-red-500' : ''"
                                     />
                                     <datalist id="sites-update-datalist">
                                         <option v-for="site in sites" :key="site.id" :value="site.name">{{ site.name }}</option>
                                     </datalist>
-                                    <p v-if="errors?.site_name" class="text-[11px] text-red-600 mt-1">Le site est requis.</p>
+                                    <p v-if="errors?.site_name" class="text-[11px] text-red-600 mt-1">{{ locale === 'en' ? 'Site is required.' : 'Le site est requis.' }}</p>
                                 </div>
 
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                                        Date prévue / du relevé <span class="text-red-500">*</span>
+                                        {{ locale === 'en' ? 'Scheduled / Inspection date' : 'Date prévue / du relevé' }} <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model="form.date"
@@ -80,14 +80,14 @@
 
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
-                                        <span>Inspecteur assigné</span>
-                                        <span class="text-[10px] text-gray-400 font-normal">Choisi parmi les utilisateurs</span>
+                                        <span>{{ locale === 'en' ? 'Assigned inspector' : 'Inspecteur assigné' }}</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Chosen from users' : 'Choisi parmi les utilisateurs' }}</span>
                                     </label>
                                     <select
                                         v-model="form.user_id"
                                         class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer"
                                     >
-                                        <option value="">Sélectionner un inspecteur...</option>
+                                        <option value="">{{ locale === 'en' ? 'Select an inspector...' : 'Sélectionner un inspecteur...' }}</option>
                                         <option v-for="user in users" :key="user.id" :value="user.id">
                                             {{ user.first_name || '' }} {{ user.last_name || '' }} {{ user.email ? `(${user.email})` : '' }} {{ user.job ? `— ${user.job}` : '' }}
                                         </option>
@@ -96,8 +96,8 @@
 
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
-                                        <span>Statut de l'inspection</span>
-                                        <span class="text-[10px] text-gray-400 font-normal">Cycle d'inspection</span>
+                                        <span>{{ locale === 'en' ? 'Inspection status' : 'Statut de l\'inspection' }}</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Inspection lifecycle' : 'Cycle d\'inspection' }}</span>
                                     </label>
                                     <select
                                         v-model="form.status"
@@ -112,12 +112,12 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1.5">
-                                    Observations générales (optionnel)
+                                    {{ locale === 'en' ? 'General observations (optional)' : 'Observations générales (optionnel)' }}
                                 </label>
                                 <textarea
                                     v-model="form.observations"
                                     rows="2"
-                                    placeholder="Notes de visite, remarques sur la conformité globale du site..."
+                                    :placeholder="locale === 'en' ? 'Visit notes, remarks on overall site compliance...' : 'Notes de visite, remarques sur la conformité globale du site...'"
                                     class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y"
                                 ></textarea>
                             </div>
@@ -130,10 +130,10 @@
                                     <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
                                     <div>
                                         <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
-                                            <span>Matériels et équipements contrôlés</span>
+                                            <span>{{ locale === 'en' ? 'Inspected equipment & materials' : 'Matériels et équipements contrôlés' }}</span>
                                             <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">{{ items.length }}</span>
                                         </h3>
-                                        <p class="text-[11px] text-gray-500">Modifiez, ajoutez ou supprimez des équipements.</p>
+                                        <p class="text-[11px] text-gray-500">{{ locale === 'en' ? 'Edit, add or remove equipment items.' : 'Modifiez, ajoutez ou supprimez des équipements.' }}</p>
                                     </div>
                                 </div>
 
@@ -142,10 +142,10 @@
                                         type="button"
                                         @click="loadStandardGalanaTemplates"
                                         class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer flex items-center gap-1.5"
-                                        title="Insérer automatiquement la liste des matériels types Galana"
+                                        :title="locale === 'en' ? 'Automatically insert standard Galana equipment list' : 'Insérer automatiquement la liste des matériels types Galana'"
                                     >
                                         <Sparkles :size="13" class="text-amber-500" />
-                                        <span>Modèle standard Galana</span>
+                                        <span>{{ locale === 'en' ? 'Standard Galana model' : 'Modèle standard Galana' }}</span>
                                     </button>
 
                                     <button
@@ -154,7 +154,7 @@
                                         class="px-3.5 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-2xs transition cursor-pointer flex items-center gap-1.5"
                                     >
                                         <Plus :size="14" />
-                                        <span>Ajouter un matériel</span>
+                                        <span>{{ locale === 'en' ? 'Add equipment' : 'Ajouter un matériel' }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -162,9 +162,9 @@
                             <!-- ÉTAT VIDE -->
                             <div v-if="items.length === 0" class="py-12 px-4 text-center border-2 border-dashed border-gray-200 rounded-xl bg-slate-50/50">
                                 <Package :size="32" class="mx-auto text-gray-300 mb-2" />
-                                <h4 class="text-xs font-bold text-gray-700">Aucun équipement renseigné</h4>
+                                <h4 class="text-xs font-bold text-gray-700">{{ locale === 'en' ? 'No equipment entered' : 'Aucun équipement renseigné' }}</h4>
                                 <p class="text-[11px] text-gray-400 max-w-sm mx-auto mt-1">
-                                    Cliquez sur « Modèle standard Galana » pour charger les équipements types ou « Ajouter un matériel » pour une saisie personnalisée.
+                                    {{ locale === 'en' ? 'Click "Standard Galana model" to load standard equipment or "Add equipment" for custom entry.' : 'Cliquez sur « Modèle standard Galana » pour charger les équipements types ou « Ajouter un matériel » pour une saisie personnalisée.' }}
                                 </p>
                                 <div class="mt-4 flex items-center justify-center gap-2">
                                     <button
@@ -172,14 +172,14 @@
                                         @click="loadStandardGalanaTemplates"
                                         class="px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary hover:text-white rounded-lg transition cursor-pointer"
                                     >
-                                        Charger le standard Galana
+                                        {{ locale === 'en' ? 'Load Galana standard' : 'Charger le standard Galana' }}
                                     </button>
                                     <button
                                         type="button"
                                         @click="openAddModal"
                                         class="px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition cursor-pointer"
                                     >
-                                        + Ajouter un matériel
+                                        + {{ locale === 'en' ? 'Add equipment' : 'Ajouter un matériel' }}
                                     </button>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@
                                             <input
                                                 v-model="item.name"
                                                 type="text"
-                                                placeholder="Nom du matériel..."
+                                                :placeholder="locale === 'en' ? 'Equipment name...' : 'Nom du matériel...'"
                                                 class="font-bold text-xs text-gray-900 border-b border-gray-200 hover:border-primary focus:border-primary focus:outline-none flex-1 py-0.5"
                                             />
                                         </div>
@@ -212,10 +212,10 @@
                                                 @click="item.conformity = !item.conformity"
                                                 class="px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition select-none flex items-center gap-1 shadow-2xs"
                                                 :class="item.conformity ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'"
-                                                :title="'Cliquer pour modifier l\'état de conformité'"
+                                                :title="locale === 'en' ? 'Click to toggle compliance state' : 'Cliquer pour modifier l\'état de conformité'"
                                             >
                                                 <span class="w-1.5 h-1.5 rounded-full inline-block" :class="item.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
-                                                <span>{{ item.conformity ? 'Conforme' : 'Non conforme' }}</span>
+                                                <span>{{ item.conformity ? (locale === 'en' ? 'Compliant' : 'Conforme') : (locale === 'en' ? 'Non-compliant' : 'Non conforme') }}</span>
                                             </button>
 
                                             <!-- Bouton supprimer -->
@@ -359,7 +359,7 @@
                                         class="px-4 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5"
                                     >
                                         <Plus :size="14" />
-                                        <span>Ajouter un matériel</span>
+                                        <span>{{ locale === 'en' ? 'Add equipment' : 'Ajouter un matériel' }}</span>
                                     </button>
                                     <button
                                         type="button"
@@ -367,7 +367,7 @@
                                         class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5"
                                     >
                                         <Plus :size="13" class="text-gray-400" />
-                                        <span>+ Ligne vide en bas</span>
+                                        <span>+ {{ locale === 'en' ? 'Empty row at bottom' : 'Ligne vide en bas' }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -383,8 +383,8 @@
                     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4">
                         <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                             <div>
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Synthèse en direct</p>
-                                <h3 class="font-bold text-gray-900 text-sm">Aperçu du contrôle</h3>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">{{ locale === 'en' ? 'Live summary' : 'Synthèse en direct' }}</p>
+                                <h3 class="font-bold text-gray-900 text-sm">{{ locale === 'en' ? 'Inspection overview' : 'Aperçu du contrôle' }}</h3>
                             </div>
                             <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
                                 <ClipboardList :size="16" />
@@ -394,27 +394,27 @@
                         <!-- INFOS CLEFS -->
                         <div class="space-y-2 text-xs">
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Site :</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Site:' : 'Site :' }}</span>
                                 <span class="font-bold text-gray-900 text-right truncate max-w-[170px]">
-                                    {{ form.site_name || 'Aucun site' }}
+                                    {{ form.site_name || (locale === 'en' ? 'No site' : 'Aucun site') }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Date prévue :</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Scheduled date:' : 'Date prévue :' }}</span>
                                 <span class="font-mono text-gray-800">{{ form.date || '-' }}</span>
                             </div>
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Inspecteur :</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Inspector:' : 'Inspecteur :' }}</span>
                                 <span class="font-semibold text-gray-800 text-right truncate max-w-[170px]" :title="selectedInspectorName">
                                     {{ selectedInspectorName }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Statut d'inspection :</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Inspection status:' : 'Statut d\'inspection :' }}</span>
                                 <ChecklistStatus :name="(form.status as any)" />
                             </div>
                             <div class="flex justify-between items-center py-1">
-                                <span class="text-gray-500">Total équipements :</span>
+                                <span class="text-gray-500">{{ locale === 'en' ? 'Total equipment:' : 'Total équipements :' }}</span>
                                 <span class="font-bold text-gray-900">{{ items.length }}</span>
                             </div>
                         </div>
@@ -422,7 +422,7 @@
                         <!-- INDICATEURS DE CONFORMITÉ -->
                         <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold text-gray-600">Taux actuel</span>
+                                <span class="text-xs font-semibold text-gray-600">{{ locale === 'en' ? 'Current rate' : 'Taux actuel' }}</span>
                                 <span class="text-base font-black" :class="conformityRate >= 90 ? 'text-emerald-700' : 'text-red-700'">
                                     {{ conformityRate }}%
                                 </span>
@@ -430,7 +430,7 @@
 
                             <!-- TRACE DU TAUX INITIAL CONSTATÉ -->
                             <div v-if="initialConformityRate !== null && initialConformityRate !== conformityRate" class="flex items-center justify-between text-xs px-2.5 py-1.5 bg-amber-50 rounded-lg border border-amber-200/60 text-amber-900">
-                                <span class="text-[11px] font-medium">Taux initial (trace historique) :</span>
+                                <span class="text-[11px] font-medium">{{ locale === 'en' ? 'Initial rate (history):' : 'Taux initial (trace historique) :' }}</span>
                                 <span class="font-bold text-[11px] font-mono">{{ initialConformityRate }}%</span>
                             </div>
 
@@ -444,11 +444,11 @@
 
                             <div class="grid grid-cols-2 gap-2 text-center text-xs pt-1">
                                 <div class="bg-white p-2 rounded-lg border border-gray-100">
-                                    <span class="text-[10px] text-gray-400 block">Conformes</span>
+                                    <span class="text-[10px] text-gray-400 block">{{ locale === 'en' ? 'Compliant' : 'Conformes' }}</span>
                                     <span class="font-bold text-emerald-600">{{ compliantCount }}</span>
                                 </div>
                                 <div class="bg-white p-2 rounded-lg border border-gray-100">
-                                    <span class="text-[10px] text-gray-400 block">Anomalies</span>
+                                    <span class="text-[10px] text-gray-400 block">{{ locale === 'en' ? 'Deviations' : 'Anomalies' }}</span>
                                     <span class="font-bold text-red-600">{{ nonCompliantCount }}</span>
                                 </div>
                             </div>
@@ -457,8 +457,8 @@
                         <!-- DÉCOMPTE UNITAIRE PAR CATÉGORIE (COUNT) -->
                         <div v-if="items.length > 0" class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
                             <div class="flex items-center justify-between">
-                                <span class="font-bold text-gray-700 text-[11px] uppercase tracking-wider">Quantités constatées</span>
-                                <span class="font-black text-primary text-xs">{{ items.length }} total</span>
+                                <span class="font-bold text-gray-700 text-[11px] uppercase tracking-wider">{{ locale === 'en' ? 'Observed quantities' : 'Quantités constatées' }}</span>
+                                <span class="font-black text-primary text-xs">{{ items.length }} {{ locale === 'en' ? 'total' : 'total' }}</span>
                             </div>
                             <div class="space-y-1 max-h-44 overflow-y-auto pr-1">
                                 <div
@@ -469,7 +469,7 @@
                                     <span class="font-medium text-gray-700">{{ cat.label }}</span>
                                     <div class="flex items-center gap-1.5 font-bold">
                                         <span class="text-gray-900">{{ cat.count }}</span>
-                                        <span class="text-[10px] text-emerald-600 font-semibold" :title="`${cat.ok} conformes sur ${cat.count}`">
+                                        <span class="text-[10px] text-emerald-600 font-semibold" :title="`${cat.ok} ${locale === 'en' ? 'compliant out of' : 'conformes sur'} ${cat.count}`">
                                             ({{ cat.ok }} ✓)
                                         </span>
                                     </div>
@@ -479,7 +479,7 @@
 
                         <!-- ÉVALUATION CONFORMITÉ -->
                         <div class="flex items-center justify-between text-xs py-1">
-                            <span class="text-gray-500">Qualité du parc :</span>
+                            <span class="text-gray-500">{{ locale === 'en' ? 'Fleet quality:' : 'Qualité du parc :' }}</span>
                             <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold" :class="statusBadgeClass">
                                 {{ statusText }}
                             </span>
@@ -495,7 +495,7 @@
                             >
                                 <Loader v-if="loading" :size="15" class="animate-spin" />
                                 <Save v-else :size="15" />
-                                <span>{{ loading ? 'Mise à jour en cours...' : 'Enregistrer les modifications' }}</span>
+                                <span>{{ loading ? (locale === 'en' ? 'Updating...' : 'Mise à jour en cours...') : (locale === 'en' ? 'Save changes' : 'Enregistrer les modifications') }}</span>
                             </button>
 
                             <button
@@ -503,7 +503,7 @@
                                 @click="router.push({ name: 'EQUIPMENT_MONITORING' })"
                                 class="w-full py-2 px-4 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 transition cursor-pointer"
                             >
-                                Annuler
+                                {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                             </button>
                         </div>
                     </div>
@@ -528,8 +528,8 @@
                             <Plus :size="18" />
                         </div>
                         <div>
-                            <h3 class="font-bold text-gray-900 text-sm">Ajouter un matériel / équipement</h3>
-                            <p class="text-[11px] text-gray-500">Renseignez les détails du matériel à contrôler</p>
+                            <h3 class="font-bold text-gray-900 text-sm">{{ locale === 'en' ? 'Add equipment / material' : 'Ajouter un matériel / équipement' }}</h3>
+                            <p class="text-[11px] text-gray-500">{{ locale === 'en' ? 'Enter details of the equipment to inspect' : 'Renseignez les détails du matériel à contrôler' }}</p>
                         </div>
                     </div>
                     <button
@@ -546,14 +546,14 @@
                     <!-- NOM DU MATÉRIEL -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">
-                            Nom du matériel <span class="text-red-500">*</span>
+                            {{ locale === 'en' ? 'Equipment name' : 'Nom du matériel' }} <span class="text-red-500">*</span>
                         </label>
                         <input
                             ref="modalNameInputRef"
                             v-model="modalItem.name"
                             type="text"
                             required
-                            placeholder="Ex: Extincteur CO₂, Caisse Anti-Feu, Bac Métal, Panneau..."
+                            :placeholder="locale === 'en' ? 'e.g., Extinguisher CO₂, Fire box, Metal bin, Sign...' : 'Ex: Extincteur CO₂, Caisse Anti-Feu, Bac Métal, Panneau...'"
                             class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                         />
                     </div>
@@ -561,28 +561,28 @@
                     <!-- CATÉGORIE & EMPLACEMENT -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Catégorie</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Category' : 'Catégorie' }}</label>
                             <select
                                 v-model="modalItem.type"
                                 class="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-primary transition"
                             >
-                                <option value="extincteur">Extincteur</option>
-                                <option value="bac">Bac & Rétention</option>
-                                <option value="materiel">Matériel & Outils</option>
-                                <option value="poubelle">Déchets & Poubelles</option>
-                                <option value="signalisation">Signalétique & Pictogrammes</option>
-                                <option value="securite">Sécurité Incendie</option>
-                                <option value="conformite">Document & Affichage</option>
-                                <option value="divers">Autre / Divers</option>
+                                <option value="extincteur">{{ locale === 'en' ? 'Extinguisher' : 'Extincteur' }}</option>
+                                <option value="bac">{{ locale === 'en' ? 'Bin & Retention' : 'Bac & Rétention' }}</option>
+                                <option value="materiel">{{ locale === 'en' ? 'Equipment & Tools' : 'Matériel & Outils' }}</option>
+                                <option value="poubelle">{{ locale === 'en' ? 'Waste & Trash' : 'Déchets & Poubelles' }}</option>
+                                <option value="signalisation">{{ locale === 'en' ? 'Signage & Pictograms' : 'Signalétique & Pictogrammes' }}</option>
+                                <option value="securite">{{ locale === 'en' ? 'Fire Safety' : 'Sécurité Incendie' }}</option>
+                                <option value="conformite">{{ locale === 'en' ? 'Document & Display' : 'Document & Affichage' }}</option>
+                                <option value="divers">{{ locale === 'en' ? 'Other / Misc' : 'Autre / Divers' }}</option>
                             </select>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Emplacement sur site</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Location on site' : 'Emplacement sur site' }}</label>
                             <input
                                 v-model="modalItem.location"
                                 type="text"
-                                placeholder="Ex: Piste, Boutique, TGBT..."
+                                :placeholder="locale === 'en' ? 'e.g., Forecourt, Shop, Switchboard...' : 'Ex: Piste, Boutique, TGBT...'"
                                 class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition"
                             />
                         </div>
@@ -590,7 +590,7 @@
 
                     <!-- ÉTAT DE CONFORMITÉ DE L'ÉQUIPEMENT (UNITAIRE) -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">État de conformité de cet équipement</label>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Compliance state of this equipment' : 'État de conformité de cet équipement' }}</label>
                         <button
                             type="button"
                             @click="modalItem.conformity = !modalItem.conformity"
@@ -598,17 +598,17 @@
                             :class="modalItem.conformity ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-red-50 text-red-700 border-red-300'"
                         >
                             <span class="w-2 h-2 rounded-full" :class="modalItem.conformity ? 'bg-emerald-500' : 'bg-red-500'"></span>
-                            <span>{{ modalItem.conformity ? 'Conforme' : 'Non conforme' }}</span>
+                            <span>{{ modalItem.conformity ? (locale === 'en' ? 'Compliant' : 'Conforme') : (locale === 'en' ? 'Non-compliant' : 'Non conforme') }}</span>
                         </button>
                     </div>
 
                     <!-- COMMENTAIRE -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Commentaire / Observation</label>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Comment / Observation' : 'Commentaire / Observation' }}</label>
                         <textarea
                             v-model="modalItem.comment"
                             rows="2"
-                            placeholder="Remarques éventuelles sur l'état du matériel..."
+                            :placeholder="locale === 'en' ? 'Any remarks regarding equipment condition...' : 'Remarques éventuelles sur l\'état du matériel...'"
                             class="w-full px-3 py-1.5 text-xs rounded-xl border border-gray-300 focus:outline-none focus:border-primary transition resize-y"
                         ></textarea>
                     </div>
@@ -618,7 +618,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <label class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
                                 <Camera :size="14" class="text-gray-500" />
-                                <span>Photos & Preuves</span>
+                                <span>{{ locale === 'en' ? 'Photos & Evidence' : 'Photos & Preuves' }}</span>
                                 <span v-if="modalItem.pendingPhotos.length" class="text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.2 rounded-full">
                                     {{ modalItem.pendingPhotos.length }}
                                 </span>
@@ -626,7 +626,7 @@
 
                             <label class="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center gap-1">
                                 <Plus :size="13" />
-                                <span>Parcourir</span>
+                                <span>{{ locale === 'en' ? 'Browse' : 'Parcourir' }}</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -648,14 +648,14 @@
                                     type="button"
                                     @click="removeModalPhoto(pIdx)"
                                     class="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer"
-                                    title="Supprimer la photo"
+                                    :title="locale === 'en' ? 'Delete photo' : 'Supprimer la photo'"
                                 >
                                     <XIcon :size="11" />
                                 </button>
                             </div>
                         </div>
                         <p v-else class="text-[11px] text-gray-400 italic">
-                            Aucune photo sélectionnée pour ce matériel.
+                            {{ locale === 'en' ? 'No photo selected for this equipment.' : 'Aucune photo sélectionnée pour ce matériel.' }}
                         </p>
                     </div>
 
@@ -666,7 +666,7 @@
                             @click="closeAddModal"
                             class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition cursor-pointer"
                         >
-                            Annuler
+                            {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                         </button>
                         <button
                             type="submit"
@@ -674,7 +674,7 @@
                             class="px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition shadow cursor-pointer flex items-center gap-1.5"
                         >
                             <Plus :size="14" />
-                            <span>Ajouter l'équipement</span>
+                            <span>{{ locale === 'en' ? 'Add equipment' : 'Ajouter l\'équipement' }}</span>
                         </button>
                     </div>
                 </form>
@@ -692,7 +692,7 @@
                     type="button"
                     @click="lightboxUrl = null"
                     class="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg cursor-pointer"
-                    title="Fermer"
+                    :title="locale === 'en' ? 'Close' : 'Fermer'"
                 >
                     <XIcon :size="20" />
                 </button>
@@ -705,6 +705,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { useI18n } from "vue-i18n"
 import {
     ClipboardList,
     Plus,
@@ -727,6 +728,7 @@ import { useEquipmentMonitoringService } from "../../../core/services/equipmentM
 import { useUserService } from "../../../core/services/user.service.ts"
 import { toast } from "vue3-toastify"
 
+const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const equipments = useEquipmentMonitoringService()
@@ -775,11 +777,11 @@ const form = reactive({
 })
 
 const selectedInspectorName = computed(() => {
-    if (!form.user_id) return "Non assigné"
+    if (!form.user_id) return locale.value === 'en' ? "Unassigned" : "Non assigné"
     const found = users.value.find(u => String(u.id) === String(form.user_id))
-    if (!found) return "Inspecteur assigné"
+    if (!found) return locale.value === 'en' ? "Assigned inspector" : "Inspecteur assigné"
     const fullName = `${found.first_name || ""} ${found.last_name || ""}`.trim()
-    return fullName || found.email || "Inspecteur assigné"
+    return fullName || found.email || (locale.value === 'en' ? "Assigned inspector" : "Inspecteur assigné")
 })
 
 const items = ref<DynamicItem[]>([])
@@ -1008,15 +1010,16 @@ const nonCompliantCount = computed(() => items.value.filter(it => !it.conformity
 
 const categoryCounts = computed(() => {
     const map: Record<string, { type: string; label: string; count: number; ok: number }> = {}
+    const isEn = locale.value === 'en'
     const labels: Record<string, string> = {
-        extincteur: 'Extincteurs',
-        bac: 'Bacs & Rétention',
-        materiel: 'Matériel & Outils',
-        poubelle: 'Poubelles & Déchets',
-        signalisation: 'Signalétique & Balisage',
-        securite: 'Sécurité Incendie',
-        conformite: 'Documents & Affichage',
-        divers: 'Autres matériels',
+        extincteur: isEn ? 'Extinguishers' : 'Extincteurs',
+        bac: isEn ? 'Bins & Retention' : 'Bacs & Rétention',
+        materiel: isEn ? 'Equipment & Tools' : 'Matériel & Outils',
+        poubelle: isEn ? 'Bins & Waste' : 'Poubelles & Déchets',
+        signalisation: isEn ? 'Signage & Marking' : 'Signalétique & Balisage',
+        securite: isEn ? 'Fire Safety' : 'Sécurité Incendie',
+        conformite: isEn ? 'Documents & Display' : 'Documents & Affichage',
+        divers: isEn ? 'Other equipment' : 'Autres matériels',
     }
 
     for (const it of items.value) {
@@ -1045,9 +1048,9 @@ const estimatedStatus = computed(() => {
 })
 
 const statusText = computed(() => {
-    if (conformityRate.value >= 90) return "🟢 Conforme"
-    if (conformityRate.value >= 70) return "🟡 Contrôle requis"
-    return "🔴 Anomalie"
+    if (conformityRate.value >= 90) return locale.value === 'en' ? "🟢 Compliant" : "🟢 Conforme"
+    if (conformityRate.value >= 70) return locale.value === 'en' ? "🟡 Control required" : "🟡 Contrôle requis"
+    return locale.value === 'en' ? "🔴 Non-compliant" : "🔴 Anomalie"
 })
 
 const statusBadgeClass = computed(() => {

@@ -59,13 +59,13 @@
                 <table class="w-full">
                     <thead>
                         <tr>
-                            <th class="w-16 text-center">REF</th>
-                            <th>ORIGINE</th>
-                            <th>INSPECTION SOURCE</th>
-                            <th>ÉCART / CONSTAT</th>
-                            <th>ACTION CORRECTIVE</th>
-                            <th>RESPONSABLE</th>
-                            <th class="text-center">STATUT</th>
+                            <th class="w-16 text-center">{{ t('table.ref') }}</th>
+                            <th>{{ t('table.origin') }}</th>
+                            <th>{{ t('table.source_inspection') }}</th>
+                            <th>{{ t('table.gap_finding') }}</th>
+                            <th>{{ t('table.corrective_action') }}</th>
+                            <th>{{ t('table.responsible') }}</th>
+                            <th class="text-center">{{ t('table.status') }}</th>
                             <th class="text-center">E-MAIL</th>
                         </tr>
                     </thead>
@@ -597,9 +597,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch, type Component } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Header from '../../../components/shared/Header.vue'
 import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
 import ChipFilter from '../../../components/ui/ChipFilter.vue'
+
+const { t, locale } = useI18n()
+
 import ActionStatus from '../../../components/features/action/ActionStatus.vue'
 import ActionEmailStatus from '../../../components/features/action/ActionEmailStatus.vue'
 import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue'

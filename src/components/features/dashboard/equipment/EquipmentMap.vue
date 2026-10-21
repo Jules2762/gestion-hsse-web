@@ -9,16 +9,16 @@
         <div class="flex items-center gap-2">
           <MapPin :size="18" class="text-primary" />
           <h3 class="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
-            Cartographie des équipements par station
+            {{ locale === 'en' ? 'Station equipment mapping' : 'Cartographie des équipements par station' }}
             <span
               v-if="isFullscreen"
               class="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full"
             >
-              Mode Plein Écran
+              {{ locale === 'en' ? 'Fullscreen Mode' : 'Mode Plein Écran' }}
             </span>
           </h3>
         </div>
-        <p class="text-xs text-gray-500">Géolocalisation GPS des stations-service et état de conformité du parc matériel</p>
+        <p class="text-xs text-gray-500">{{ locale === 'en' ? 'GPS geolocation of service stations and fleet compliance status' : 'Géolocalisation GPS des stations-service et état de conformité du parc matériel' }}</p>
       </div>
 
       <!-- FILTRES PAR PROVINCE ET ÉTAT + BOUTON FULLSCREEN -->
@@ -28,7 +28,7 @@
           v-model="selectedProvince"
           class="border border-gray-200 rounded-lg px-2.5 py-1.5 bg-gray-50 font-medium text-gray-700 outline-none focus:border-primary"
         >
-          <option value="ALL">Toutes les provinces ({{ sites.length }})</option>
+          <option value="ALL">{{ locale === 'en' ? 'All provinces' : 'Toutes les provinces' }} ({{ sites.length }})</option>
           <option v-for="prov in provinces" :key="prov" :value="prov">
             {{ prov }}
           </option>
@@ -39,10 +39,10 @@
           v-model="selectedStatus"
           class="border border-gray-200 rounded-lg px-2.5 py-1.5 bg-gray-50 font-medium text-gray-700 outline-none focus:border-primary"
         >
-          <option value="ALL">Tous les statuts</option>
-          <option value="green">🟢 100% Conforme</option>
-          <option value="yellow">🟡 Contrôle à prévoir</option>
-          <option value="red">🔴 Anomalie / Non conforme</option>
+          <option value="ALL">{{ locale === 'en' ? 'All statuses' : 'Tous les statuts' }}</option>
+          <option value="green">{{ locale === 'en' ? '🟢 100% Compliant' : '🟢 100% Conforme' }}</option>
+          <option value="yellow">{{ locale === 'en' ? '🟡 Inspection needed' : '🟡 Contrôle à prévoir' }}</option>
+          <option value="red">{{ locale === 'en' ? '🔴 Anomaly / Non-compliant' : '🔴 Anomalie / Non conforme' }}</option>
         </select>
 
         <!-- Bouton Plein Écran Principal -->
@@ -51,11 +51,11 @@
           @click="toggleFullscreen"
           class="inline-flex items-center gap-1.5 border rounded-lg px-3 py-1.5 font-medium transition cursor-pointer shadow-xs select-none"
           :class="isFullscreen ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200'"
-          :title="isFullscreen ? 'Quitter le plein écran (Échap)' : 'Afficher la carte en plein écran'"
+          :title="isFullscreen ? (locale === 'en' ? 'Exit fullscreen (Esc)' : 'Quitter le plein écran (Échap)') : (locale === 'en' ? 'Show map in fullscreen' : 'Afficher la carte en plein écran')"
         >
           <component :is="isFullscreen ? Minimize2 : Maximize2" :size="15" />
-          <span>{{ isFullscreen ? 'Quitter le plein écran' : 'Plein écran' }}</span>
-          <span v-if="isFullscreen" class="hidden sm:inline text-[10px] bg-red-200/60 px-1 py-0.5 rounded font-mono">Échap</span>
+          <span>{{ isFullscreen ? (locale === 'en' ? 'Exit fullscreen' : 'Quitter le plein écran') : (locale === 'en' ? 'Fullscreen' : 'Plein écran') }}</span>
+          <span v-if="isFullscreen" class="hidden sm:inline text-[10px] bg-red-200/60 px-1 py-0.5 rounded font-mono">{{ locale === 'en' ? 'Esc' : 'Échap' }}</span>
         </button>
       </div>
     </div>
@@ -63,25 +63,25 @@
     <!-- BADGES RAPIDES DE SYNTHÈSE GÉOGRAPHIQUE -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs shrink-0">
       <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-        <span class="text-slate-600 font-medium">Stations sur la carte</span>
+        <span class="text-slate-600 font-medium">{{ locale === 'en' ? 'Stations on map' : 'Stations sur la carte' }}</span>
         <span class="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
           {{ filteredSites.length }} / {{ sites.length }}
         </span>
       </div>
       <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-between">
-        <span class="text-emerald-800 font-medium">Parc 100% conforme</span>
+        <span class="text-emerald-800 font-medium">{{ locale === 'en' ? '100% Compliant fleet' : 'Parc 100% conforme' }}</span>
         <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
           {{ sites.filter(s => s.status === 'green').length }}
         </span>
       </div>
       <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-between">
-        <span class="text-amber-800 font-medium">Contrôles à prévoir</span>
+        <span class="text-amber-800 font-medium">{{ locale === 'en' ? 'Inspections needed' : 'Contrôles à prévoir' }}</span>
         <span class="font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
           {{ sites.filter(s => s.status === 'yellow').length }}
         </span>
       </div>
       <div class="p-2.5 rounded-lg bg-red-50 border border-red-100 flex items-center justify-between">
-        <span class="text-red-800 font-medium">Anomalies détectées</span>
+        <span class="text-red-800 font-medium">{{ locale === 'en' ? 'Anomalies detected' : 'Anomalies détectées' }}</span>
         <span class="font-bold text-red-800 bg-white px-2 py-0.5 rounded border border-red-200">
           {{ sites.filter(s => s.status === 'red').length }}
         </span>
@@ -98,10 +98,10 @@
         type="button"
         @click="toggleFullscreen"
         class="absolute top-3 right-3 z-[1000] bg-white/95 hover:bg-white text-gray-700 shadow-md border border-gray-300 rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition hover:scale-105 select-none"
-        :title="isFullscreen ? 'Quitter le plein écran (Échap)' : 'Afficher la carte en plein écran'"
+        :title="isFullscreen ? (locale === 'en' ? 'Exit fullscreen (Esc)' : 'Quitter le plein écran (Échap)') : (locale === 'en' ? 'Show map in fullscreen' : 'Afficher la carte en plein écran')"
       >
         <component :is="isFullscreen ? Minimize2 : Maximize2" :size="15" class="text-primary" />
-        <span>{{ isFullscreen ? 'Réduire' : 'Plein écran' }}</span>
+        <span>{{ isFullscreen ? (locale === 'en' ? 'Collapse' : 'Réduire') : (locale === 'en' ? 'Fullscreen' : 'Plein écran') }}</span>
       </button>
 
       <DashboardSkeleton v-if="loading" type="chart" :height="440" />
@@ -134,7 +134,7 @@
             <div class="text-xs font-semibold">
               <p class="font-bold text-gray-800">{{ formatStationName(site.name) }}</p>
               <p class="text-gray-500 font-normal">{{ site.locality }}</p>
-              <p class="text-emerald-700 font-semibold">{{ site.conformity_rate }}% conforme</p>
+              <p class="text-emerald-700 font-semibold">{{ site.conformity_rate }}% {{ locale === 'en' ? 'compliant' : 'conforme' }}</p>
             </div>
           </LTooltip>
 
@@ -149,7 +149,7 @@
                     class="px-2 py-0.5 rounded-full text-[10px] font-bold inline-block"
                     :class="badgeColor(site.status)"
                   >
-                    {{ site.conformity_rate }}% conforme
+                    {{ site.conformity_rate }}% {{ locale === 'en' ? 'compliant' : 'conforme' }}
                   </span>
                 </div>
                 <p class="text-[11px] text-gray-500 mt-0.5">
@@ -163,18 +163,18 @@
               <!-- Synthèse des équipements -->
               <div class="space-y-1.5 bg-slate-50 p-2 rounded-lg border border-slate-100">
                 <p class="font-semibold text-gray-700 text-[11px] flex items-center justify-between">
-                  <span>Parc matériel inspecté :</span>
-                  <span class="text-primary font-bold">{{ site.total_items || (site.total_extincteurs + site.total_bacs) }} unités</span>
+                  <span>{{ locale === 'en' ? 'Inspected equipment fleet:' : 'Parc matériel inspecté :' }}</span>
+                  <span class="text-primary font-bold">{{ site.total_items || (site.total_extincteurs + site.total_bacs) }} {{ locale === 'en' ? 'units' : 'unités' }}</span>
                 </p>
                 <div class="flex items-center justify-between text-[10px] pb-1 border-b border-slate-200/60">
-                  <span class="text-emerald-700 font-semibold">✓ {{ site.ok_items ?? site.total_items ?? 0 }} conformes</span>
+                  <span class="text-emerald-700 font-semibold">✓ {{ site.ok_items ?? site.total_items ?? 0 }} {{ locale === 'en' ? 'compliant' : 'conformes' }}</span>
                   <span :class="(site.anomaly_items || 0) > 0 ? 'text-red-600 font-bold' : 'text-gray-400'">
-                    {{ (site.anomaly_items || 0) > 0 ? `⚠ ${site.anomaly_items} anomalie(s)` : '0 anomalie' }}
+                    {{ (site.anomaly_items || 0) > 0 ? `⚠ ${site.anomaly_items} ${locale === 'en' ? 'anomaly(ies)' : 'anomalie(s)'}` : (locale === 'en' ? '0 anomaly' : '0 anomalie') }}
                   </span>
                 </div>
                 <div class="grid grid-cols-2 gap-1 text-[11px] pt-0.5">
-                  <div>• Extincteurs : <b>{{ site.total_extincteurs }}</b></div>
-                  <div>• Bacs : <b>{{ site.total_bacs }}</b></div>
+                  <div>{{ locale === 'en' ? '• Extinguishers:' : '• Extincteurs :' }} <b>{{ site.total_extincteurs }}</b></div>
+                  <div>{{ locale === 'en' ? '• Retentions:' : '• Bacs :' }} <b>{{ site.total_bacs }}</b></div>
                   <div class="text-gray-500 text-[10px]">P50: {{ site.counts?.p50 || 0 }} | P9: {{ site.counts?.p9 || 0 }}</div>
                   <div class="text-gray-500 text-[10px]">CO2: {{ site.counts?.co2 || 0 }} | P6: {{ site.counts?.p6 || 0 }}</div>
                 </div>
@@ -182,7 +182,7 @@
 
               <!-- Équipements détaillés si disponibles -->
               <div v-if="site.items && site.items.length" class="space-y-1">
-                <p class="font-semibold text-gray-700 text-[11px]">Derniers items contrôlés :</p>
+                <p class="font-semibold text-gray-700 text-[11px]">{{ locale === 'en' ? 'Recent items inspected:' : 'Derniers items contrôlés :' }}</p>
                 <div class="max-h-24 overflow-y-auto space-y-1 pr-1">
                   <div
                     v-for="it in site.items"
@@ -194,7 +194,7 @@
                       class="px-1.5 py-0.5 rounded font-semibold text-[9px]"
                       :class="it.conformity ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'"
                     >
-                      {{ it.conformity ? 'Conforme' : 'Non conforme' }}
+                      {{ it.conformity ? (locale === 'en' ? 'Compliant' : 'Conforme') : (locale === 'en' ? 'Non-compliant' : 'Non conforme') }}
                     </span>
                   </div>
                 </div>
@@ -202,7 +202,7 @@
 
               <!-- Secours d'urgence proches -->
               <div v-if="site.emergency_contacts && site.emergency_contacts.length" class="border-t border-gray-100 pt-2">
-                <p class="font-semibold text-gray-700 text-[11px] mb-1">🚨 Secours d'urgence proches :</p>
+                <p class="font-semibold text-gray-700 text-[11px] mb-1">🚨 {{ locale === 'en' ? 'Nearby emergency services:' : 'Secours d\'urgence proches :' }}</p>
                 <div class="space-y-1 max-h-20 overflow-y-auto">
                   <div
                     v-for="c in site.emergency_contacts"
@@ -224,7 +224,7 @@
               <!-- Date dernier contrôle + Bouton de redirection vers les détails -->
               <div class="pt-2 border-t border-gray-100 flex flex-col gap-1.5">
                 <div class="flex items-center justify-between text-[10px] text-gray-400">
-                  <span>Dernier contrôle :</span>
+                  <span>{{ locale === 'en' ? 'Last inspection:' : 'Dernier contrôle :' }}</span>
                   <span class="font-medium text-gray-600">{{ site.last_monitoring_date || 'N/A' }}</span>
                 </div>
 
@@ -232,10 +232,10 @@
                   type="button"
                   @click="goToMonitoringDetails(site)"
                   class="w-full mt-1 py-1.5 px-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition active:scale-[0.98] cursor-pointer"
-                  :title="site.last_monitoring_id ? 'Consulter le suivi détaillé des équipements' : 'Accéder au registre des suivis pour ce site'"
+                  :title="site.last_monitoring_id ? (locale === 'en' ? 'View detailed equipment monitoring' : 'Consulter le suivi détaillé des équipements') : (locale === 'en' ? 'Access monitoring registry for this site' : 'Accéder au registre des suivis pour ce site')"
                 >
                   <Eye :size="13" />
-                  <span>{{ site.last_monitoring_id ? 'Consulter les détails du suivi' : 'Voir le suivi du site' }}</span>
+                  <span>{{ site.last_monitoring_id ? (locale === 'en' ? 'View monitoring details' : 'Consulter les détails du suivi') : (locale === 'en' ? 'View site monitoring' : 'Voir le suivi du site') }}</span>
                   <ArrowUpRight :size="13" />
                 </button>
               </div>
@@ -250,11 +250,14 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import 'leaflet/dist/leaflet.css';
 import { LMap, LTileLayer, LCircleMarker, LPopup, LTooltip } from '@vue-leaflet/vue-leaflet';
 import { ArrowUpRight, Eye, MapPin, Maximize2, Minimize2 } from '@lucide/vue';
 import DashboardSkeleton from '../DashboardSkeleton.vue';
 import dashboardService from '../../../../core/services/dashboard.service';
+
+const { locale } = useI18n();
 
 type SiteMapItem = {
   id: number;

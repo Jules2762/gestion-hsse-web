@@ -6,15 +6,15 @@
     <div class="mb-3 flex items-center justify-between shrink-0 flex-wrap gap-2">
       <div class="flex items-center gap-2">
         <h3 class="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
-          <span>Cartographie des visites VMC</span>
+          <span>{{ locale === 'en' ? 'VMC visits mapping' : 'Cartographie des visites VMC' }}</span>
           <span
             v-if="show_fullscreen"
             class="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full"
           >
-            Mode Plein Écran
+            {{ locale === 'en' ? 'Fullscreen Mode' : 'Mode Plein Écran' }}
           </span>
         </h3>
-        <span class="text-xs text-gray-400 font-normal">({{ filteredSites.length }} sites audités)</span>
+        <span class="text-xs text-gray-400 font-normal">({{ filteredSites.length }} {{ locale === 'en' ? 'audited sites' : 'sites audités' }})</span>
       </div>
 
       <!-- Filtres et bouton plein écran -->
@@ -24,7 +24,7 @@
           v-model="selectedProvince"
           class="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white outline-none focus:border-primary text-gray-700"
         >
-          <option value="ALL">Toutes provinces ({{ sites.length }})</option>
+          <option value="ALL">{{ locale === 'en' ? 'All provinces' : 'Toutes provinces' }} ({{ sites.length }})</option>
           <option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</option>
         </select>
 
@@ -33,13 +33,13 @@
           v-model="selectedStatus"
           class="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white outline-none focus:border-primary text-gray-700 font-medium"
         >
-          <option value="ALL">Tous les statuts</option>
-          <option value="green">🟢 Conforme (Clôturée)</option>
-          <option value="yellow">🟡 Contrôle / En cours</option>
-          <option value="red">🔴 Anomalie / Non conforme</option>
-          <option value="COMPLETED">✅ Visite Clôturée</option>
-          <option value="IN_PROGRESS">🔄 Visite En cours</option>
-          <option value="DRAFT">📅 Visite Planifiée</option>
+          <option value="ALL">{{ locale === 'en' ? 'All statuses' : 'Tous les statuts' }}</option>
+          <option value="green">{{ locale === 'en' ? '🟢 Compliant (Closed)' : '🟢 Conforme (Clôturée)' }}</option>
+          <option value="yellow">{{ locale === 'en' ? '🟡 Inspection / In Progress' : '🟡 Contrôle / En cours' }}</option>
+          <option value="red">{{ locale === 'en' ? '🔴 Anomaly / Non-compliant' : '🔴 Anomalie / Non conforme' }}</option>
+          <option value="COMPLETED">{{ locale === 'en' ? '✅ Closed Visit' : '✅ Visite Clôturée' }}</option>
+          <option value="IN_PROGRESS">{{ locale === 'en' ? '🔄 In Progress Visit' : '🔄 Visite En cours' }}</option>
+          <option value="DRAFT">{{ locale === 'en' ? '📅 Planned Visit' : '📅 Visite Planifiée' }}</option>
         </select>
 
         <button
@@ -47,10 +47,10 @@
           @click="toggleFullscreen"
           class="inline-flex items-center gap-1.5 border rounded-lg px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-xs select-none"
           :class="show_fullscreen ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200'"
-          :title="show_fullscreen ? 'Quitter le plein écran (Échap)' : 'Afficher la carte en plein écran'"
+          :title="show_fullscreen ? (locale === 'en' ? 'Exit fullscreen (Esc)' : 'Quitter le plein écran (Échap)') : (locale === 'en' ? 'Show map in fullscreen' : 'Afficher la carte en plein écran')"
         >
           <component :is="show_fullscreen ? Minimize2 : Fullscreen" :size="14" />
-          <span>{{ show_fullscreen ? 'Quitter' : 'Plein écran' }}</span>
+          <span>{{ show_fullscreen ? (locale === 'en' ? 'Exit' : 'Quitter') : (locale === 'en' ? 'Fullscreen' : 'Plein écran') }}</span>
         </button>
       </div>
     </div>
@@ -61,7 +61,7 @@
     >
       <div v-if="loading" class="absolute inset-0 bg-white/70 backdrop-blur-2xs z-[1000] flex flex-col items-center justify-center gap-2 text-gray-500">
         <Loader :size="24" class="animate-spin text-primary" />
-        <span class="text-xs font-medium">Chargement des sites et visites VMC...</span>
+        <span class="text-xs font-medium">{{ locale === 'en' ? 'Loading sites and VMC visits...' : 'Chargement des sites et visites VMC...' }}</span>
       </div>
 
       <LMap
@@ -113,27 +113,27 @@
 
               <div class="space-y-1 bg-slate-50 p-2 rounded-lg border border-slate-100">
                 <div class="flex justify-between items-center text-[11px]">
-                  <span class="text-gray-500">Total visites VMC :</span>
+                  <span class="text-gray-500">{{ locale === 'en' ? 'Total VMC visits:' : 'Total visites VMC :' }}</span>
                   <span class="font-bold text-gray-800">{{ site.total_vmc }}</span>
                 </div>
                 <div class="flex justify-between items-center text-[11px]">
-                  <span class="text-gray-500">Visites clôturées :</span>
+                  <span class="text-gray-500">{{ locale === 'en' ? 'Closed visits:' : 'Visites clôturées :' }}</span>
                   <span class="font-semibold text-emerald-600">{{ site.completed_vmc }}</span>
                 </div>
                 <div v-if="site.last_vmc_date" class="text-[10px] text-gray-500 border-t border-slate-200/60 pt-1 mt-1">
-                  Dernière VMC : <b>{{ site.last_vmc_date }}</b>
-                  <p v-if="site.last_vmc_status" class="text-gray-700 font-medium">Statut : {{ site.last_vmc_status }}</p>
-                  <p v-if="site.last_vmc_type" class="text-gray-700 font-medium">Type : {{ site.last_vmc_type }}</p>
+                  {{ locale === 'en' ? 'Last VMC:' : 'Dernière VMC :' }} <b>{{ site.last_vmc_date }}</b>
+                  <p v-if="site.last_vmc_status" class="text-gray-700 font-medium">{{ locale === 'en' ? 'Status:' : 'Statut :' }} {{ site.last_vmc_status }}</p>
+                  <p v-if="site.last_vmc_type" class="text-gray-700 font-medium">{{ locale === 'en' ? 'Type:' : 'Type :' }} {{ site.last_vmc_type }}</p>
                   <p v-if="site.last_vmc_recommendation" class="italic text-gray-500 truncate mt-0.5">« {{ site.last_vmc_recommendation }} »</p>
                 </div>
                 <div v-else class="text-[10px] text-amber-600 italic">
-                  Aucune visite VMC enregistrée sur ce site
+                  {{ locale === 'en' ? 'No VMC visit recorded on this site' : 'Aucune visite VMC enregistrée sur ce site' }}
                 </div>
               </div>
 
               <!-- Contacts d'urgence -->
               <div v-if="site.emergency_contacts && site.emergency_contacts.length" class="text-[10px] text-gray-600">
-                <span class="font-bold text-gray-700">🚨 Contact secours :</span>
+                <span class="font-bold text-gray-700">🚨 {{ locale === 'en' ? 'Emergency Contact:' : 'Contact secours :' }}</span>
                 <span class="truncate block">{{ site.emergency_contacts[0].name }} ({{ site.emergency_contacts[0].phone || 'N/A' }})</span>
               </div>
 
@@ -143,7 +143,7 @@
                 @click="goToVmc(site)"
                 class="w-full mt-1.5 py-1 px-2.5 bg-primary text-white text-[11px] font-bold rounded-lg hover:bg-primary/90 transition cursor-pointer flex items-center justify-center gap-1 shadow-2xs"
               >
-                <span>Consulter les VMC de ce site</span>
+                <span>{{ locale === 'en' ? 'View VMC of this site' : 'Consulter les VMC de ce site' }}</span>
                 <ArrowUpRight :size="12" />
               </button>
             </div>
@@ -166,8 +166,10 @@ import {
 import { Fullscreen, Minimize2, Loader, ArrowUpRight } from "@lucide/vue";
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import dashboardService from "../../../../core/services/dashboard.service";
 
+const { locale } = useI18n();
 const router = useRouter();
 const loading = ref(true);
 const show_fullscreen = ref(false);

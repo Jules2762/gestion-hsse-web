@@ -7,16 +7,18 @@
 
             <input v-model="inputValue" type="text" autocomplete="off" :placeholder="displayPlaceholder"
                 @focus="openDropdown" class="h-9 w-full rounded-lg border
-                       border-gray-300 bg-white pl-8 pr-16
+                       border-gray-300 bg-white pl-8
                        text-xs text-gray-700
                        placeholder:text-gray-400
                        focus:border-primary focus:outline-none
-                       focus:ring-2 focus:ring-primary/20" />
+                       focus:ring-2 focus:ring-primary/20"
+                :class="lists?.length ? 'pr-16' : 'pr-8'" />
 
             <!-- Clear -->
-            <button v-if="props.modelValue" type="button" @click="clear" class="absolute right-8 top-1/2
+            <button v-if="props.modelValue" type="button" @click="clear" class="absolute top-1/2
                        -translate-y-1/2 text-gray-400
-                       hover:text-gray-600">
+                       hover:text-gray-600"
+                :class="lists?.length ? 'right-8' : 'right-2.5'">
                 <XIcon :size="14" />
             </button>
 
@@ -111,6 +113,10 @@
 
     const inputValue = computed({
         get() {
+            if (!props.lists?.length) {
+                return props.modelValue !== null && props.modelValue !== undefined ? String(props.modelValue) : ''
+            }
+
             if (isOpen.value) {
                 return search.value
             }
@@ -119,6 +125,11 @@
         },
 
         set(value: string) {
+            if (!props.lists?.length) {
+                emit('update:modelValue', value)
+                return
+            }
+
             search.value = value
 
             // L'utilisateur recommence à rechercher
@@ -172,7 +183,7 @@
     }
 
     function clear() {
-        emit('update:modelValue', null)
+        emit('update:modelValue', props.lists?.length ? null : '')
 
         search.value = ''
         isOpen.value = false

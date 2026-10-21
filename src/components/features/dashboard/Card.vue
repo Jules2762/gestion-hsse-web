@@ -87,10 +87,95 @@ const tag = computed(() => (props.clickable ? 'button' : 'div'))
 
 const { t, te, locale } = useI18n()
 
+const kpiTitleMap: Record<string, { fr: string; en: string }> = {
+  "Taux de réalisation du plan": { fr: "Taux de réalisation du plan", en: "Plan Completion Rate" },
+  "Inspections réalisées": { fr: "Inspections réalisées", en: "Completed Inspections" },
+  "Inspections en retard": { fr: "Inspections en retard", en: "Delayed Inspections" },
+  "Taux de conformité moyen": { fr: "Taux de conformité moyen", en: "Average Conformity Rate" },
+  "Non-conformités détectées": { fr: "Non-conformités détectées", en: "Detected Non-Conformities" },
+  "Taux de conformité global": { fr: "Taux de conformité global", en: "Global Conformity Rate" },
+  "Actions ouvertes": { fr: "Actions ouvertes", en: "Open Actions" },
+  "Formations réalisées": { fr: "Formations réalisées", en: "Completed Trainings" },
+  "Heures de formation dispensées": { fr: "Heures de formation dispensées", en: "Training Hours Delivered" },
+  "Nombre total de participants": { fr: "Nombre total de participants", en: "Total Participants" },
+  "Taux de présence moyen": { fr: "Taux de présence moyen", en: "Average Attendance Rate" },
+  "Total VMC réalisées": { fr: "Total VMC réalisées", en: "Total Completed VMCs" },
+  "Taux de couverture": { fr: "Taux de couverture", en: "Coverage Rate" },
+  "Écarts identifiés": { fr: "Écarts identifiés", en: "Identified Gaps" },
+  "Taux de résolution VMC": { fr: "Taux de résolution VMC", en: "VMC Resolution Rate" },
+  "VMC Réalisées": { fr: "VMC Réalisées", en: "Completed VMCs" },
+  "Taux de réalisation global": { fr: "Taux de réalisation global", en: "Overall Completion Rate" },
+  "Autres visites (En cours & Planifiées)": { fr: "Autres visites (En cours & Planifiées)", en: "Other Visits (In Progress & Planned)" },
+  "Visites Station-Service (SS)": { fr: "Visites Station-Service (SS)", en: "Service Station Visits (SS)" },
+  "Visites Magasins & Agences": { fr: "Visites Magasins & Agences", en: "Store & Branch Visits" },
+  "Inspections Camions": { fr: "Inspections Camions", en: "Truck Inspections" },
+  "Nombre de remontées": { fr: "Nombre de remontées", en: "Total Safety Reports" },
+  "Taux de conformité des visites": { fr: "Taux de conformité des visites", en: "Visit Conformity Rate" },
+  "Total matériels suivis": { fr: "Total matériels suivis", en: "Total Monitored Equipment" },
+  "Matériels conformes": { fr: "Matériels conformes", en: "Compliant Equipment" },
+  "Matériels non conformes": { fr: "Matériels non conformes", en: "Non-Compliant Equipment" },
+  "Taux de conformité matériel": { fr: "Taux de conformité matériel", en: "Equipment Conformity Rate" },
+  "Fiches d'inspection": { fr: "Fiches d'inspection", en: "Inspection Records" },
+  "Taux moyen de conformité": { fr: "Taux moyen de conformité", en: "Average Conformity Rate" },
+  "Extincteurs en parc": { fr: "Extincteurs en parc", en: "Fire Extinguishers in Stock" },
+  "Bacs & Rétention": { fr: "Bacs & Rétention", en: "Spill Trays & Retention" },
+  "Anomalies actives": { fr: "Anomalies actives", en: "Active Anomalies" },
+  "Checklists réalisées": { fr: "Checklists réalisées", en: "Checklists Completed" },
+  "Taux de conformité checklists": { fr: "Taux de conformité checklists", en: "Checklist Conformity Rate" },
+  "Total utilisateurs": { fr: "Total utilisateurs", en: "Total Users" },
+  "Utilisateurs actifs": { fr: "Utilisateurs actifs", en: "Active Users" },
+  "Connexions ce mois": { fr: "Connexions ce mois", en: "Logins this month" },
+  "Rôles configurés": { fr: "Rôles configurés", en: "Configured Roles" },
+  "Utilisateurs Inscrits": { fr: "Utilisateurs Inscrits", en: "Registered Users" },
+  "Administrateurs Système": { fr: "Administrateurs Système", en: "System Administrators" },
+  "Personnel Référencé": { fr: "Personnel Référencé", en: "Referenced Personnel" },
+  "Traçabilité & Audit (30j)": { fr: "Traçabilité & Audit (30j)", en: "Traceability & Audit (30d)" },
+  "Nombre de sessions réalisées": { fr: "Nombre de sessions réalisées", en: "Completed Training Sessions" },
+  "Nombre total des heures de formation": { fr: "Nombre total des heures de formation", en: "Total Training Hours" },
+  "Taux de réalisation du plan de formation": { fr: "Taux de réalisation du plan de formation", en: "Training Plan Completion Rate" },
+  "Nombre de personnes ayant participé": { fr: "Nombre de personnes ayant participé", en: "Number of Attendees" },
+  "Taux de participation global": { fr: "Taux de participation global", en: "Overall Attendance Rate" },
+  "Personnes ayant suivi au moins une formation": { fr: "Personnes ayant suivi au moins une formation", en: "People Trained (At Least One)" },
+  "Taux de personnes ayant participé à au moins une formation": { fr: "Taux de personnes ayant participé à au moins une formation", en: "Trained Personnel Ratio" },
+  "État du Compte": { fr: "État du Compte", en: "Account Status" },
+  "Accréditation Système": { fr: "Accréditation Système", en: "System Accreditation" },
+  "Habilitations Actives": { fr: "Habilitations Actives", en: "Active Permissions" },
+  "Rattachement Pôle": { fr: "Rattachement Pôle", en: "Department Affiliation" },
+}
+
 const displayTitle = computed(() => {
   if (te(props.title)) return t(props.title)
+  const mapped = kpiTitleMap[props.title]
+  if (mapped) {
+    return locale.value === 'en' ? mapped.en : mapped.fr
+  }
   return props.title
 })
+
+const displaySubtitle = computed(() => {
+  if (!props.subtitle) return undefined
+  if (locale.value === 'en') {
+    return props.subtitle
+      .replace(/sur (\d+) VMC au total/g, 'out of $1 total VMCs')
+      .replace(/(\d+) VMC clôturées sur (\d+)/g, '$1 VMCs closed out of $2')
+      .replace(/(\d+) en cours • (\d+) planifiée\(s\)/g, '$1 in progress • $2 planned')
+      .replace(/Pistes & boutiques/g, 'Forecourts & convenience stores')
+      .replace(/(\d+) Magasin • (\d+) Agence/g, '$1 Store • $2 Branch')
+      .replace(/Camions-citernes transport/g, 'Fuel transport tanker trucks')
+      .replace(/Safety Reports & écarts/g, 'Safety Reports & findings')
+      .replace(/Points évalués conformes/g, 'Compliant audited items')
+      .replace(/(\d+) actif\(s\) • (\d+) inactif\(s\)/g, '$1 active • $2 inactive')
+      .replace(/(\d+) utilisateur\(s\) standard/g, '$1 standard user(s)')
+      .replace(/Collaborateurs & Équipes Galana/g, 'Galana staff & teams')
+      .replace(/(\d+) action\(s\) tracée\(s\) aujourd'hui/g, '$1 action(s) logged today')
+      .replace(/Accès certifié & conforme HSSE/g, 'Certified access & HSSE compliant')
+      .replace(/Niveau de privilèges actif/g, 'Active privilege level')
+      .replace(/Répartis sur l’ensemble des modules/g, 'Distributed across all modules')
+      .replace(/Fonction opérationnelle/g, 'Operational function')
+  }
+  return props.subtitle
+})
+
 
 const displayDeltaLabel = computed(() => {
   if (props.deltaLabel && props.deltaLabel !== 'vs période précédente') return props.deltaLabel
@@ -133,7 +218,7 @@ const displayDeltaLabel = computed(() => {
         <span v-if="unit" class="text-lg font-medium leading-none text-slate-600">{{ unit }}</span>
       </p>
 
-      <p v-if="subtitle" class="text-xs font-medium text-slate-600">{{ subtitle }}</p>
+      <p v-if="displaySubtitle" class="text-xs font-medium text-slate-600">{{ displaySubtitle }}</p>
 
       <p v-if="delta !== undefined" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
         <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium" :class="trend.tone">

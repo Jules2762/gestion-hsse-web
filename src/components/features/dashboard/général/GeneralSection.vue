@@ -16,10 +16,12 @@ import {
 import Card from '../Card.vue';
 import DashboardSkeleton from '../DashboardSkeleton.vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import dashboardService from '../../../../core/services/dashboard.service';
 
 const router = useRouter();
+const { t, locale } = useI18n();
 
 const loading = ref(true);
 const loadingPerf = ref(false);
@@ -44,19 +46,37 @@ const series = ref<any[]>([
     { name: 'Non-conformités', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
 ]);
 
-const options = ref({
+const monthsFr = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'];
+const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const serverCategories = ref<string[] | null>(null);
+
+const options = computed(() => ({
     chart: {
-        type: 'area',
+        type: 'area' as const,
         toolbar: { show: false },
         fontFamily: 'inherit'
     },
-    stroke: { curve: 'smooth', width: 2 },
+    stroke: { curve: 'smooth' as const, width: 2 },
     xaxis: {
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
+        categories: serverCategories.value && serverCategories.value.length === 12
+            ? (locale.value === 'en' ? monthsEn : monthsFr)
+            : (serverCategories.value || (locale.value === 'en' ? monthsEn : monthsFr))
     },
     colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'],
     dataLabels: { enabled: false },
     grid: { borderColor: '#f1f5f9' },
+}));
+
+const translatedSeries = computed(() => {
+    return series.value.map(s => {
+        let name = s.name;
+        if (s.name === 'Formations') name = locale.value === 'en' ? 'Trainings' : 'Formations';
+        else if (s.name === 'Inspections & VMC') name = locale.value === 'en' ? 'Inspections & VMC' : 'Inspections & VMC';
+        else if (s.name === 'Actions Correctives') name = locale.value === 'en' ? 'Corrective Actions' : 'Actions Correctives';
+        else if (s.name === 'Non-conformités') name = locale.value === 'en' ? 'Non-conformities' : 'Non-conformités';
+        return { ...s, name };
+    });
 });
 
 const latestInspections = ref<any[]>([]);
@@ -70,10 +90,7 @@ async function fetchPerformance(year: number) {
             const data = perfRes.data;
             if (data.series) series.value = data.series;
             if (data.categories) {
-                options.value = {
-                    ...options.value,
-                    xaxis: { categories: data.categories }
-                };
+                serverCategories.value = data.categories;
             }
         }
     } catch (e) {
@@ -195,8 +212,12 @@ onBeforeUnmount(() => {
         <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                    <h3 class="font-bold text-gray-800 text-base">Performance HSSE Globale</h3>
-                    <p class="text-xs text-gray-500">Évolution mensuelle consolidée des formations, inspections, actions et non-conformités</p>
+                    <h3 class="font-bold text-gray-800 text-base">
+                        {{ locale === 'en' ? 'Global HSSE Performance' : 'Performance HSSE Globale' }}
+                    </h3>
+                    <p class="text-xs text-gray-500">
+                        {{ locale === 'en' ? 'Consolidated monthly evolution of trainings, inspections, actions, and non-conformities' : 'Évolution mensuelle consolidée des formations, inspections, actions et non-conformités' }}
+                    </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <div ref="yearDropdownRef" class="relative inline-flex items-center justify-center">
@@ -205,10 +226,10 @@ onBeforeUnmount(() => {
                             @click="toggleYearDropdown"
                             class="inline-flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 active:bg-gray-200/70 border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-700 shadow-2xs transition-all cursor-pointer select-none"
                             :class="{ 'ring-2 ring-primary/20 border-primary': isYearDropdownOpen }"
-                            title="Sélectionner l'année"
+                            :title="locale === 'en' ? 'Select year' : 'Sélectionner l\'année'"
                         >
                             <Calendar :size="14" class="text-gray-400 shrink-0" />
-                            <span class="text-xs font-medium text-gray-500">Année :</span>
+                            <span class="text-xs font-medium text-gray-500">{{ locale === 'en' ? 'Year:' : 'Année :' }}</span>
                             <span class="text-xs font-bold text-gray-800">{{ selectedYear }}</span>
                             <ChevronDown
                                 :size="13"
@@ -238,7 +259,7 @@ onBeforeUnmount(() => {
                 </div>
             </div>
             <div v-if="!loadingPerf">
-                <apexchart type="area" height="340" :options="options" :series="series"></apexchart>
+                <apexchart type="area" height="340" :options="options" :series="translatedSeries"></apexchart>
             </div>
             <DashboardSkeleton v-else type="chart" :height="340" />
         </div>
@@ -251,30 +272,34 @@ onBeforeUnmount(() => {
                 <div>
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm">Dernières inspections</h3>
-                            <p class="text-xs text-gray-500">Checklists et VMC récemment clôturées</p>
+                            <h3 class="font-bold text-gray-800 text-sm">
+                                {{ locale === 'en' ? 'Latest Inspections' : 'Dernières inspections' }}
+                            </h3>
+                            <p class="text-xs text-gray-500">
+                                {{ locale === 'en' ? 'Recently completed checklists and VMC' : 'Checklists et VMC récemment clôturées' }}
+                            </p>
                         </div>
                         <button
                             @click="router.push({ name: 'CHECKLIST' })"
                             class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                         >
-                            Voir tout <ArrowUpRight :size="13" />
+                            {{ locale === 'en' ? 'View all' : 'Voir tout' }} <ArrowUpRight :size="13" />
                         </button>
                     </div>
 
                     <DashboardSkeleton v-if="loading" type="table" :rows="4" />
 
                     <div v-else-if="latestInspections.length === 0" class="py-10 text-center text-xs text-gray-400">
-                        Aucune inspection récente enregistrée
+                        {{ locale === 'en' ? 'No recent inspections recorded' : 'Aucune inspection récente enregistrée' }}
                     </div>
 
                     <table v-else class="w-full text-xs">
                         <thead>
                             <tr class="text-left text-gray-400 font-semibold border-b border-gray-100">
-                                <th class="pb-2">Type / Intitulé</th>
-                                <th class="pb-2">Site / Lieu</th>
-                                <th class="pb-2">Inspecteur</th>
-                                <th class="pb-2 text-right">Conformité</th>
+                                <th class="pb-2">{{ locale === 'en' ? 'Type / Title' : 'Type / Intitulé' }}</th>
+                                <th class="pb-2">{{ locale === 'en' ? 'Site / Location' : 'Site / Lieu' }}</th>
+                                <th class="pb-2">{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</th>
+                                <th class="pb-2 text-right">{{ locale === 'en' ? 'Conformity' : 'Conformité' }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -315,30 +340,34 @@ onBeforeUnmount(() => {
                 <div>
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm">Dernières actions correctives</h3>
-                            <p class="text-xs text-gray-500">Actions issues des contrôles terrain</p>
+                            <h3 class="font-bold text-gray-800 text-sm">
+                                {{ locale === 'en' ? 'Latest Corrective Actions' : 'Dernières actions correctives' }}
+                            </h3>
+                            <p class="text-xs text-gray-500">
+                                {{ locale === 'en' ? 'Actions from field inspections' : 'Actions issues des contrôles terrain' }}
+                            </p>
                         </div>
                         <button
                             @click="navigateToAction"
                             class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                         >
-                            Voir tout <ArrowUpRight :size="13" />
+                            {{ locale === 'en' ? 'View all' : 'Voir tout' }} <ArrowUpRight :size="13" />
                         </button>
                     </div>
 
                     <DashboardSkeleton v-if="loading" type="table" :rows="4" />
 
                     <div v-else-if="latestActions.length === 0" class="py-10 text-center text-xs text-gray-400">
-                        Aucune action corrective enregistrée
+                        {{ locale === 'en' ? 'No corrective actions recorded' : 'Aucune action corrective enregistrée' }}
                     </div>
 
                     <table v-else class="w-full text-xs">
                         <thead>
                             <tr class="text-left text-gray-400 font-semibold border-b border-gray-100">
-                                <th class="pb-2">Action</th>
-                                <th class="pb-2">Origine</th>
-                                <th class="pb-2">Responsable</th>
-                                <th class="pb-2 text-right">Statut</th>
+                                <th class="pb-2">{{ locale === 'en' ? 'Action' : 'Action' }}</th>
+                                <th class="pb-2">{{ locale === 'en' ? 'Origin' : 'Origine' }}</th>
+                                <th class="pb-2">{{ locale === 'en' ? 'Responsible' : 'Responsable' }}</th>
+                                <th class="pb-2 text-right">{{ locale === 'en' ? 'Status' : 'Statut' }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -374,7 +403,7 @@ onBeforeUnmount(() => {
                                         }"
                                     >
                                         <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
-                                        {{ item.status === 'DONE' ? 'Fait' : item.status === 'IN_PROGRESS' ? 'En cours' : 'À faire' }}
+                                        {{ (item.status === 'DONE' || item.status === 'Clôturé') ? (locale === 'en' ? 'Done' : 'Fait') : (item.status === 'IN_PROGRESS' || item.status === 'En cours') ? (locale === 'en' ? 'In progress' : 'En cours') : (locale === 'en' ? 'To do' : 'À faire') }}
                                     </span>
                                 </td>
                             </tr>

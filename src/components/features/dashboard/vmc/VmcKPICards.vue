@@ -5,7 +5,7 @@
         <div class="flex flex-col gap-y-2">
             <div class="flex items-center justify-between">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    Taux de réalisation VMC
+                    {{ locale === 'en' ? 'VMC Completion Rate' : 'Taux de réalisation VMC' }}
                 </h4>
             </div>
 
@@ -44,7 +44,7 @@
         <div class="flex flex-col gap-y-2 mt-1">
             <div class="flex items-center justify-between">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    Visites par entité, Camions & Remontées
+                    {{ locale === 'en' ? 'Visits by entity, Trucks & Safety reports' : 'Visites par entité, Camions & Remontées' }}
                 </h4>
             </div>
 
@@ -101,6 +101,7 @@
 </template>
 
 <script lang="ts" setup>
+    import { useI18n } from 'vue-i18n';
     import {
         AlertTriangle,
         Building2,
@@ -113,6 +114,8 @@
     } from '@lucide/vue';
     import Card from '../Card.vue';
     import type { DashboardVmcKPIs } from '../../../../@types/Dashboard.type.ts';
+
+    const { locale } = useI18n();
 
     withDefaults(defineProps<DashboardVmcKPIs & { loading?: boolean }>(), {
         loading: false,
