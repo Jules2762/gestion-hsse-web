@@ -13,7 +13,7 @@
             <!-- CHARGEMENT INITIAL -->
             <div v-if="loadingInitial" class="p-20 flex flex-col items-center justify-center gap-3 text-gray-500">
                 <Loader2 :size="32" class="animate-spin text-primary" />
-                <span class="text-sm">Chargement des données du personnel...</span>
+                <span class="text-sm">{{ locale === 'en' ? 'Loading personnel data...' : 'Chargement des données du personnel...' }}</span>
             </div>
 
             <!-- FORMULAIRE -->
@@ -31,15 +31,15 @@
                                     <IdCard class="h-4.5 w-4.5" />
                                 </div>
                                 <div>
-                                    <h5 class="font-bold text-gray-900 text-sm">Identité</h5>
-                                    <p class="text-xs text-text-muted">Informations personnelles du membre.</p>
+                                    <h5 class="font-bold text-gray-900 text-sm">{{ locale === 'en' ? 'Identity' : 'Identité' }}</h5>
+                                    <p class="text-xs text-text-muted">{{ locale === 'en' ? 'Personal information of the member.' : 'Informations personnelles du membre.' }}</p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <Input v-model="form.first_name" label="Prénom *" :icon="UserRound" :error="errors.first_name?.[0]" />
-                                <Input v-model="form.last_name" label="Nom" :icon="UserRound" :error="errors.last_name?.[0]" />
-                                <Input v-model="form.email" type="email" label="E-mail *" :icon="MailIcon" :error="errors.email?.[0]" class="sm:col-span-2" />
+                                <Input v-model="form.first_name" :label="locale === 'en' ? 'First name *' : 'Prénom *'" :icon="UserRound" :error="errors.first_name?.[0]" />
+                                <Input v-model="form.last_name" :label="locale === 'en' ? 'Last name' : 'Nom'" :icon="UserRound" :error="errors.last_name?.[0]" />
+                                <Input v-model="form.email" type="email" :label="locale === 'en' ? 'Email *' : 'E-mail *'" :icon="MailIcon" :error="errors.email?.[0]" class="sm:col-span-2" />
                             </div>
                         </section>
 
@@ -50,23 +50,23 @@
                                     <Building2Icon class="h-4.5 w-4.5" />
                                 </div>
                                 <div>
-                                    <h5 class="font-bold text-gray-900 text-sm">Affectation</h5>
-                                    <p class="text-xs text-text-muted">Poste occupé et rattachement organisationnel.</p>
+                                    <h5 class="font-bold text-gray-900 text-sm">{{ locale === 'en' ? 'Assignment' : 'Affectation' }}</h5>
+                                    <p class="text-xs text-text-muted">{{ locale === 'en' ? 'Position held and organizational unit.' : 'Poste occupé et rattachement organisationnel.' }}</p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <Input
                                     v-model="form.fonction"
-                                    label="Fonction *"
+                                    :label="locale === 'en' ? 'Position *' : 'Fonction *'"
                                     :icon="Briefcase"
                                     list_id="fonction-lists"
                                     :lists="fonctions"
                                     :error="errors.fonction?.[0]"
                                     class="sm:col-span-2"
                                 />
-                                <Input v-model="form.direction" label="Direction *" :icon="Network" :error="errors.direction?.[0]" />
-                                <Input v-model="form.entity" label="Entité *" :icon="Building2Icon" :error="errors.entity?.[0]" />
+                                <Input v-model="form.direction" :label="locale === 'en' ? 'Department *' : 'Direction *'" :icon="Network" :error="errors.direction?.[0]" />
+                                <Input v-model="form.entity" :label="locale === 'en' ? 'Entity *' : 'Entité *'" :icon="Building2Icon" :error="errors.entity?.[0]" />
                             </div>
                         </section>
 
@@ -86,7 +86,7 @@
                                     {{ fullName || "Personnel" }}
                                 </p>
                                 <p class="truncate text-sm text-text-muted">
-                                    {{ form.fonction.trim() || "Fonction non renseignée" }}
+                                    {{ form.fonction.trim() || (locale === 'en' ? 'Position not specified' : 'Fonction non renseignée') }}
                                 </p>
                             </div>
                         </div>
@@ -109,10 +109,10 @@
                         <!-- BOUTONS D'ACTION -->
                         <div class="flex flex-col gap-2 pt-2 border-t border-border">
                             <Button :loading="isSubmitting" :disabled="isSubmitting" :left-icon="Save" type="submit" class="w-full">
-                                Enregistrer les modifications
+                                {{ locale === 'en' ? 'Save changes' : 'Enregistrer les modifications' }}
                             </Button>
                             <Button variant="outline" type="button" @click="router.push({ name: 'PERSONNEL' })" class="w-full">
-                                Annuler
+                                {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                             </Button>
                         </div>
 
@@ -130,6 +130,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import Header from '../../../components/shared/Header.vue';
 import Input from '../../../components/ui/Input.vue';
 import Button from '../../../components/ui/Button.vue';
@@ -148,6 +149,7 @@ import { toast } from 'vue3-toastify';
 
 const route = useRoute();
 const router = useRouter();
+const { t, locale } = useI18n();
 
 const loadingInitial = ref(true);
 const isSubmitting = ref(false);
@@ -202,7 +204,7 @@ async function loadData() {
         }
     } catch (e) {
         console.error('Erreur chargement personnel:', e);
-        toast.error('Impossible de charger ce personnel');
+        toast.error(locale.value === 'en' ? 'Unable to load personnel data' : 'Impossible de charger ce personnel');
     } finally {
         loadingInitial.value = false;
     }
@@ -214,15 +216,15 @@ async function handleSubmit() {
     try {
         const id = route.params.id as string;
         await personnelService.update(id, form.value);
-        toast.success('Personnel mis à jour avec succès');
+        toast.success(locale.value === 'en' ? 'Personnel successfully updated' : 'Personnel mis à jour avec succès');
         router.push({ name: 'PERSONNEL' });
     } catch (e: any) {
         if (e.response?.status === 422) {
             errors.value = e.response.data.errors || {};
-            toast.error('Veuillez corriger les erreurs dans le formulaire');
+            toast.error(locale.value === 'en' ? 'Please fix the errors in the form' : 'Veuillez corriger les erreurs dans le formulaire');
         } else {
             console.error('Erreur mise à jour personnel:', e);
-            toast.error('Impossible de mettre à jour le personnel');
+            toast.error(locale.value === 'en' ? 'Unable to update personnel' : 'Impossible de mettre à jour le personnel');
         }
     } finally {
         isSubmitting.value = false;

@@ -179,28 +179,28 @@ onBeforeUnmount(() => {
         <!-- CARTES KPI DYNAMIQUES -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Card
-                title="Taux de réalisation du plan"
+                :title="locale === 'en' ? 'Plan Completion Rate' : 'Taux de réalisation du plan'"
                 theme="red"
                 :value="kpis.plan_completion_rate + '%'"
                 :icon="Target"
                 :loading="loading"
             />
             <Card
-                title="Inspections réalisées"
+                :title="locale === 'en' ? 'Completed Inspections' : 'Inspections réalisées'"
                 theme="green"
                 :value="String(kpis.inspections_realisees)"
                 :icon="ClipboardCheck"
                 :loading="loading"
             />
             <Card
-                title="Taux de conformité global"
+                :title="locale === 'en' ? 'Global Compliance Rate' : 'Taux de conformité global'"
                 theme="orange"
                 :value="kpis.global_conformity_rate + '%'"
                 :icon="ShieldCheck"
                 :loading="loading"
             />
             <Card
-                title="Actions ouvertes"
+                :title="locale === 'en' ? 'Open Actions' : 'Actions ouvertes'"
                 theme="cyan"
                 :value="String(kpis.open_actions)"
                 :icon="ClipboardPen"

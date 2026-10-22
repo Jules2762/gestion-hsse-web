@@ -15,10 +15,10 @@
     <!-- 1. CARTES KPIS D'ADMINISTRATION -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card
-        title="Utilisateurs Inscrits"
+        :title="locale === 'en' ? 'Registered Users' : 'Utilisateurs Inscrits'"
         :icon="UsersIcon"
         :value="kpis.total_users"
-        :subtitle="`${kpis.active_users} actif(s) • ${kpis.inactive_users} inactif(s)`"
+        :subtitle="locale === 'en' ? `${kpis.active_users} active • ${kpis.inactive_users} inactive` : `${kpis.active_users} actif(s) • ${kpis.inactive_users} inactif(s)`"
         theme="blue"
         :loading="loading"
         clickable
@@ -26,10 +26,10 @@
       />
 
       <Card
-        title="Administrateurs Système"
+        :title="locale === 'en' ? 'System Administrators' : 'Administrateurs Système'"
         :icon="ShieldCheck"
         :value="kpis.admin_users"
-        :subtitle="`${kpis.standard_users} utilisateur(s) standard`"
+        :subtitle="locale === 'en' ? `${kpis.standard_users} standard user(s)` : `${kpis.standard_users} utilisateur(s) standard`"
         theme="purple"
         :loading="loading"
         clickable
@@ -37,10 +37,10 @@
       />
 
       <Card
-        title="Personnel Référencé"
+        :title="locale === 'en' ? 'Referenced Personnel' : 'Personnel Référencé'"
         :icon="Briefcase"
         :value="kpis.total_personnels"
-        subtitle="Collaborateurs & Équipes Galana"
+        :subtitle="locale === 'en' ? 'Galana staff & teams' : 'Collaborateurs & Équipes Galana'"
         theme="green"
         :loading="loading"
         clickable
@@ -48,10 +48,10 @@
       />
 
       <Card
-        title="Traçabilité & Audit (30j)"
+        :title="locale === 'en' ? 'Traceability & Audit (30d)' : 'Traçabilité & Audit (30j)'"
         :icon="Activity"
         :value="kpis.logs_this_month"
-        :subtitle="`${kpis.logs_today} action(s) tracée(s) aujourd'hui`"
+        :subtitle="locale === 'en' ? `${kpis.logs_today} action(s) tracked today` : `${kpis.logs_today} action(s) tracée(s) aujourd'hui`"
         theme="orange"
         :loading="loading"
         clickable

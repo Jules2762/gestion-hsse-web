@@ -17,28 +17,28 @@
         <!-- KPI CARDS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Card
-                title="Inspections réalisées"
+                :title="locale === 'en' ? 'Completed Inspections' : 'Inspections réalisées'"
                 theme="green"
                 :value="String(kpis.completed)"
                 :icon="ClipboardCheck"
                 :loading="loading"
             />
             <Card
-                title="Inspections en retard"
+                :title="locale === 'en' ? 'Delayed Inspections' : 'Inspections en retard'"
                 theme="blue"
                 :value="String(kpis.delayed)"
                 :icon="ClockAlert"
                 :loading="loading"
             />
             <Card
-                title="Taux de conformité moyen"
+                :title="locale === 'en' ? 'Average Compliance Rate' : 'Taux de conformité moyen'"
                 theme="red"
                 :value="kpis.avg_conformity + '%'"
                 :icon="ShieldCheck"
                 :loading="loading"
             />
             <Card
-                title="Non-conformités détectées"
+                :title="locale === 'en' ? 'Detected Non-conformities' : 'Non-conformités détectées'"
                 theme="cyan"
                 :value="String(kpis.non_conformities)"
                 :icon="TriangleAlert"

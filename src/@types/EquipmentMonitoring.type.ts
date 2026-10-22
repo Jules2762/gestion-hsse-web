@@ -62,6 +62,8 @@ export type EquipmentMonitoringType = {
     original_conformity_rate?: number
     is_resolved?: boolean
     observations?: string
+    non_conforming_items_count?: number
+    total_items_count?: number
     items?: EquipmentItemType[]
     user?: any
 

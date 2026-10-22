@@ -55,10 +55,10 @@ const useSidebarNotification = defineStore("sidebar-notification", {
                     };
                 }
             } catch (err) {
-                // Ignore silent fetch errors
+                // Handled globally by api interceptor for 401/403
             }
         },
-        startRealtime(intervalMs = 30000) {
+        startRealtime(intervalMs = 15000) {
             this.fetchCounts();
 
             if (!pollTimer && typeof window !== "undefined") {

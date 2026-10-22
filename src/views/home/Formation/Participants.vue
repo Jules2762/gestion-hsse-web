@@ -22,7 +22,7 @@
                 <div class="flex items-center gap-4">
                     <router-link :to="{ name: 'FORMATION' }"
                         class="p-2 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition cursor-pointer"
-                        title="Retour aux formations">
+                        :title="locale === 'en' ? 'Back to training' : 'Retour aux formations'">
                         <ArrowLeft :size="18" />
                     </router-link>
                     <div>
@@ -46,11 +46,11 @@
                             </span>
                             <span v-if="formationDetails.trainer" class="flex items-center gap-1">
                                 <User :size="13" class="text-gray-400" />
-                                Formateur : <strong class="text-gray-700">{{ formationDetails.trainer }}</strong>
+                                {{ locale === 'en' ? 'Trainer :' : 'Formateur :' }} <strong class="text-gray-700">{{ formationDetails.trainer }}</strong>
                             </span>
                             <span v-if="formationDetails.target" class="flex items-center gap-1">
                                 <Users :size="13" class="text-gray-400" />
-                                Cible : <strong class="text-gray-700">{{ formationDetails.target }}</strong>
+                                {{ locale === 'en' ? 'Target :' : 'Cible :' }} <strong class="text-gray-700">{{ formationDetails.target }}</strong>
                             </span>
                         </div>
                     </div>
@@ -59,7 +59,7 @@
                 <!-- KPI Inscrits vs Prévus -->
                 <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 self-start md:self-auto">
                     <div class="flex flex-col">
-                        <span class="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Inscrits / Prévus</span>
+                        <span class="text-[11px] font-medium text-gray-500 uppercase tracking-wider">{{ locale === 'en' ? 'Enrolled / Planned' : 'Inscrits / Prévus' }}</span>
                         <div class="flex items-baseline gap-1">
                             <span class="text-lg font-bold text-primary">{{ data?.length ?? 0 }}</span>
                             <span class="text-xs text-gray-400">/ {{ formationDetails.participant ?? 0 }}</span>
@@ -85,9 +85,9 @@
                             @click="openAddModal"
                             class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 shadow-sm transition cursor-pointer">
                             <UserPlus :size="16" />
-                            <span>Ajouter des participants</span>
+                            <span>{{ locale === 'en' ? 'Add participants' : 'Ajouter des participants' }}</span>
                             <span v-if="availablePersonnelsCount > 0" class="ml-1 px-1.5 py-0.5 rounded-full bg-white/20 text-[10px]">
-                                {{ availablePersonnelsCount }} dispo
+                                {{ availablePersonnelsCount }} {{ locale === 'en' ? 'avail.' : 'dispo' }}
                             </span>
                         </button>
 
@@ -98,14 +98,14 @@
                             <div class="w-px h-6 bg-gray-300 mx-1" />
                             <div class="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1 rounded-lg">
                                 <span class="text-xs font-semibold text-primary">
-                                    {{ selectedTableIds.length }} sélectionné(s)
+                                    {{ selectedTableIds.length }} {{ locale === 'en' ? 'selected' : 'sélectionné(s)' }}
                                 </span>
                                 <button
                                     type="button"
                                     @click="openBatchDeleteConfirm"
                                     class="text-xs text-danger font-medium hover:underline flex items-center gap-1 cursor-pointer">
                                     <Trash2Icon :size="13" />
-                                    <span>Retirer</span>
+                                    <span>{{ locale === 'en' ? 'Remove' : 'Retirer' }}</span>
                                 </button>
                                 <span class="text-gray-300">|</span>
                                 <button
@@ -113,7 +113,7 @@
                                     @click="exportSelectedParticipants"
                                     class="text-xs text-primary font-medium hover:underline flex items-center gap-1 cursor-pointer">
                                     <DownloadIcon :size="13" />
-                                    <span>Exporter</span>
+                                    <span>{{ locale === 'en' ? 'Export' : 'Exporter' }}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -125,7 +125,7 @@
                         </template>
                     </div>
 
-                    <InputFilter :icon="Search" v-model="searchQuery" placeholder="Rechercher un participant..." />
+                    <InputFilter :icon="Search" v-model="searchQuery" :placeholder="locale === 'en' ? 'Search participant...' : 'Rechercher un participant...'" />
                 </div>
 
                 <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLabels"
@@ -149,11 +149,11 @@
                                         class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 cursor-pointer" />
                                 </th>
                                 <th>REF</th>
-                                <th>NOM</th>
-                                <th>E-MAIL</th>
-                                <th>FONCTION</th>
-                                <th>DIRECTION</th>
-                                <th>ENTITÉ</th>
+                                <th>{{ locale === 'en' ? 'NAME' : 'NOM' }}</th>
+                                <th>{{ locale === 'en' ? 'EMAIL' : 'E-MAIL' }}</th>
+                                <th>{{ locale === 'en' ? 'POSITION' : 'FONCTION' }}</th>
+                                <th>{{ locale === 'en' ? 'DEPARTMENT' : 'DIRECTION' }}</th>
+                                <th>{{ locale === 'en' ? 'ENTITY' : 'ENTITÉ' }}</th>
                                
                             </tr>
                         </thead>
@@ -203,8 +203,8 @@
                                 <td colspan="8" class="text-center py-12 text-gray-500">
                                     <div class="flex flex-col items-center justify-center gap-2">
                                         <Users :size="32" class="text-gray-300" />
-                                        <p class="font-medium text-gray-600">Aucun participant trouvé pour cette formation.</p>
-                                        <p class="text-xs text-gray-400">Cliquez sur « Ajouter des participants » pour inscrire des collaborateurs.</p>
+                                        <p class="font-medium text-gray-600">{{ locale === 'en' ? 'No participants found for this training session.' : 'Aucun participant trouvé pour cette formation.' }}</p>
+                                        <p class="text-xs text-gray-400">{{ locale === 'en' ? 'Click on "Add participants" to enroll colleagues.' : 'Cliquez sur « Ajouter des participants » pour inscrire des collaborateurs.' }}</p>
                                     </div>
                                 </td>
                             </tr>
@@ -246,15 +246,15 @@
                         </div>
                         <div class="flex flex-col gap-3 text-xs">
                             <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-400">Fonction</span>
+                                <span class="text-gray-400">{{ locale === 'en' ? 'Position' : 'Fonction' }}</span>
                                 <span class="font-medium text-gray-700">{{ selected_personnel.fonction || '-' }}</span>
                             </div>
                             <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-400">Direction</span>
+                                <span class="text-gray-400">{{ locale === 'en' ? 'Department' : 'Direction' }}</span>
                                 <span class="font-medium text-gray-700">{{ selected_personnel.direction || '-' }}</span>
                             </div>
                             <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-gray-400">Entité</span>
+                                <span class="text-gray-400">{{ locale === 'en' ? 'Entity' : 'Entité' }}</span>
                                 <span class="font-medium text-gray-700">{{ selected_personnel.entity || '-' }}</span>
                             </div>
                         </div>
@@ -264,7 +264,7 @@
                             class="w-full py-2.5 px-3 text-xs font-semibold text-danger bg-danger/10 hover:bg-danger/20 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer"
                             @click="deleteSpecificParticipant(selected_personnel)">
                             <Trash2Icon :size="15" />
-                            <span>Retirer de la session</span>
+                            <span>{{ locale === 'en' ? 'Remove from session' : 'Retirer de la session' }}</span>
                         </button>
                     </div>
                 </aside>
@@ -283,7 +283,7 @@
                             <UserPlus :size="20" />
                         </div>
                         <div>
-                            <h3 class="font-bold text-gray-900 text-base">Inscrire des participants</h3>
+                            <h3 class="font-bold text-gray-900 text-base">{{ locale === 'en' ? 'Enroll participants' : 'Inscrire des participants' }}</h3>
                             <p class="text-xs text-gray-500">
                                 Sélectionnez les collaborateurs à inscrire à la session « {{ formationDetails?.title || 'Formation' }} ».
                             </p>
@@ -480,7 +480,7 @@
                                     <span v-if="isTargetMatch(item)"
                                         class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-0.5">
                                         <Sparkles :size="10" />
-                                        Cible recommandée
+                                        {{ locale === 'en' ? 'Recommended target' : 'Cible recommandée' }}
                                     </span>
                                 </div>
                                 <span class="text-[11px] text-gray-500">{{ item.email }}</span>
@@ -550,7 +550,7 @@
                             @click="submitBatchAddParticipants"
                             class="px-5 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center gap-2 transition cursor-pointer">
                             <span v-if="loading_add_participant" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            <span>Inscrire les participants ({{ selectedPersonnelIds.length }})</span>
+                            <span>{{ locale === 'en' ? `Enroll participants (${selectedPersonnelIds.length})` : `Inscrire les participants (${selectedPersonnelIds.length})` }}</span>
                         </button>
                     </div>
                 </div>
@@ -562,9 +562,9 @@
         ==================================== -->
         <CenterModal
             :is-open="isBatchDeleteModalOpen"
-            title="Retirer les participants sélectionnés"
+            :title="locale === 'en' ? 'Remove selected participants' : 'Retirer les participants sélectionnés'"
             title-variant="danger"
-            confirm-title="Confirmer le retrait"
+            :confirm-title="locale === 'en' ? 'Confirm removal' : 'Confirmer le retrait'"
             confirm-variant="danger"
             :confirm-loading="loadingBatchDelete"
             @close="isBatchDeleteModalOpen = false"
@@ -621,7 +621,7 @@
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import { exportUtils } from '../../../core/utils/export.utils.ts';
 
-    const { t } = useI18n()
+    const { t, locale } = useI18n()
     const route = useRoute()
     const formationService = useFormationService()
 
@@ -660,11 +660,11 @@
 
     // Filters & Chips
     const filterableKeys: string[] = ['fonction', 'direction', 'entity']
-    const columnLabels = ref<Record<string, string>>({
-        'fonction': 'Fonction',
-        'direction': 'Direction',
-        'entity': 'Entité'
-    })
+    const columnLabels = computed<Record<string, string>>(() => ({
+        'fonction': locale.value === 'en' ? 'Position' : 'Fonction',
+        'direction': locale.value === 'en' ? 'Department' : 'Direction',
+        'entity': locale.value === 'en' ? 'Entity' : 'Entité'
+    }))
     const filters = ref<Record<string, string[]>>({
         'fonction': [],
         'direction': [],
@@ -691,7 +691,7 @@
         },
         bottom_actions: [
             {
-                label: "Supprimer",
+                label: locale.value === 'en' ? "Delete" : "Supprimer",
                 variant: "DANGER",
                 icon: Trash2Icon,
                 onClick: () => deleteParticipant()
@@ -699,7 +699,7 @@
         ],
         actions: [
             {
-                label: "Détails",
+                label: locale.value === 'en' ? "Details" : "Détails",
                 icon: Users,
                 onClick: () => {
                     selected_personnel.value = context_menu.value.participant

@@ -10,13 +10,13 @@
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter is-primary text="Ajout" :icon="SquarePlusIcon" @click="openAddModal" />
-                        <ButtonFilter text="Importer" :icon="CloudDownloadIcon" @click="router.push({
+                        <ButtonFilter is-primary :text="locale === 'en' ? 'Add' : 'Ajout'" :icon="SquarePlusIcon" @click="openAddModal" />
+                        <ButtonFilter :text="locale === 'en' ? 'Import' : 'Importer'" :icon="CloudDownloadIcon" @click="router.push({
                             name: 'EQUIPMENT_MONITORING_IMPORT'
                         })" />
-                        <ButtonFilter text="Exporter" :icon="DownloadIcon" :loading="loading_export"
+                        <ButtonFilter :text="locale === 'en' ? 'Export' : 'Exporter'" :icon="DownloadIcon" :loading="loading_export"
                             :badge="pagination.total.toString()" @click="exportData()" />
-                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading_data"
+                        <ButtonFilter :text="locale === 'en' ? 'Refresh' : 'Actualiser'" :icon="RefreshCw" :loading="loading_data"
                             @click="fetchData()" />
                     </div>
 
@@ -71,7 +71,7 @@
                     </div>
 
                     <div class="flex flex-row items-center gap-2">
-                        <InputFilter :icon="SearchIcon" placeholder="Rechercher un équipement..." v-model="searchQuery" />
+                        <InputFilter :icon="SearchIcon" :placeholder="locale === 'en' ? 'Search equipment...' : 'Rechercher un équipement...'" v-model="searchQuery" />
                     </div>
                 </div>
                 <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLables" :date-range="dateRange"
@@ -137,20 +137,26 @@
                                 </td>
 
                                 <td class="whitespace-nowrap font-bold text-xs">
-                                    <div class="inline-flex flex-col items-start">
+                                    <div class="inline-flex flex-col items-start gap-0.5">
                                         <span
                                             class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold"
-                                            :class="(item.conformity_rate ?? 100) >= 90 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ((item.conformity_rate ?? 100) >= 70 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200')"
+                                            :class="(item.conformity_rate ?? 100) >= 100 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ((item.conformity_rate ?? 100) >= 80 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200')"
                                         >
-                                            <span class="w-1.5 h-1.5 rounded-full" :class="(item.conformity_rate ?? 100) >= 90 ? 'bg-emerald-500' : ((item.conformity_rate ?? 100) >= 70 ? 'bg-amber-500' : 'bg-red-500')"></span>
+                                            <span class="w-1.5 h-1.5 rounded-full" :class="(item.conformity_rate ?? 100) >= 100 ? 'bg-emerald-500' : ((item.conformity_rate ?? 100) >= 80 ? 'bg-amber-500' : 'bg-red-500')"></span>
                                             {{ formatConformityRate(item.conformity_rate) }}
                                         </span>
                                         <span
-                                            v-if="item.initial_conformity_rate !== undefined && item.initial_conformity_rate !== item.conformity_rate"
-                                            class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded-full mt-0.5"
-                                            :title="`Taux initial constaté lors de la visite : ${item.initial_conformity_rate}%`"
+                                            v-if="(item.non_conforming_items_count ?? 0) > 0"
+                                            class="text-[9px] font-bold text-red-700 bg-red-50 border border-red-200/80 px-1.5 py-0.2 rounded-full"
                                         >
-                                            Initial: {{ item.initial_conformity_rate }}%
+                                            {{ item.non_conforming_items_count }} {{ item.non_conforming_items_count! > 1 ? (locale === 'en' ? 'defects' : 'anomalies') : (locale === 'en' ? 'defect' : 'anomalie') }}
+                                        </span>
+                                        <span
+                                            v-else-if="item.initial_conformity_rate !== undefined && item.initial_conformity_rate !== item.conformity_rate"
+                                            class="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-full"
+                                            :title="`Taux initial constaté lors de la visite : ${item.initial_conformity_rate}% (Régularisé)`"
+                                        >
+                                            {{ locale === 'en' ? 'Resolved' : 'Régularisé' }} (initial {{ item.initial_conformity_rate }}%)
                                         </span>
                                     </div>
                                 </td>
@@ -161,7 +167,7 @@
 
                     <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="context_actions" :bottom_actions="[
                     {
-                        label: 'Supprimer',
+                        label: locale === 'en' ? 'Delete' : 'Supprimer',
                         icon: Trash2,
                         variant: 'DANGER',
                         onClick() {
@@ -174,17 +180,17 @@
             </div>
             <div class="py-4 px-6 bg-white w-full border-t border-gray-200 flex flex-row items-center justify-between text-sm">
                 <span class="text-xs text-gray-500 font-medium">
-                    Affichage de {{ pagination.to }} sur {{ pagination.total }} équipements
+                    {{ locale === 'en' ? `Displaying ${pagination.to} of ${pagination.total} equipment` : `Affichage de ${pagination.to} sur ${pagination.total} équipements` }}
                 </span>
                 <vue-awesome-paginate :hide-prev-next-when-ends="true" :total-items="pagination.total"
                     :items-per-page="15" :max-pages-shown="4" v-model="pagination.current_page"
                     @click="(page: number) => pagination.current_page = page" />
             </div>
 
-            <CenterModal class="w-30" title="Supprimer le suivi d’équipement ?" :is-open="modal_delete"
-                @close="modal_delete = false" @confirm="deleteEquipments" confirm-title="Supprimer"
+            <CenterModal class="w-30" :title="locale === 'en' ? 'Delete equipment monitoring?' : 'Supprimer le suivi d’équipement ?'" :is-open="modal_delete"
+                @close="modal_delete = false" @confirm="deleteEquipments" :confirm-title="locale === 'en' ? 'Delete' : 'Supprimer'"
                 :confirm-variant="'danger'" :confirm-loading="loading_delete">
-                <p>Êtes-vous sûr de vouloir supprimer ce suivi d’équipement ? Cette action est irréversible.</p>
+                <p>{{ locale === 'en' ? 'Are you sure you want to delete this equipment monitoring record? This action cannot be undone.' : 'Êtes-vous sûr de vouloir supprimer ce suivi d’équipement ? Cette action est irréversible.' }}</p>
             </CenterModal>
         </div>
 
@@ -194,18 +200,18 @@
             <div class="flex items-start justify-between border-b border-gray-200 pb-3">
                 <div class="min-w-0 flex-1">
                     <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                        Fiche de suivi n° {{ right_sidebar.equipment?.id }}
+                        {{ locale === 'en' ? 'Monitoring sheet #' : 'Fiche de suivi n°' }} {{ right_sidebar.equipment?.id }}
                     </p>
                     <h4 class="mt-0.5 font-bold text-gray-900 truncate text-sm">
-                        {{ getSiteNameText(right_sidebar.equipment?.site_name) || 'Détails du matériel' }}
+                        {{ getSiteNameText(right_sidebar.equipment?.site_name) || (locale === 'en' ? 'Equipment details' : 'Détails du matériel') }}
                     </h4>
                     <div class="flex items-center gap-2 mt-2 flex-wrap">
                         <ChecklistStatus :name="(right_sidebar.equipment?.status as any) || 'COMPLETED'" />
                         <span
                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold"
-                            :class="(right_sidebar.equipment?.conformity_rate ?? 100) >= 90 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ((right_sidebar.equipment?.conformity_rate ?? 100) >= 70 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200')"
+                            :class="(right_sidebar.equipment?.conformity_rate ?? 100) >= 100 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ((right_sidebar.equipment?.conformity_rate ?? 100) >= 80 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200')"
                         >
-                            Conformité : {{ right_sidebar.equipment?.conformity_rate ?? 100 }}%
+                            {{ locale === 'en' ? 'Compliance:' : 'Conformité :' }} {{ right_sidebar.equipment?.conformity_rate ?? 100 }}%
                         </span>
                     </div>
                     <div class="mt-2.5 flex items-center gap-2 text-xs text-gray-700 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
@@ -213,7 +219,7 @@
                             <User :size="12" />
                         </div>
                         <div class="min-w-0">
-                            <span class="text-[10px] uppercase font-bold text-gray-400 block leading-tight">Inspecteur</span>
+                            <span class="text-[10px] uppercase font-bold text-gray-400 block leading-tight">{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</span>
                             <span class="font-semibold text-gray-800 truncate block">{{ formatInspector(right_sidebar.equipment?.user) }}</span>
                         </div>
                     </div>
@@ -926,7 +932,7 @@
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts';
-    import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, RefreshCw, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
+    import { CloudDownloadIcon, DownloadIcon, Edit, ExternalLink, Eye, Loader, Printer, RefreshCw, SearchIcon, SquarePlusIcon, Trash2, User, XIcon } from '@lucide/vue';
     import { router } from '../../../router/index.ts';
     import type { PaginationType } from '../../../@types/Pagination.type.ts';
     import ChipFilter from '../../../components/ui/ChipFilter.vue';
@@ -1100,13 +1106,13 @@
     }
 
     function formatInspector(user: any): string {
-        if (!user) return 'Non assigné'
+        if (!user) return locale.value === 'en' ? 'Unassigned' : 'Non assigné'
         if (user.first_name || user.last_name) {
             return `${user.first_name || ''} ${user.last_name || ''}`.trim()
         }
         if (user.name) return user.name
         if (user.email) return user.email
-        return 'Non assigné'
+        return locale.value === 'en' ? 'Unassigned' : 'Non assigné'
     }
 
     function resolvePhotoUrl(path: string) {
@@ -1159,10 +1165,20 @@
         }
     }
 
+    function openOfficialPdf(id?: string | number) {
+        if (!id) return;
+        const routeData = router.resolve({
+            name: 'EQUIPMENT_MONITORING_DETAILS',
+            params: { id },
+            query: { print: 'true' }
+        });
+        window.open(routeData.href, '_blank');
+    }
+
     const context_actions: ComputedRef<ContextMenuActionType[]> = computed(() => {
         return [
             {
-                label: 'Aperçu rapide',
+                label: locale.value === 'en' ? 'Quick preview' : 'Aperçu rapide',
                 icon: Eye,
                 onClick: () => {
                     right_sidebar.value.isOpen = true
@@ -1170,7 +1186,7 @@
                 }
             },
             {
-                label: 'Fiche complète (Détails)',
+                label: locale.value === 'en' ? 'Full record (Details)' : 'Fiche complète (Détails)',
                 icon: ExternalLink,
                 onClick: () => {
                     if (context_menu.value.equipment?.id) {
@@ -1182,7 +1198,7 @@
                 }
             },
             {
-                label: 'Modifier',
+                label: locale.value === 'en' ? 'Edit' : 'Modifier',
                 icon: Edit,
                 variant: 'WARNING',
                 onClick: () => {
@@ -1217,11 +1233,11 @@
     const data = ref<EquipmentMonitoringType[]>()
     type filtersKeyType = "site" | "status" | "inspector"
     const filterableKeys: filtersKeyType[] = ["site", "status", "inspector"]
-    const columnLables: Record<filtersKeyType, string> = {
-        site: 'Site',
-        status: 'Statut',
-        inspector: 'Inspecteur'
-    }
+    const columnLables = computed<Record<filtersKeyType, string>>(() => ({
+        site: locale.value === 'en' ? 'Site' : 'Site',
+        status: locale.value === 'en' ? 'Status' : 'Statut',
+        inspector: locale.value === 'en' ? 'Inspector' : 'Inspecteur'
+    }))
     const filters = ref<Record<filtersKeyType, string[]>>({
         site: [],
         status: [],

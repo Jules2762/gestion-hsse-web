@@ -1,5 +1,12 @@
 <template>
-    <div class="min-h-screen p-6 lg:p-8">
+    <div class="min-h-screen bg-white">
+        <Header title="inspections.equipment-monitoring.title" :thumbnails="[
+            { label: 'thumbnails.home', name: 'DASHBOARD' },
+            { label: 'thumbnails.inspections', name: 'INSPECTION' },
+            { label: 'thumbnails.equipment-monitoring', name: 'EQUIPMENT_MONITORING' },
+            { label: 'thumbnails.import', name: 'EQUIPMENT_MONITORING_IMPORT' }
+        ]" />
+        <div class="p-6 lg:p-8">
 
         <div class="mx-auto max-w-7xl">
 
@@ -11,18 +18,18 @@
 
                 <div class="max-w-xl">
                     <h1 class="text-2xl font-semibold text-text-primary">
-                        Importer le suivi matériel
+                        {{ locale === 'en' ? 'Import equipment monitoring' : 'Importer le suivi matériel' }}
                     </h1>
                     <p class="mt-1.5 text-sm text-text-secondary">
-                        Chargez votre fichier Excel, contrôlez les données, puis lancez l'importation.
+                        {{ locale === 'en' ? 'Upload your Excel file, verify data, then launch import.' : "Chargez votre fichier Excel, contrôlez les données, puis lancez l'importation." }}
                     </p>
                 </div>
 
-                <ol class="flex items-center" aria-label="Progression de l'importation">
+                <ol class="flex items-center" :aria-label="locale === 'en' ? 'Import progress' : 'Progression de l\'importation'">
                     <template v-for="(step, i) in [
-                        { n: 1, label: 'Fichier', state: hasFile ? 'done' : 'active' },
-                        { n: 2, label: 'Prévisualisation', state: canImport ? 'done' : hasFile ? 'active' : 'todo' },
-                        { n: 3, label: 'Importation', state: canImport ? 'active' : 'todo' }
+                        { n: 1, label: locale === 'en' ? 'File' : 'Fichier', state: hasFile ? 'done' : 'active' },
+                        { n: 2, label: locale === 'en' ? 'Preview' : 'Prévisualisation', state: canImport ? 'done' : hasFile ? 'active' : 'todo' },
+                        { n: 3, label: locale === 'en' ? 'Import' : 'Importation', state: canImport ? 'active' : 'todo' }
                     ]" :key="step.n">
 
                         <li class="flex items-center gap-2.5"
@@ -78,7 +85,7 @@
                             </div>
 
                             <h2 class="text-lg font-semibold text-text-primary">
-                                Glissez votre fichier Excel ici
+                                {{ locale === 'en' ? 'Drag and drop your Excel file here' : 'Glissez votre fichier Excel ici' }}
                             </h2>
 
                             <p class="mt-1.5 max-w-sm text-sm text-text-secondary">
@@ -89,11 +96,11 @@
                             <span
                                 class="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-primary-dark">
                                 <Upload class="h-4 w-4" />
-                                Choisir un fichier
+                                {{ locale === 'en' ? 'Choose a file' : 'Choisir un fichier' }}
                             </span>
 
                             <div class="mt-6 flex items-center gap-2 text-xs text-text-muted">
-                                <span>Formats acceptés</span>
+                                <span>{{ locale === 'en' ? 'Accepted formats' : 'Formats acceptés' }}</span>
                                 <span v-for="ext in ['XLSX', 'XLS', 'CSV']" :key="ext"
                                     class="rounded-md bg-surface-alt px-2 py-0.5 font-medium text-text-secondary">
                                     {{ ext }}
@@ -115,20 +122,20 @@
 
                         <div class="rounded-2xl border border-border bg-surface p-5">
                             <h2 class="text-base font-semibold text-text-primary">
-                                Pas encore de fichier ?
+                                {{ locale === 'en' ? 'No file yet?' : 'Pas encore de fichier ?' }}
                             </h2>
                             <p class="mt-1.5 text-sm text-text-secondary">
-                                Le modèle contient les bons en-têtes, une ligne d'exemple et une feuille d'instructions.
+                                {{ locale === 'en' ? 'The template contains valid headers, a sample row and instructions.' : "Le modèle contient les bons en-têtes, une ligne d'exemple et une feuille d'instructions." }}
                             </p>
                             <button type="button" @click="downloadTemplate"
                                 class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light">
                                 <Download class="h-4 w-4" />
-                                Télécharger le modèle
+                                {{ locale === 'en' ? 'Download template' : 'Télécharger le modèle' }}
                             </button>
                         </div>
 
                         <div class="rounded-2xl border border-border bg-surface p-5">
-                            <h3 class="text-sm font-semibold text-text-primary">Avant d'importer</h3>
+                            <h3 class="text-sm font-semibold text-text-primary">{{ locale === 'en' ? 'Before importing' : "Avant d'importer" }}</h3>
                             <ul class="mt-3 space-y-3 text-sm text-text-secondary">
                                 <li class="flex gap-2.5">
                                     <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
@@ -160,17 +167,17 @@
 
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <h2 class="text-base font-semibold text-text-primary">Structure attendue</h2>
+                            <h2 class="text-base font-semibold text-text-primary">{{ locale === 'en' ? 'Expected structure' : 'Structure attendue' }}</h2>
                             <p class="mt-0.5 text-sm text-text-secondary">
-                                Les en-têtes de la première ligne doivent porter exactement ces noms.
+                                {{ locale === 'en' ? 'First row headers must match these names exactly.' : 'Les en-têtes de la première ligne doivent porter exactement ces noms.' }}
                             </p>
                         </div>
                         <div class="flex items-center gap-4 text-xs text-text-secondary">
                             <span class="flex items-center gap-1.5">
-                                <span class="h-3 w-3 rounded-sm bg-primary"></span>Obligatoire
+                                <span class="h-3 w-3 rounded-sm bg-primary"></span>{{ locale === 'en' ? 'Required' : 'Obligatoire' }}
                             </span>
                             <span class="flex items-center gap-1.5">
-                                <span class="h-3 w-3 rounded-sm bg-accent-dark"></span>Optionnel
+                                <span class="h-3 w-3 rounded-sm bg-accent-dark"></span>{{ locale === 'en' ? 'Optional' : 'Optionnel' }}
                             </span>
                         </div>
                     </div>
@@ -228,15 +235,15 @@
                                     {{ formatFileSize(fileSize) }}
                                 </span>
                                 <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
-                                    {{ rows.length }} ligne(s)
+                                    {{ rows.length }} {{ locale === 'en' ? 'row(s)' : 'ligne(s)' }}
                                 </span>
                                 <span class="rounded-md bg-surface-alt px-2 py-0.5 text-text-secondary">
-                                    {{ headers.length }} colonne(s)
+                                    {{ headers.length }} {{ locale === 'en' ? 'column(s)' : 'colonne(s)' }}
                                 </span>
 
                                 <span v-if="canImport"
                                     class="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 font-semibold text-success">
-                                    <CheckCircle2 class="h-3.5 w-3.5" /> Prêt à importer
+                                    <CheckCircle2 class="h-3.5 w-3.5" /> {{ locale === 'en' ? 'Ready to import' : 'Prêt à importer' }}
                                 </span>
                                 <span v-else-if="missingColumns.length"
                                     class="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2.5 py-0.5 font-semibold text-danger">
@@ -258,13 +265,13 @@
                         <button type="button" @click="downloadTemplate"
                             class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-light">
                             <Download class="h-4 w-4" />
-                            Modèle
+                            {{ locale === 'en' ? 'Template' : 'Modèle' }}
                         </button>
 
                         <button type="button" @click="removeFile()"
                             class="inline-flex items-center gap-2 rounded-xl border border-danger/30 px-3 py-2 text-sm font-semibold text-danger transition-colors hover:bg-danger/10">
                             <Trash2 class="h-4 w-4" />
-                            Supprimer
+                            {{ locale === 'en' ? 'Delete' : 'Supprimer' }}
                         </button>
 
                         <button type="button" :disabled="!canImport || loading_import" @click="prepareImport"
@@ -274,7 +281,7 @@
                                 : 'bg-linear-to-r from-success to-primary-dark text-white hover:-translate-y-0.5 hover:shadow-md'">
                             <Upload class="h-4 w-4" v-if="loading_import == false" />
                             <Loader class="h-4 w-4 animate-spin" v-else />
-                            Préparer l'importation
+                            {{ locale === 'en' ? 'Prepare import' : "Préparer l'importation" }}
                         </button>
 
                     </div>
@@ -306,17 +313,16 @@
 
                 <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 class="text-base font-semibold text-text-primary">Vérification des colonnes</h2>
+                        <h2 class="text-base font-semibold text-text-primary">{{ locale === 'en' ? 'Column verification' : 'Vérification des colonnes' }}</h2>
                         <p class="mt-1 text-sm text-text-secondary">
-                            Vérifiez que la structure de votre fichier correspond au modèle attendu.
+                            {{ locale === 'en' ? 'Verify that your file structure matches the expected template.' : 'Vérifiez que la structure de votre fichier correspond au modèle attendu.' }}
                         </p>
                     </div>
 
                     <div class="inline-flex rounded-full px-3 py-1 text-xs font-semibold" :class="missingColumns.length === 0
                         ? 'bg-primary-light text-primary ring-1 ring-primary/20'
                         : 'bg-danger/10 text-danger ring-1 ring-danger/20'">
-                        {{ missingColumns.length === 0 ? 'Structure valide' : `${missingColumns.length} colonne(s)
-                        manquante(s)` }}
+                        {{ missingColumns.length === 0 ? (locale === 'en' ? 'Valid structure' : 'Structure valide') : `${missingColumns.length} ${locale === 'en' ? 'missing column(s)' : 'colonne(s) manquante(s)'}` }}
                     </div>
                 </div>
 
@@ -361,16 +367,16 @@
                 <div
                     class="flex flex-col gap-3 border-b border-border bg-surface-alt/80 p-5 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 class="text-base font-semibold text-text-primary">Prévisualisation des données</h2>
+                        <h2 class="text-base font-semibold text-text-primary">{{ locale === 'en' ? 'Data preview' : 'Prévisualisation des données' }}</h2>
                         <p class="mt-1 text-sm text-text-secondary">
-                            Voici les données qui seront préparées pour l'importation.
+                            {{ locale === 'en' ? 'Here is the data that will be prepared for import.' : "Voici les données qui seront préparées pour l'importation." }}
                         </p>
                     </div>
 
                     <div
                         class="inline-flex items-center gap-2 rounded-xl bg-accent-dark/5 px-3 py-2 text-xs font-semibold text-accent-dark ring-1 ring-accent-dark/10">
                         <Eye class="h-4 w-4" />
-                        {{ previewRows.length }} ligne(s) affichée(s)
+                        {{ previewRows.length }} {{ locale === 'en' ? 'row(s) displayed' : 'ligne(s) affichée(s)' }}
                     </div>
                 </div>
 
@@ -418,7 +424,7 @@
                                                 : 'bg-surface-alt text-text-secondary'">
                                             <Check v-if="parseBoolean(getRawValue(row, field))" class="h-3.5 w-3.5" />
                                             <X v-else class="h-3.5 w-3.5" />
-                                            {{ parseBoolean(getRawValue(row, field)) ? 'Oui' : 'Non' }}
+                                            {{ parseBoolean(getRawValue(row, field)) ? (locale === 'en' ? 'Yes' : 'Oui') : (locale === 'en' ? 'No' : 'Non') }}
                                         </span>
                                     </template>
 
@@ -435,7 +441,7 @@
                                         class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-surface-alt">
                                         <FileX class="h-6 w-6 text-text-muted" />
                                     </div>
-                                    <p class="mt-3 text-sm font-medium text-text-secondary">Aucune donnée à afficher</p>
+                                    <p class="mt-3 text-sm font-medium text-text-secondary">{{ locale === 'en' ? 'No data to display' : 'Aucune donnée à afficher' }}</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -461,7 +467,7 @@
                 <div class="flex items-start gap-3">
                     <CircleAlert class="mt-0.5 h-5 w-5 text-warning" />
                     <div>
-                        <h3 class="font-semibold text-warning">Données à vérifier</h3>
+                        <h3 class="font-semibold text-warning">{{ locale === 'en' ? 'Data to review' : 'Données à vérifier' }}</h3>
                         <p class="mt-1 text-sm text-warning/80">
                             {{ validationErrors.length }} erreur(s) détectée(s).
                         </p>
@@ -478,6 +484,7 @@
 
             </div>
 
+        </div>
         </div>
 
     </div>
@@ -506,10 +513,14 @@
     } from "@lucide/vue"
 
     import * as XLSX from "xlsx-js-style"
+    import { useI18n } from "vue-i18n"
+    import Header from "../../../components/shared/Header.vue"
     import type { EquipmentMonitoringFormType } from "../../../@types/EquipmentMonitoring.type"
     import { useEquipmentMonitoringService } from "../../../core/services/equipmentMonitoring.service"
     import { toast } from "vue3-toastify"
     import { router } from "../../../router"
+
+    const { t, locale } = useI18n()
 
 
     /*

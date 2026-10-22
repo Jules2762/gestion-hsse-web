@@ -29,10 +29,10 @@
                     <thead>
                         <tr>
                             <th class="w-16 text-center">REF</th>
-                            <th>TITRE DU MODÈLE</th>
+                            <th>{{ locale === 'en' ? 'TEMPLATE TITLE' : 'TITRE DU MODÈLE' }}</th>
                             <th>SITE</th>
                             <th>SECTIONS</th>
-                            <th>CRITÈRES</th>
+                            <th>{{ locale === 'en' ? 'CRITERIA' : 'CRITÈRES' }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,12 +46,12 @@
                             <td class="truncate max-w-70 text-gray-500">{{ item.site || '-' }}</td>
                             <td>
                                 <span class="px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                                    {{ item.sections?.length || 0 }} sections
+                                    {{ item.sections?.length || 0 }} {{ locale === 'en' ? 'sections' : 'sections' }}
                                 </span>
                             </td>
                             <td>
                                 <span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    {{ item.sections ? item.sections.reduce((total, section) => total + (section.items?.length || 0), 0) : 0 }} critères
+                                    {{ item.sections ? item.sections.reduce((total, section) => total + (section.items?.length || 0), 0) : 0 }} {{ locale === 'en' ? 'criteria' : 'critères' }}
                                 </span>
                             </td>
                         </tr>
@@ -61,7 +61,7 @@
                             <td colspan="5" class="w-full p-4 border-t border-gray-200">
                                 <div class="flex flex-row items-center justify-between text-sm">
                                     <span class="text-xs text-gray-500 font-medium">
-                                        Affichage de {{ pagination.total }} modèles disponibles
+                                        {{ locale === 'en' ? `Showing ${pagination.total} available templates` : `Affichage de ${pagination.total} modèles disponibles` }}
                                     </span>
                                     <vue-awesome-paginate @click="(page: number) => {pagination.current_page=page; fetchData({ page } as any)}"
                                         :hide-prev-next-when-ends="true" :total-items="pagination.total" :items-per-page="15"
@@ -74,7 +74,7 @@
                 <ContextMenuUI v-model="context_menu.isOpen" :context-menu="context_menu.context_menu" :actions="[
                         {
                             'icon': Eye,
-                            'label': 'Détails du modèle',
+                            label: locale === 'en' ? 'Template details' : 'Détails du modèle',
                             onClick: () => {
                                 right_sidebar.isOpen = true;
                                 right_sidebar.template = context_menu.template;
@@ -82,7 +82,7 @@
                         },
                         {
                             'icon': Plus,
-                            'label': 'Créer une inspection',
+                            label: locale === 'en' ? 'Create an inspection' : 'Créer une inspection',
                             onClick: () => {
                                 router.push({ name: 'CHECKLIST_NEW' })
                             }
@@ -100,7 +100,7 @@
                 <!-- EN-TÊTE DU VOLET -->
                 <div class="flex items-start justify-between pb-4 border-b border-gray-200 mb-5">
                     <div class="min-w-0 flex-1">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Modèle n° {{ right_sidebar.template.id }}</p>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">{{ locale === 'en' ? 'Template #' : 'Modèle n°' }} {{ right_sidebar.template.id }}</p>
                         <h4 class="mt-1 font-bold text-gray-900 truncate">{{ right_sidebar.template.title }}</h4>
                     </div>
                     <button
@@ -115,7 +115,7 @@
 
                 <div class="p-3 bg-slate-50 rounded-xl mb-4">
                     <h3 class="font-bold text-gray-900 text-base mb-1">{{ right_sidebar.template.title }}</h3>
-                    <p class="text-xs text-gray-500 mb-2">Site associé : <span class="font-medium text-gray-700">{{ right_sidebar.template.site || 'Tous les sites' }}</span></p>
+                    <p class="text-xs text-gray-500 mb-2">{{ locale === 'en' ? 'Associated site :' : 'Site associé :' }} <span class="font-medium text-gray-700">{{ right_sidebar.template.site || (locale === 'en' ? 'All sites' : 'Tous les sites') }}</span></p>
                     <div class="flex items-center gap-2 text-xs">
                         <span class="px-2 py-0.5 rounded bg-white border border-gray-200 font-semibold text-gray-700">
                             {{ right_sidebar.template.sections?.length || 0 }} sections
@@ -128,7 +128,7 @@
 
                 <!-- LISTE DES SECTIONS ET QUESTIONS -->
                 <div class="space-y-3">
-                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Sections et critères de vérification</h5>
+                    <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ locale === 'en' ? 'Sections and verification criteria' : 'Sections et critères de vérification' }}</h5>
                     <div v-for="(sec, sIdx) in right_sidebar.template.sections" :key="(sec as any).order ?? sIdx" class="border border-gray-200 rounded-lg overflow-hidden">
                         <div class="bg-gray-50 px-3 py-2 font-semibold text-xs text-gray-800 flex items-center justify-between border-b border-gray-200">
                             <span>{{ sIdx + 1 }}. {{ sec.title }}</span>
@@ -146,7 +146,7 @@
 
             <div class="pt-4 border-t border-gray-200 mt-6">
                 <Button class="w-full" :left-icon="Plus" @click="router.push({ name: 'CHECKLIST_NEW' })">
-                    Créer une inspection avec ce modèle
+                    {{ locale === 'en' ? 'Create an inspection with this template' : 'Créer une inspection avec ce modèle' }}
                 </Button>
             </div>
         </aside>
@@ -155,6 +155,7 @@
 <script setup lang="ts">
     import { onMounted, ref, watch } from 'vue';
     import Header from '../../../components/shared/Header.vue';
+    import { useI18n } from 'vue-i18n';
 
 
     import { VueAwesomePaginate } from 'vue-awesome-paginate';
@@ -189,6 +190,7 @@
         total:0
     })
     const current_page = ref(1)
+    const { t, locale } = useI18n()
     const templatesService = useTemplateService()
     const filterableKeys: string[] = ['site', 'type', 'creator']
     const columnLabels: Record<string, string> = {

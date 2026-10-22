@@ -3,35 +3,35 @@
         <!-- 1. CARTES KPI DYNAMIQUES (5 INDICATEURS CLÉS) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <Card
-                title="Fiches d'inspection"
+                :title="locale === 'en' ? 'Inspection Sheets' : 'Fiches d\'inspection'"
                 theme="green"
                 :value="String(kpis.total_records)"
                 :icon="ClipboardCheck"
                 :loading="loading"
             />
             <Card
-                title="Taux moyen de conformité"
+                :title="locale === 'en' ? 'Average Compliance Rate' : 'Taux moyen de conformité'"
                 theme="blue"
                 :value="(kpis.avg_conformity ?? 100) + '%'"
                 :icon="ShieldCheck"
                 :loading="loading"
             />
             <Card
-                title="Extincteurs en parc"
+                :title="locale === 'en' ? 'Extinguishers in Fleet' : 'Extincteurs en parc'"
                 theme="red"
                 :value="String(kpis.total_extincteurs)"
                 :icon="Flame"
                 :loading="loading"
             />
             <Card
-                title="Bacs & Rétention"
+                :title="locale === 'en' ? 'Basins & Retention' : 'Bacs & Rétention'"
                 theme="cyan"
                 :value="String(kpis.total_bacs)"
                 :icon="ShieldCheck"
                 :loading="loading"
             />
             <Card
-                title="Anomalies actives"
+                :title="locale === 'en' ? 'Active Anomalies' : 'Anomalies actives'"
                 :theme="kpis.total_anomalies > 0 ? 'orange' : 'green'"
                 :value="String(kpis.total_anomalies || 0)"
                 :icon="AlertTriangle"

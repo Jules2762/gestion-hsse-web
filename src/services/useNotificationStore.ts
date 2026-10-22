@@ -34,7 +34,7 @@ const useNotificationStore = defineStore("notifications", {
                     this.unreadCount = res.data.unread_count ?? this.data.filter((n) => !n.viewed).length;
                 }
             } catch (err) {
-                // Ignore silent fetch errors
+                // Handled globally by api interceptor for 401/403
             } finally {
                 this.isLoading = false;
             }
@@ -111,7 +111,7 @@ const useNotificationStore = defineStore("notifications", {
             }
         },
 
-        startRealtime(intervalMs = 30000) {
+        startRealtime(intervalMs = 15000) {
             this.fetchNotifications();
 
             if (!pollTimer && typeof window !== "undefined") {

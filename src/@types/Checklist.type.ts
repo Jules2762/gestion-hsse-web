@@ -35,7 +35,10 @@ type Checklistype = {
 type CheckllistFormType = {
     type?: ChecklistType | string,
     site?: SiteType | string,
+    site_type?: SiteType | string,
     location?: string,
+    latitude?: number,
+    longitude?: number,
     inspector_id?: number | string,
     date?: string,
     time?: string

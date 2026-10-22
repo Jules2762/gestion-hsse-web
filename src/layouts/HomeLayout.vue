@@ -1,15 +1,15 @@
 <template>
 
-    <div class="flex min-h-screen w-full bg-primary/2">
+    <div class="flex min-h-screen w-full bg-primary/2 print:bg-white print:min-h-0 print:m-0 print:p-0">
 
         <!-- SIDEBAR SPACER -->
         <!-- Sidebar itself is position:fixed (see Sidebar.vue), so it doesn't take up flex space. -->
         <!-- This spacer reserves room for it so <main> content doesn't render underneath it. -->
-        <div class="w-16 min-w-16 shrink-0 max-md:hidden" aria-hidden="true"></div>
+        <div class="w-16 min-w-16 shrink-0 max-md:hidden print:hidden" aria-hidden="true"></div>
 
-        <Sidebar v-model="search" class="max-md:hidden" />
+        <Sidebar v-model="search" class="max-md:hidden print:hidden" />
         <transition name="sidebar">
-            <div class="fixed top-0 left-0 z-40 w-screen h-screen bg-black/10" v-if="sidebar.isShow"></div>
+            <div class="fixed top-0 left-0 z-40 w-screen h-screen bg-black/10 print:hidden" v-if="sidebar.isShow"></div>
         </transition>
         <!-- CONTENT -->
         <main class="
@@ -18,6 +18,10 @@
                 min-h-screen
                 transition-all
                 duration-300
+                print:min-h-0
+                print:m-0
+                print:p-0
+                print:overflow-visible
             ">
             <router-view />
         </main>

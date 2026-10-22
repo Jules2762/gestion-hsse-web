@@ -13,13 +13,13 @@
                 <div class="h-16 px-4 flex flex-row items-center justify-between">
                     <div class="flex flex-row items-center gap-1">
                         <ButtonFilter
-                            :text="'Exporter'"
+                            :text="locale === 'en' ? 'Export' : 'Exporter'"
                             @click="exportData()"
                             :loading="loading_export"
                             :icon="DownloadIcon"
                             :badge="filteredActions.length.toString()" />
                         <ButtonFilter
-                            :text="'Actualiser'"
+                            :text="locale === 'en' ? 'Refresh' : 'Actualiser'"
                             @click="fetchActions()"
                             :loading="loading"
                             :icon="RefreshCw" />
@@ -30,7 +30,7 @@
                             <input
                                 v-model="searchQuery"
                                 type="text"
-                                placeholder="Rechercher par écart, libellé, site, responsable..."
+                                :placeholder="locale === 'en' ? 'Search by finding, title, site, responsible...' : 'Rechercher par écart, libellé, site, responsable...'"
                                 class="h-9 w-64 sm:w-80 rounded-lg border border-gray-300 bg-white pl-8 pr-8 text-sm text-gray-700 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                             <button
                                 v-if="searchQuery"
@@ -66,7 +66,7 @@
                             <th>{{ t('table.corrective_action') }}</th>
                             <th>{{ t('table.responsible') }}</th>
                             <th class="text-center">{{ t('table.status') }}</th>
-                            <th class="text-center">E-MAIL</th>
+                            <th class="text-center">{{ locale === 'en' ? 'EMAIL' : 'E-MAIL' }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -129,7 +129,7 @@
                                         {{ item.description }}
                                     </p>
                                     <span class="text-[10px] text-gray-400 mt-0.5 block font-mono">
-                                        Créée le {{ item.created_at_date || item.created_at }}
+                                        {{ locale === 'en' ? 'Created on' : 'Créée le' }} {{ item.created_at_date || item.created_at }}
                                     </span>
                                 </td>
 
@@ -148,7 +148,7 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <span v-else class="text-gray-400 italic text-[11px]">Non assigné</span>
+                                    <span v-else class="text-gray-400 italic text-[11px]">{{ locale === 'en' ? 'Unassigned' : 'Non assigné' }}</span>
                                 </td>
 
                                 <!-- Statut -->
@@ -165,7 +165,7 @@
                                 <td colspan="8" class="w-full">
                                     <div class="flex flex-row items-center text-sm justify-between px-4 py-3">
                                         <span class="text-xs text-gray-500 font-medium">
-                                            Affichage de {{ paginatedActions.length }} sur {{ filteredActions.length }} action{{ filteredActions.length > 1 ? 's' : '' }} corrective{{ filteredActions.length > 1 ? 's' : '' }}
+                                            {{ locale === 'en' ? `Showing ${paginatedActions.length} of ${filteredActions.length} corrective action${filteredActions.length > 1 ? 's' : ''}` : `Affichage de ${paginatedActions.length} sur ${filteredActions.length} action${filteredActions.length > 1 ? 's' : ''} corrective${filteredActions.length > 1 ? 's' : ''}` }}
                                         </span>
                                         <vue-awesome-paginate
                                             :hide-prev-next-when-ends="true"
@@ -185,11 +185,11 @@
                             <td colspan="8" class="py-12 text-center text-gray-500">
                                 <div class="flex flex-col items-center gap-2">
                                     <AlertCircle :size="28" class="text-gray-400 mb-1" />
-                                    <span class="font-medium text-sm">Aucun résultat ne correspond à ces critères</span>
+                                    <span class="font-medium text-sm">{{ locale === 'en' ? 'No results match these criteria' : 'Aucun résultat ne correspond à ces critères' }}</span>
                                     <button
                                         class="text-xs font-semibold text-primary hover:underline cursor-pointer"
                                         @click="clearAllFilters">
-                                        Réinitialiser les filtres
+                                        {{ locale === 'en' ? 'Reset filters' : 'Réinitialiser les filtres' }}
                                     </button>
                                 </div>
                             </td>
@@ -200,7 +200,7 @@
                             <td colspan="8" class="py-12 text-center text-gray-500">
                                 <div class="flex flex-col items-center gap-2">
                                     <AlertCircle :size="28" class="text-gray-400 mb-1" />
-                                    <span class="font-medium text-sm">Aucune action corrective trouvée</span>
+                                    <span class="font-medium text-sm">{{ locale === 'en' ? 'No corrective actions found' : 'Aucune action corrective trouvée' }}</span>
                                 </div>
                             </td>
                         </tr>
@@ -210,7 +210,7 @@
                             <td colspan="8" class="py-12">
                                 <div class="flex flex-col items-center justify-center gap-3">
                                     <Loader2 :size="30" class="animate-spin text-primary" />
-                                    <span class="text-sm text-gray-500">Chargement des actions correctives en cours...</span>
+                                    <span class="text-sm text-gray-500">{{ locale === 'en' ? 'Loading corrective actions...' : 'Chargement des actions correctives en cours...' }}</span>
                                 </div>
                             </td>
                         </tr>
@@ -234,7 +234,7 @@
                 <div class="border-b border-gray-200 pb-3 flex items-start justify-between">
                     <div>
                         <div class="flex items-center gap-2">
-                            <h5 class="font-bold text-sm text-gray-900">Détails de l'action</h5>
+                            <h5 class="font-bold text-sm text-gray-900">{{ locale === 'en' ? 'Action details' : "Détails de l'action" }}</h5>
                             <span
                                 v-if="selected_action.origin === 'CHECKLIST'"
                                 class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">
@@ -247,7 +247,7 @@
                             </span>
                         </div>
                         <p class="text-[11px] text-gray-500 mt-0.5">
-                            Réf : #{{ selected_action.raw_id || selected_action.id }}
+                            {{ locale === 'en' ? 'Ref: #' : 'Réf : #' }}{{ selected_action.raw_id || selected_action.id }}
                         </p>
                     </div>
 
@@ -272,20 +272,20 @@
                 <!-- CONSTANT / POINT NON-CONFORME -->
                 <div class="mt-4 p-3 bg-red-50/70 border border-red-200/80 rounded-xl text-xs">
                     <span class="text-[10px] uppercase tracking-wider font-bold text-red-700 block">
-                        Constat non conforme (Écart)
+                        {{ locale === 'en' ? 'Non-compliant finding (Gap)' : 'Constat non conforme (Écart)' }}
                     </span>
                     <p class="mt-1 font-medium text-gray-800">
                         {{ selected_action.item_title }}
                     </p>
                     <p v-if="selected_action.item_observation" class="mt-1.5 text-gray-600 italic">
-                        Observation : {{ selected_action.item_observation }}
+                        {{ locale === 'en' ? 'Observation:' : 'Observation :' }} {{ selected_action.item_observation }}
                     </p>
                 </div>
 
                 <!-- INSPECTION SOURCE -->
                 <div class="mt-4 border-t border-gray-200 pt-3">
                     <span class="text-[10px] uppercase tracking-wide font-bold text-gray-400 block mb-1">
-                        Origine & Inspection source
+                        {{ locale === 'en' ? 'Origin & Source inspection' : 'Origine & Inspection source' }}
                     </span>
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-2.5 flex items-center justify-between">
                         <div class="truncate mr-2">
@@ -300,7 +300,7 @@
                             type="button"
                             @click="goToInspection(selected_action)"
                             class="p-1.5 text-xs text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors cursor-pointer shrink-0"
-                            title="Ouvrir la fiche d'inspection">
+                            :title="locale === 'en' ? 'Open inspection sheet' : 'Ouvrir la fiche d\'inspection'">
                             <ExternalLink :size="14" />
                         </button>
                     </div>
@@ -321,7 +321,7 @@
                 <!-- RESPONSABLE -->
                 <div class="mt-4 border-t border-gray-200 pt-3">
                     <span class="text-[10px] uppercase tracking-wide font-bold text-gray-400 block mb-2">
-                        Responsable de l'action
+                        {{ locale === 'en' ? 'Action responsible' : "Responsable de l'action" }}
                     </span>
 
                     <div v-if="selected_action.assigned_to" class="flex items-center gap-3">
@@ -333,7 +333,7 @@
                                 {{ selected_action.assigned_to.name || selected_action.assigned_to.first_name + ' ' + (selected_action.assigned_to.last_name || '') }}
                             </p>
                             <p class="text-[11px] text-gray-500 truncate">
-                                {{ selected_action.assigned_to.email || 'Aucun e-mail' }}
+                                {{ selected_action.assigned_to.email || (locale === 'en' ? 'No email' : 'Aucun e-mail') }}
                             </p>
                             <p class="text-[10px] text-gray-400 mt-0.5 truncate">
                                 {{ selected_action.assigned_to.department }} — {{ selected_action.assigned_to.job }}
@@ -341,13 +341,13 @@
                         </div>
                     </div>
                     <div v-else class="text-xs text-gray-400 italic">
-                        Aucun responsable assigné pour cette action.
+                        {{ locale === 'en' ? 'No responsible assigned for this action.' : 'Aucun responsable assigné pour cette action.' }}
                     </div>
                 </div>
 
                 <!-- DATES -->
                 <div class="mt-4 border-t border-gray-200 pt-3 flex items-center justify-between text-xs text-gray-500">
-                    <span>Créée le :</span>
+                    <span>{{ locale === 'en' ? 'Created on:' : 'Créée le :' }}</span>
                     <span class="font-medium text-gray-800">{{ selected_action.created_at }}</span>
                 </div>
 
@@ -357,10 +357,10 @@
                         <div class="flex items-center gap-1.5">
                             <Paperclip :size="14" class="text-gray-500" />
                             <span class="text-[10px] uppercase tracking-wide font-bold text-gray-400">
-                                Pièces jointes & Photos
+                                {{ locale === 'en' ? 'Attachments & Photos' : 'Pièces jointes & Photos' }}
                             </span>
                             <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-gray-100 text-gray-600">
-                                {{ selected_action.attachments?.length || 0 }}
+                                {{ uniqueAttachments.length }}
                             </span>
                         </div>
                         <button
@@ -370,7 +370,7 @@
                             class="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 cursor-pointer disabled:opacity-50 transition-colors">
                             <Loader2 v-if="isUploadingAttachment" :size="12" class="animate-spin" />
                             <Plus v-else :size="12" />
-                            <span>Ajouter</span>
+                            <span>{{ locale === 'en' ? 'Add' : 'Ajouter' }}</span>
                         </button>
                     </div>
 
@@ -385,10 +385,10 @@
                     />
 
                     <!-- Liste / Grille des pièces jointes -->
-                    <div v-if="selected_action.attachments && selected_action.attachments.length > 0" class="flex flex-col gap-2">
+                    <div v-if="uniqueAttachments.length > 0" class="flex flex-col gap-2">
                         <!-- Miniatures Photos -->
                         <div v-if="photoAttachments.length > 0" class="flex flex-col gap-1.5">
-                            <span class="text-[10px] text-gray-400 font-semibold">Photos & Preuves :</span>
+                            <span class="text-[10px] text-gray-400 font-semibold">{{ locale === 'en' ? 'Photos & Evidence:' : 'Photos & Preuves :' }}</span>
                             <div class="grid grid-cols-3 gap-2">
                                 <div
                                     v-for="att in photoAttachments"
@@ -406,7 +406,7 @@
                                     <span
                                         :class="att.source === 'ACTION' ? 'bg-primary text-white' : 'bg-gray-800/80 text-white'"
                                         class="absolute bottom-1 left-1 text-[8px] font-bold px-1 py-0.2 rounded backdrop-blur-xs">
-                                        {{ att.source === 'ACTION' ? 'Preuve' : 'Constat' }}
+                                        {{ att.source === 'ACTION' ? (locale === 'en' ? 'Evidence' : 'Preuve') : (locale === 'en' ? 'Finding' : 'Constat') }}
                                     </span>
                                     <!-- Overlay hover icons -->
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-opacity">
@@ -414,7 +414,7 @@
                                             type="button"
                                             @click.stop="openLightbox(att)"
                                             class="p-1 rounded-full bg-white/90 text-gray-800 hover:bg-white transition-colors"
-                                            title="Agrandir">
+                                            :title="locale === 'en' ? 'Zoom' : 'Agrandir'">
                                             <Eye :size="13" />
                                         </button>
                                         <button
@@ -422,7 +422,7 @@
                                             type="button"
                                             @click.stop="deleteAttachment(att)"
                                             class="p-1 rounded-full bg-red-600/90 text-white hover:bg-red-600 transition-colors"
-                                            title="Supprimer">
+                                            :title="locale === 'en' ? 'Delete' : 'Supprimer'">
                                             <Trash2 :size="13" />
                                         </button>
                                     </div>
@@ -432,7 +432,7 @@
 
                         <!-- Documents (PDF, Word, etc.) -->
                         <div v-if="docAttachments.length > 0" class="flex flex-col gap-1.5 mt-1">
-                            <span class="text-[10px] text-gray-400 font-semibold">Documents :</span>
+                            <span class="text-[10px] text-gray-400 font-semibold">{{ locale === 'en' ? 'Documents:' : 'Documents :' }}</span>
                             <div class="flex flex-col gap-1.5">
                                 <div
                                     v-for="att in docAttachments"
@@ -445,7 +445,7 @@
                                         <FileText :size="16" class="text-gray-500 shrink-0" />
                                         <div class="truncate">
                                             <p class="font-medium text-[11px] truncate">{{ att.file_name }}</p>
-                                            <p class="text-[9px] text-gray-400">{{ formatFileSize(att.file_size) }} • {{ att.source === 'ACTION' ? 'Preuve action' : 'Inspection' }}</p>
+                                            <p class="text-[9px] text-gray-400">{{ formatFileSize(att.file_size) }} • {{ att.source === 'ACTION' ? (locale === 'en' ? 'Action evidence' : 'Preuve action') : (locale === 'en' ? 'Inspection' : 'Inspection') }}</p>
                                         </div>
                                     </a>
                                     <div class="flex items-center gap-1 shrink-0">
@@ -454,7 +454,7 @@
                                             target="_blank"
                                             download
                                             class="p-1 text-gray-400 hover:text-primary rounded transition-colors"
-                                            title="Télécharger">
+                                            :title="locale === 'en' ? 'Download' : 'Télécharger'">
                                             <Download :size="13" />
                                         </a>
                                         <button
@@ -478,10 +478,10 @@
                         class="p-4 border-2 border-dashed border-gray-200 hover:border-primary/50 rounded-xl flex flex-col items-center justify-center gap-1 text-center cursor-pointer transition-colors bg-gray-50/50 hover:bg-primary/5 group">
                         <Upload :size="18" class="text-gray-400 group-hover:text-primary transition-colors" />
                         <span class="text-xs font-semibold text-gray-600 group-hover:text-primary transition-colors">
-                            Aucune pièce jointe
+                            {{ locale === 'en' ? 'No attachments' : 'Aucune pièce jointe' }}
                         </span>
                         <span class="text-[10px] text-gray-400">
-                            Cliquez pour joindre une photo ou un document de preuve
+                            {{ locale === 'en' ? 'Click to attach a photo or evidence document' : 'Cliquez pour joindre une photo ou un document de preuve' }}
                         </span>
                     </div>
                 </div>
@@ -495,7 +495,7 @@
                         @click="updateActionStatus(selected_action, 'IN_PROGRESS')"
                         class="w-full py-2 px-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors">
                         <PlayCircle :size="15" />
-                        Prendre en charge (En cours)
+                        {{ locale === 'en' ? 'Take charge (In progress)' : 'Prendre en charge (En cours)' }}
                     </button>
 
                     <button
@@ -504,7 +504,7 @@
                         @click="updateActionStatus(selected_action, 'FINISHED')"
                         class="w-full py-2 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors">
                         <CheckCircle2 :size="15" />
-                        Clôturer l'action (Terminée)
+                        {{ locale === 'en' ? 'Close action (Finished)' : "Clôturer l'action (Terminée)" }}
                     </button>
 
                     <button
@@ -513,7 +513,7 @@
                         @click="updateActionStatus(selected_action, 'PENDING')"
                         class="w-full py-2 px-3 text-xs font-bold text-gray-700 bg-amber-100 hover:bg-amber-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors">
                         <RotateCcw :size="15" />
-                        Réouvrir l'action
+                        {{ locale === 'en' ? 'Reopen action' : "Réouvrir l'action" }}
                     </button>
 
                     <!-- Notifier par email officiel -->
@@ -524,7 +524,7 @@
                         class="w-full py-2 px-3 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs">
                         <Loader2 v-if="sendingEmailKey === getActionKey(selected_action)" :size="15" class="animate-spin" />
                         <Mail v-else :size="15" />
-                        <span>{{ selected_action.email_status === 'SENT' ? 'Réenvoyer l\'e-mail officiel' : 'Notifier par e-mail' }}</span>
+                        <span>{{ selected_action.email_status === 'SENT' ? (locale === 'en' ? 'Resend official email' : 'Réenvoyer l\'e-mail officiel') : (locale === 'en' ? 'Notify by email' : 'Notifier par e-mail') }}</span>
                     </button>
 
                     <!-- Brouillon Outlook / Mailto si un email existe -->
@@ -533,7 +533,7 @@
                         :href="getMailtoLink(selected_action)"
                         class="w-full py-1.5 px-3 text-[11px] font-medium text-gray-600 hover:text-gray-800 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors text-center">
                         <ExternalLink :size="13" />
-                        <span>Ouvrir un brouillon dans Outlook</span>
+                        <span>{{ locale === 'en' ? 'Open draft in Outlook' : 'Ouvrir un brouillon dans Outlook' }}</span>
                     </a>
 
                     <!-- Naviguer vers l'inspection -->
@@ -542,7 +542,7 @@
                         @click="goToInspection(selected_action)"
                         class="w-full py-2 px-3 text-xs font-semibold text-primary hover:bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors">
                         <ExternalLink :size="15" />
-                        Voir la fiche complète
+                        {{ locale === 'en' ? 'View full sheet' : 'Voir la fiche complète' }}
                     </button>
                 </div>
         </aside>
@@ -560,7 +560,7 @@
                         <span
                             :class="lightboxAttachment.source === 'ACTION' ? 'bg-primary text-white' : 'bg-white/20 text-white'"
                             class="text-[9px] font-bold px-1.5 py-0.5 rounded">
-                            {{ lightboxAttachment.source === 'ACTION' ? 'Preuve action' : 'Constat inspection' }}
+                            {{ lightboxAttachment.source === 'ACTION' ? (locale === 'en' ? 'Action evidence' : 'Preuve action') : (locale === 'en' ? 'Inspection finding' : 'Constat inspection') }}
                         </span>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -569,14 +569,14 @@
                             target="_blank"
                             download
                             class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-                            title="Télécharger l'image">
+                            :title="locale === 'en' ? 'Download image' : 'Télécharger l\'image'">
                             <Download :size="16" />
                         </a>
                         <button
                             type="button"
                             @click="lightboxAttachment = null"
                             class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-                            title="Fermer">
+                            :title="locale === 'en' ? 'Close' : 'Fermer'">
                             <XIcon :size="16" />
                         </button>
                     </div>
@@ -650,14 +650,23 @@ const lightboxAttachment = ref<ActionAttachmentType | null>(null)
 const isUploadingAttachment = ref<boolean>(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
-const photoAttachments = computed<ActionAttachmentType[]>(() => {
+const uniqueAttachments = computed<ActionAttachmentType[]>(() => {
     const list = selected_action.value?.attachments || []
-    return list.filter(isImageAttachment)
+    const seen = new Set<string>()
+    return list.filter(att => {
+        const key = att.id ? `id_${att.id}` : `path_${att.file_path || att.file_name}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+    })
+})
+
+const photoAttachments = computed<ActionAttachmentType[]>(() => {
+    return uniqueAttachments.value.filter(isImageAttachment)
 })
 
 const docAttachments = computed<ActionAttachmentType[]>(() => {
-    const list = selected_action.value?.attachments || []
-    return list.filter(att => !isImageAttachment(att))
+    return uniqueAttachments.value.filter(att => !isImageAttachment(att))
 })
 
 function isImageAttachment(att: ActionAttachmentType): boolean {
@@ -720,12 +729,22 @@ async function handleFileUpload(event: Event) {
                 if (!selected_action.value.attachments) {
                     selected_action.value.attachments = []
                 }
-                selected_action.value.attachments.push(newAtt)
+                const alreadyInSelected = selected_action.value.attachments.some(
+                    a => (a.id && a.id === newAtt.id) || (a.file_path && a.file_path === newAtt.file_path)
+                )
+                if (!alreadyInSelected) {
+                    selected_action.value.attachments.push(newAtt)
+                }
 
                 const actionInList = actions.value.find(a => getActionKey(a) === getActionKey(selected_action.value!))
-                if (actionInList) {
+                if (actionInList && actionInList !== selected_action.value) {
                     if (!actionInList.attachments) actionInList.attachments = []
-                    actionInList.attachments.push(newAtt)
+                    const alreadyInList = actionInList.attachments.some(
+                        a => (a.id && a.id === newAtt.id) || (a.file_path && a.file_path === newAtt.file_path)
+                    )
+                    if (!alreadyInList) {
+                        actionInList.attachments.push(newAtt)
+                    }
                 }
             }
         }
@@ -786,12 +805,12 @@ const meta = ref<ActionMetaType>({
 // Configuration ChipFilter & Filtres
 type FilterKey = 'origin' | 'status' | 'site' | 'assigned_to'
 const filterableKeys: FilterKey[] = ['origin', 'status', 'site', 'assigned_to']
-const columnLabels: Record<FilterKey, string> = {
-    origin: 'Origine',
-    status: 'Statut',
-    site: 'Site / Station',
-    assigned_to: 'Responsable',
-}
+const columnLabels = computed<Record<FilterKey, string>>(() => ({
+    origin: locale.value === 'en' ? 'Origin' : 'Origine',
+    status: locale.value === 'en' ? 'Status' : 'Statut',
+    site: locale.value === 'en' ? 'Site / Station' : 'Site / Station',
+    assigned_to: locale.value === 'en' ? 'Responsible' : 'Responsable',
+}))
 
 const filters = reactive<Record<FilterKey, string[]>>({
     origin: [],
@@ -1125,7 +1144,7 @@ const contextMenuActions = computed(() => {
 
     return [
         {
-            label: 'Détails & pièces jointes',
+            label: locale.value === 'en' ? 'Details & attachments' : 'Détails & pièces jointes',
             icon: Paperclip,
             onClick: () => {
                 selected_action.value = action
@@ -1142,12 +1161,12 @@ const contextMenuActions = computed(() => {
             }
         },
         {
-            label: action.email_status === 'SENT' ? 'Réenvoyer e-mail' : 'Envoyer e-mail',
+            label: action.email_status === 'SENT' ? (locale.value === 'en' ? 'Resend email' : 'Réenvoyer e-mail') : (locale.value === 'en' ? 'Send email' : 'Envoyer e-mail'),
             icon: Mail,
             onClick: () => sendEmail(action)
         },
         {
-            label: action.origin === 'CHECKLIST' ? 'Voir la checklist source' : 'Voir la visite VMC source',
+            label: action.origin === 'CHECKLIST' ? (locale.value === 'en' ? 'View source checklist' : 'Voir la checklist source') : (locale.value === 'en' ? 'View source VMC visit' : 'Voir la visite VMC source'),
             icon: ExternalLink,
             onClick: () => goToInspection(action)
         }
@@ -1161,11 +1180,11 @@ function textContextMenuStatus(status?: ActionStatusType): {
 } {
     switch (status) {
         case 'PENDING':
-            return { text: 'Prendre en charge', icon: PlayCircle, theme: 'INFO' }
+            return { text: locale.value === 'en' ? 'Start progress' : 'Prendre en charge', icon: PlayCircle, theme: 'INFO' }
         case 'IN_PROGRESS':
-            return { text: 'Clôturer l\'action', icon: CheckCircle2, theme: 'SUCCESS' }
+            return { text: locale.value === 'en' ? 'Close action' : 'Clôturer l\'action', icon: CheckCircle2, theme: 'SUCCESS' }
         default:
-            return { text: 'Réouvrir l\'action', icon: RotateCcw, theme: 'WARNING' }
+            return { text: locale.value === 'en' ? 'Reopen action' : 'Réouvrir l\'action', icon: RotateCcw, theme: 'WARNING' }
     }
 }
 

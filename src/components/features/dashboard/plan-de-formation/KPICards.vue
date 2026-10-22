@@ -16,6 +16,7 @@
 
 <script lang="ts" setup>
     import { computed } from 'vue';
+    import { useI18n } from 'vue-i18n';
     import { ClipboardCheck, Clock3, TargetIcon, TrendingUp, UsersIcon } from '@lucide/vue';
     import Card from '../Card.vue';
     import type { ColorType, DashboardTrainingPlanKPIs } from '../../../../@types/Dashboard.type.ts';
@@ -29,16 +30,18 @@
         overallParticipationRate: 0,
     });
 
+    const { locale } = useI18n();
+
     const kpis = computed(() => [
         {
-            title: 'Nombre de sessions réalisées',
+            title: locale.value === 'en' ? 'Completed Training Sessions' : 'Nombre de sessions réalisées',
             theme: 'green',
             icon: ClipboardCheck,
             value: props.sessionsCount,
             span: '',
         },
         {
-            title: 'Nombre total des heures de formation',
+            title: locale.value === 'en' ? 'Total Training Hours' : 'Nombre total des heures de formation',
             theme: 'red',
             icon: Clock3,
             value: props.totalTrainingHours,
@@ -46,7 +49,7 @@
             span: '',
         },
         {
-            title: 'Taux de réalisation du plan de formation',
+            title: locale.value === 'en' ? 'Training Plan Completion Rate' : 'Taux de réalisation du plan de formation',
             theme: 'blue',
             icon: TargetIcon,
             value: props.trainingPlanCompletionRate,
@@ -54,14 +57,14 @@
             span: '',
         },
         {
-            title: 'Nombre de personnes ayant participé',
+            title: locale.value === 'en' ? 'Total Participants' : 'Nombre de personnes ayant participé',
             theme: 'cyan',
             icon: UsersIcon,
             value: props.totalParticipants,
             span: '',
         },
         {
-            title: 'Taux de participation global',
+            title: locale.value === 'en' ? 'Overall Participation Rate' : 'Taux de participation global',
             theme: 'yellow',
             icon: TrendingUp,
             value: props.overallParticipationRate,
@@ -69,7 +72,7 @@
             span: '',
         },
         {
-            title: 'Personnes ayant suivi au moins une formation',
+            title: locale.value === 'en' ? 'Unique Trained People' : 'Personnes ayant suivi au moins une formation',
             theme: 'blue',
             icon: UsersIcon,
             value: props.uniqueTrainedPeople,
@@ -77,7 +80,7 @@
             span: '',
         },
         {
-            title: 'Taux de personnes ayant participé à au moins une formation',
+            title: locale.value === 'en' ? 'Unique Training Participation Rate' : 'Taux de personnes ayant participé à au moins une formation',
             theme: 'green',
             icon: TrendingUp,
             value: props.trainingParticipationRate,

@@ -5,8 +5,8 @@
       class="p-3 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-100 flex items-center justify-between gap-2 select-none"
     >
       <div class="flex items-center gap-2 min-w-0">
-        <div class="h-7 w-7 rounded-lg bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0">
-          <Fuel :size="15" />
+        <div :class="['h-7 w-7 rounded-lg flex items-center justify-center shrink-0', siteCategoryInfo.themeBg, siteCategoryInfo.themeText]">
+          <component :is="siteCategoryInfo.icon" :size="15" />
         </div>
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
@@ -96,8 +96,8 @@
           class="flex items-center justify-between gap-3 pb-3 border-b border-gray-200 mb-3 shrink-0"
         >
           <div class="flex items-center gap-2">
-            <div class="h-8 w-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
-              <Fuel :size="18" />
+            <div :class="['h-8 w-8 rounded-xl flex items-center justify-center font-bold', siteCategoryInfo.themeBg, siteCategoryInfo.themeText]">
+              <component :is="siteCategoryInfo.icon" :size="18" />
             </div>
             <div>
               <h3 class="font-bold text-gray-900 text-sm md:text-base flex items-center gap-2">
@@ -211,7 +211,7 @@
                 <!-- Tooltip permanent compact -->
                 <LTooltip :options="{ permanent: false, direction: 'top', offset: [0, -8] }">
                   <div class="text-[11px] font-bold text-gray-900 flex items-center gap-1">
-                    <span>⛽</span>
+                    <span>{{ siteCategoryInfo.emoji }}</span>
                     <span>{{ displaySiteName }}</span>
                   </div>
                 </LTooltip>
@@ -220,9 +220,9 @@
                 <LPopup :options="{ maxWidth: 280, minWidth: 220, autoPan: true, autoPanPadding: [15, 15] }">
                   <div class="flex flex-col gap-2 p-1 text-xs">
                     <div class="border-b border-gray-100 pb-1.5">
-                      <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700">
-                        <Fuel :size="12" />
-                        <span>Station Galana (SS)</span>
+                      <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" :class="siteCategoryInfo.themeText">
+                        <component :is="siteCategoryInfo.icon" :size="12" />
+                        <span>{{ siteCategoryInfo.label }}</span>
                       </div>
                       <h4 class="font-bold text-gray-900 text-sm mt-0.5">{{ displaySiteName }}</h4>
                       <p class="text-[11px] text-gray-500">
@@ -624,6 +624,9 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import {
   ArrowRight,
+  Building,
+  Building2,
+  Car,
   ChevronDown,
   ChevronUp,
   Compass,
@@ -633,6 +636,8 @@ import {
   Maximize2,
   Minimize2,
   Phone,
+  Store,
+  Truck,
   X as XIcon,
 } from "@lucide/vue";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
@@ -646,6 +651,7 @@ import type {
 interface Props {
   siteName?: string | null;
   locationName?: string | null;
+  siteType?: string | null;
   latitude?: number | string | null;
   longitude?: number | string | null;
   locality?: string | null;
@@ -660,6 +666,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   siteName: null,
   locationName: null,
+  siteType: null,
   latitude: null,
   longitude: null,
   locality: null,
@@ -669,6 +676,84 @@ const props = withDefaults(defineProps<Props>(), {
   initiallyCollapsed: false,
   showEmergency: true,
   mapHeight: 'h-[250px]',
+});
+
+
+// DÉTECTION DE LA CATÉGORIE DU SITE (STATION, CAMION CITERNE, CLIENT B2B, VÉHICULE, MAGASIN, AGENCE...)
+const siteCategoryInfo = computed(() => {
+  const type = (props.siteType || '').toUpperCase().trim();
+  const name = (props.siteName || '').toUpperCase().trim();
+  const loc = (props.locationName || '').toUpperCase().trim();
+  const combined = `${type} ${name} ${loc}`;
+
+  if (combined.includes('B2B') || combined.includes('USINE') || combined.includes('CLIENT') || type === 'B2B') {
+    return {
+      icon: Building2,
+      emoji: '🏢',
+      label: 'Site Client B2B',
+      themeBg: 'bg-indigo-500/15',
+      themeText: 'text-indigo-700',
+      badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    };
+  }
+  if (combined.includes('CAMION') || combined.includes('CITERNE') || combined.includes(' CC') || type === 'CC' || type === 'CAMION CITERNE' || combined.startsWith('CC')) {
+    return {
+      icon: Truck,
+      emoji: '🚛',
+      label: 'Camion Citerne (CC)',
+      themeBg: 'bg-blue-500/15',
+      themeText: 'text-blue-700',
+      badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
+    };
+  }
+  if (combined.includes('VEHICULE') || combined.includes('VÉHICULE') || combined.includes('VOITURE') || type === 'VEHICULE') {
+    return {
+      icon: Car,
+      emoji: '🚗',
+      label: 'Véhicule Galana',
+      themeBg: 'bg-emerald-500/15',
+      themeText: 'text-emerald-700',
+      badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    };
+  }
+  if (combined.includes('MAGASIN') || combined.includes('SHOP') || combined.includes('BOUTIQUE') || type === 'MAGASIN') {
+    return {
+      icon: Store,
+      emoji: '🏪',
+      label: 'Magasin / Shop',
+      themeBg: 'bg-purple-500/15',
+      themeText: 'text-purple-700',
+      badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
+    };
+  }
+  if (combined.includes('AGENCE') || combined.includes('BUREAU') || combined.includes('SIEGE') || combined.includes('SIÈGE') || type === 'AGENCE') {
+    return {
+      icon: Building,
+      emoji: '🏛️',
+      label: 'Agence / Siège Galana',
+      themeBg: 'bg-cyan-500/15',
+      themeText: 'text-cyan-700',
+      badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+    };
+  }
+  if (combined.includes('STATION') || combined.includes('SERVICE') || combined.includes('SS ') || type === 'STATION SERVICE' || type === 'SS' || combined.startsWith('SS')) {
+    return {
+      icon: Fuel,
+      emoji: '⛽',
+      label: 'Station Galana (SS)',
+      themeBg: 'bg-amber-500/15',
+      themeText: 'text-amber-700',
+      badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
+    };
+  }
+  return {
+    icon: MapPin,
+    emoji: '📍',
+    label: 'Site / Emplacement Galana',
+    themeBg: 'bg-slate-500/15',
+    themeText: 'text-slate-700',
+    badgeBg: 'bg-slate-50 text-slate-700 border-slate-200',
+  };
 });
 
 // ÉTAT DU WIDGET

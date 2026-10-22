@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Input from '../../../components/ui/Input.vue';
 import { ArrowLeft, ArrowRightIcon, MailIcon, CheckCircle2 } from '@lucide/vue';
 import Button from '../../../components/ui/Button.vue';
@@ -7,22 +8,24 @@ import { router } from '../../../router/index.ts';
 import { toast } from 'vue3-toastify';
 import authApi from '../../../core/api/auth.api.ts';
 
+const { locale } = useI18n();
+
 const email = ref('');
 const loading = ref(false);
 const submitted = ref(false);
 
 async function handleSubmit() {
     if (!email.value.trim()) {
-        toast.error('Veuillez saisir votre adresse e-mail professionnelle');
+        toast.error(locale.value === 'en' ? 'Please enter your professional email address' : 'Veuillez saisir votre adresse e-mail professionnelle');
         return;
     }
     loading.value = true;
     try {
         await authApi.forgotPassword(email.value.trim());
         submitted.value = true;
-        toast.success('Instructions de réinitialisation envoyées');
+        toast.success(locale.value === 'en' ? 'Reset instructions sent' : 'Instructions de réinitialisation envoyées');
     } catch (err: any) {
-        toast.error(err?.response?.data?.message || 'Une erreur est survenue lors de la demande');
+        toast.error(err?.response?.data?.message || (locale.value === 'en' ? 'An error occurred while processing the request' : 'Une erreur est survenue lors de la demande'));
     } finally {
         loading.value = false;
     }
@@ -36,9 +39,9 @@ async function handleSubmit() {
             <CheckCircle2 :size="32" />
         </div>
         <div>
-            <h3 class="font-bold text-gray-900 text-lg">E-mail envoyé</h3>
+            <h3 class="font-bold text-gray-900 text-lg">{{ locale === 'en' ? 'Email sent' : 'E-mail envoyé' }}</h3>
             <p class="mt-1 text-xs text-gray-500">
-                Si un compte correspond à <strong>{{ email }}</strong>, vous recevrez un lien de réinitialisation sous peu.
+                {{ locale === 'en' ? 'If an account matches ' : 'Si un compte correspond à ' }}<strong>{{ email }}</strong>{{ locale === 'en' ? ', you will receive a reset link shortly.' : ', vous recevrez un lien de réinitialisation sous peu.' }}
             </p>
         </div>
         <button
@@ -46,22 +49,22 @@ async function handleSubmit() {
             @click="router.replace({ name: 'LOGIN' })"
         >
             <ArrowLeft :size="16" />
-            <span>Retour à la connexion</span>
+            <span>{{ locale === 'en' ? 'Back to login' : 'Retour à la connexion' }}</span>
         </button>
     </div>
 
     <form v-else class="p-8 bg-white border border-gray-200 rounded-2xl w-full max-w-md flex flex-col gap-y-5 shadow-sm" @submit.prevent="handleSubmit">
       <div>
         <h2 class="font-bold text-gray-900 text-xl">
-          Trouver votre compte
+          {{ locale === 'en' ? 'Find your account' : 'Trouver votre compte' }}
         </h2>
         <p class="mt-1.5 text-xs text-gray-500">
-          Saisissez votre adresse e-mail professionnelle pour réinitialiser votre mot de passe.
+          {{ locale === 'en' ? 'Enter your professional email address to reset your password.' : 'Saisissez votre adresse e-mail professionnelle pour réinitialiser votre mot de passe.' }}
         </p>
       </div>
       <div class="flex flex-col gap-y-3">
-        <Input v-model="email" :icon="MailIcon" type="email" label="Adresse e-mail" placeholder="ex: nom@galana.mg" required />
-        <Button :right-icon="ArrowRightIcon" :loading="loading" type="submit">Continuer</Button>
+        <Input v-model="email" :icon="MailIcon" type="email" :label="locale === 'en' ? 'Email address' : 'Adresse e-mail'" :placeholder="locale === 'en' ? 'e.g., name@galana.mg' : 'ex: nom@galana.mg'" required />
+        <Button :right-icon="ArrowRightIcon" :loading="loading" type="submit">{{ locale === 'en' ? 'Continue' : 'Continuer' }}</Button>
       </div>
       <div class="pt-2 border-t border-gray-100">
         <button
@@ -70,7 +73,7 @@ async function handleSubmit() {
             @click="router.replace({ name: 'LOGIN' })"
         >
             <ArrowLeft :size="15" />
-            <span>Retour à la connexion</span>
+            <span>{{ locale === 'en' ? 'Back to login' : 'Retour à la connexion' }}</span>
         </button>
       </div>
     </form>

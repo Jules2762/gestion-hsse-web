@@ -1,5 +1,3 @@
-
-
 <template>
 
   <div class="w-full  h-full flex flex-row items-center justify-center">
@@ -99,10 +97,19 @@ function onSubmit(){
   }).catch((err)=>{
     
     data.value.forms.loading = false
-    if(err?.status=="403"){
-      console.log(err.response.data.message)
-    }
-    if(err.status=="422"){
+    const status = err?.response?.status || err?.status
+    const msg = err?.response?.data?.message
+    if (status == 403) {
+      if (msg === '403.disabled') {
+        toast.error(t('errors.403.disabled'))
+      } else {
+        toast.error(t('errors.403.forbidden'))
+      }
+    } else if (status == 422) {
+      toast.error(
+        t('login.notification.error')
+      );
+    } else {
       toast.error(
         t('login.notification.error')
       );

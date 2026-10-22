@@ -1,47 +1,51 @@
 <template>
-    <div class="min-h-screen bg-slate-100/80 py-4 print:bg-white print:p-0 print:min-h-0 print:m-0">
+    <div class="min-h-screen bg-slate-100/80 print:bg-white print:p-0 print:min-h-0 print:m-0">
 
-        <!-- HEADER & ACTIONS EN LIGNE (MASQUÉ À L'IMPRESSION) -->
-        <div class="max-w-4xl mx-auto mb-4 px-4 sm:px-0 print:hidden">
+        <!-- HEADER PRINCIPAL (FULL WIDTH COMME DASHBOARD) -->
+        <div class="w-full print:hidden">
             <Header title="inspections.vmc.details" :thumbnails="[
                 { label: 'thumbnails.home', name: 'DASHBOARD' },
                 { label: 'thumbnails.inspections', name: 'INSPECTION' },
                 { label: 'thumbnails.vmc', name: 'VMC' },
                 { label: 'thumbnails.details', name: 'VMC_DETAILS' }
             ]" />
+        </div>
 
-            <div class="mt-3 bg-white border border-gray-200 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
-                <div class="flex items-center gap-3">
-                    <button
-                        @click="router.push({ name: 'VMC' })"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer">
-                        <ArrowLeft :size="15" />
-                        {{ locale === 'en' ? 'Back to list' : 'Retour à la liste' }}
-                    </button>
-                    <span class="text-sm font-bold text-gray-800 truncate" v-if="vmc">
-                        VMC #{{ vmc.id }} — {{ vmc.title || vmc.type }}
-                    </span>
-                    <ChecklistStatus v-if="vmc?.status" :name="vmc.status" />
-                </div>
+        <div class="py-4 px-4 sm:px-6">
+            <!-- HEADER & ACTIONS EN LIGNE (MASQUÉ À L'IMPRESSION) -->
+            <div class="max-w-4xl mx-auto mb-4 print:hidden">
+                <div class="bg-white border border-gray-200 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <button
+                            @click="router.push({ name: 'VMC' })"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer">
+                            <ArrowLeft :size="15" />
+                            {{ locale === 'en' ? 'Back to list' : 'Retour à la liste' }}
+                        </button>
+                        <span class="text-sm font-bold text-gray-800 truncate" v-if="vmc">
+                            VMC #{{ vmc.id }} — {{ vmc.title || vmc.type }}
+                        </span>
+                        <ChecklistStatus v-if="vmc?.status" :name="vmc.status" />
+                    </div>
 
-                <div class="flex items-center gap-2">
-                    <button
-                        v-if="vmc && vmc.status === 'IN_PROGRESS'"
-                        @click="markCompleted"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer">
-                        <CheckCircle2 :size="15" />
-                        {{ locale === 'en' ? 'Close visit' : 'Clôturer la visite' }}
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            v-if="vmc && vmc.status === 'IN_PROGRESS'"
+                            @click="markCompleted"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer">
+                            <CheckCircle2 :size="15" />
+                            {{ locale === 'en' ? 'Close visit' : 'Clôturer la visite' }}
+                        </button>
 
-                    <button
-                        @click="handlePrint"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#0F9D58] hover:bg-[#0F9D58]/90 rounded-lg shadow-sm transition-colors cursor-pointer">
-                        <Printer :size="16" />
-                        {{ locale === 'en' ? 'Download PDF' : 'Télécharger en PDF' }}
-                    </button>
+                        <button
+                            @click="handlePrint"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#0F9D58] hover:bg-[#0F9D58]/90 rounded-lg shadow-sm transition-colors cursor-pointer">
+                            <Printer :size="16" />
+                            {{ locale === 'en' ? 'Download PDF' : 'Télécharger en PDF' }}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
         <!-- CHARGEMENT -->
         <div v-if="loading" class="p-20 flex flex-col items-center justify-center gap-3 text-gray-500 print:hidden">
@@ -520,7 +524,7 @@
                         <div><span class="font-semibold">Date de l'évènement (aaaa/mm/jj): </span>{{ formattedDate }}</div>
                         <div><span class="font-semibold">Heure: </span>{{ vmc.safety_report_form?.info_time || '—' }}</div>
                         <div><span class="font-semibold">Type d'évènement: </span>{{ vmc.safety_report_form?.info_type || 'Presqu\'accident' }}</div>
-                        <div><span class="font-semibold">Niveau de gravité: </span>{{ vmc.safety_report_form?.info_gravity || 'Faible' }}</div>
+                        <div class="flex items-center gap-1.5"><span class="font-semibold">Niveau de gravité: </span><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold" :class="getSafetyReportGravityBadge(vmc.safety_report_form?.info_gravity)">{{ formatSafetyReportGravity(vmc.safety_report_form?.info_gravity) }}</span></div>
                     </div>
                 </div>
 
@@ -722,6 +726,7 @@
                 </div>
             </div>
         </div>
+        </div>
 
         <!-- MODAL AJOUT / ÉDITION ACTION CORRECTIVE VMC -->
         <div v-if="actionModal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
@@ -759,14 +764,23 @@
                             class="w-full p-2.5 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary resize-none"></textarea>
                     </div>
 
-                    <!-- Responsable (Personnel) -->
+                    <!-- Responsable assigné (Personnel) -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Assigned person' : 'Responsable assigné' }}</label>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block font-semibold text-gray-700">{{ locale === 'en' ? 'Assigned person (Personnel) *' : 'Responsable assigné (Personnel) *' }}</label>
+                            <span v-if="personnelsList.length > 0" class="text-[10px] text-gray-400 font-medium">({{ filteredPersonnelsList.length }} / {{ personnelsList.length }})</span>
+                        </div>
+                        <input
+                            v-model="actionPersonnelSearchQuery"
+                            type="text"
+                            :placeholder="locale === 'en' ? 'Search personnel by name, role...' : '🔍 Rechercher un personnel par nom, fonction...'"
+                            class="w-full mb-1.5 p-2 text-xs border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary transition"
+                        />
                         <select
                             v-model="actionModal.personInCharge"
                             class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option :value="null">{{ locale === 'en' ? '-- No person assigned --' : '-- Aucun responsable assigné --' }}</option>
-                            <option v-for="p in personnelsList" :key="p.id" :value="p.id">
+                            <option :value="null">{{ locale === 'en' ? '-- Select a personnel --' : '-- Choisir parmi le personnel Galana --' }}</option>
+                            <option v-for="p in filteredPersonnelsList" :key="p.id" :value="p.id">
                                 {{ p.first_name }} {{ p.last_name || '' }} — {{ p.fonction || p.direction || (locale === 'en' ? 'Personnel' : 'Personnel') }}
                             </option>
                         </select>
@@ -1068,6 +1082,45 @@
 
     const actionService = useActionService()
     const personnelsList = ref<any[]>([])
+
+    const actionPersonnelSearchQuery = ref('')
+
+    const filteredPersonnelsList = computed(() => {
+        const q = actionPersonnelSearchQuery.value.toLowerCase().trim()
+        if (!q) return personnelsList.value
+        return personnelsList.value.filter((p: any) => {
+            const full = `${p.first_name || ''} ${p.last_name || ''} ${p.fonction || ''} ${p.direction || ''} ${p.email || ''}`.toLowerCase()
+            return full.includes(q)
+        })
+    })
+
+    function formatSafetyReportGravity(g: any): string {
+        const num = parseInt(String(g || '2'), 10)
+        const labels: Record<number, string> = {
+            1: 'Mineur',
+            2: 'Modéré',
+            3: 'Important',
+            4: 'Majeur',
+            5: 'Critique',
+        }
+        if (num >= 1 && num <= 5) {
+            return `Niveau ${num} / 5 (${labels[num]})`
+        }
+        return g ? `Niveau ${g}` : 'Niveau 2 / 5 (Modéré)'
+    }
+
+    function getSafetyReportGravityBadge(g: any): string {
+        const num = parseInt(String(g || '2'), 10)
+        switch (num) {
+            case 1: return 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+            case 2: return 'bg-sky-100 text-sky-800 border border-sky-200'
+            case 3: return 'bg-amber-100 text-amber-800 border border-amber-200'
+            case 4: return 'bg-orange-100 text-orange-800 border border-orange-200'
+            case 5: return 'bg-red-100 text-red-800 border border-red-200'
+            default: return 'bg-gray-100 text-gray-800 border border-gray-200'
+        }
+    }
+
 
     const allVmcItems = computed(() => {
         const items = vmc.value?.inspection?.items || []

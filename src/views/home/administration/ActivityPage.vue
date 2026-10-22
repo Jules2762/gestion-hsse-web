@@ -11,14 +11,14 @@
             <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                 <div class="flex flex-row items-center gap-1.5">
                     <ButtonFilter
-                        text="Exporter"
+                        :text="t('common.export') || (locale === 'en' ? 'Export' : 'Exporter')"
                         :icon="Download"
                         :badge="pagination.total.toString()"
                         :loading="loading_export"
                         @click="exportData"
                     />
                     <ButtonFilter
-                        text="Actualiser"
+                        :text="t('common.refresh') || (locale === 'en' ? 'Refresh' : 'Actualiser')"
                         :icon="RefreshCw"
                         :loading="loading"
                         @click="fetchLogs"

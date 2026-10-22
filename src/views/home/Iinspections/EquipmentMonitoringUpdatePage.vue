@@ -237,14 +237,14 @@
                                                 v-model="item.type"
                                                 class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-primary"
                                             >
-                                                <option value="extincteur">Extincteur</option>
-                                                <option value="bac">Bac & Rétention</option>
-                                                <option value="materiel">Matériel & Outils</option>
-                                                <option value="poubelle">Déchets & Poubelles</option>
-                                                <option value="signalisation">Signalétique & Pictogrammes</option>
-                                                <option value="securite">Sécurité Incendie</option>
-                                                <option value="conformite">Document & Affichage</option>
-                                                <option value="divers">Autre / Divers</option>
+                                                <option value="extincteur">{{ locale === 'en' ? 'Extinguisher' : 'Extincteur' }}</option>
+                                                <option value="bac">{{ locale === 'en' ? 'Retention basin' : 'Bac de rétention' }}</option>
+                                                <option value="materiel">{{ locale === 'en' ? 'Equipment & tools' : 'Matériel et outils' }}</option>
+                                                <option value="poubelle">{{ locale === 'en' ? 'Trash bins' : 'Poubelles' }}</option>
+                                                <option value="signalisation">{{ locale === 'en' ? 'Signage & pictogram' : 'Signalétique et pictogramme' }}</option>
+                                                <option value="securite">{{ locale === 'en' ? 'Fire safety' : 'Sécurité incendie' }}</option>
+                                                <option value="conformite">{{ locale === 'en' ? 'Document & display' : 'Document & affichage' }}</option>
+                                                <option value="divers">{{ locale === 'en' ? 'Other / Misc' : 'Autre / Divers' }}</option>
                                             </select>
                                         </div>
 
@@ -567,12 +567,12 @@
                                 class="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:border-primary transition"
                             >
                                 <option value="extincteur">{{ locale === 'en' ? 'Extinguisher' : 'Extincteur' }}</option>
-                                <option value="bac">{{ locale === 'en' ? 'Bin & Retention' : 'Bac & Rétention' }}</option>
-                                <option value="materiel">{{ locale === 'en' ? 'Equipment & Tools' : 'Matériel & Outils' }}</option>
-                                <option value="poubelle">{{ locale === 'en' ? 'Waste & Trash' : 'Déchets & Poubelles' }}</option>
-                                <option value="signalisation">{{ locale === 'en' ? 'Signage & Pictograms' : 'Signalétique & Pictogrammes' }}</option>
-                                <option value="securite">{{ locale === 'en' ? 'Fire Safety' : 'Sécurité Incendie' }}</option>
-                                <option value="conformite">{{ locale === 'en' ? 'Document & Display' : 'Document & Affichage' }}</option>
+                                <option value="bac">{{ locale === 'en' ? 'Retention basin' : 'Bac de rétention' }}</option>
+                                <option value="materiel">{{ locale === 'en' ? 'Equipment & tools' : 'Matériel et outils' }}</option>
+                                <option value="poubelle">{{ locale === 'en' ? 'Trash bins' : 'Poubelles' }}</option>
+                                <option value="signalisation">{{ locale === 'en' ? 'Signage & pictogram' : 'Signalétique et pictogramme' }}</option>
+                                <option value="securite">{{ locale === 'en' ? 'Fire safety' : 'Sécurité incendie' }}</option>
+                                <option value="conformite">{{ locale === 'en' ? 'Document & display' : 'Document & affichage' }}</option>
                                 <option value="divers">{{ locale === 'en' ? 'Other / Misc' : 'Autre / Divers' }}</option>
                             </select>
                         </div>
@@ -1013,13 +1013,13 @@ const categoryCounts = computed(() => {
     const isEn = locale.value === 'en'
     const labels: Record<string, string> = {
         extincteur: isEn ? 'Extinguishers' : 'Extincteurs',
-        bac: isEn ? 'Bins & Retention' : 'Bacs & Rétention',
-        materiel: isEn ? 'Equipment & Tools' : 'Matériel & Outils',
-        poubelle: isEn ? 'Bins & Waste' : 'Poubelles & Déchets',
-        signalisation: isEn ? 'Signage & Marking' : 'Signalétique & Balisage',
-        securite: isEn ? 'Fire Safety' : 'Sécurité Incendie',
-        conformite: isEn ? 'Documents & Display' : 'Documents & Affichage',
-        divers: isEn ? 'Other equipment' : 'Autres matériels',
+        bac: isEn ? 'Retention basins' : 'Bacs de rétention',
+        materiel: isEn ? 'Equipment & tools' : 'Matériel et outils',
+        poubelle: isEn ? 'Trash bins' : 'Poubelles',
+        signalisation: isEn ? 'Signage & pictograms' : 'Signalétique et pictogramme',
+        securite: isEn ? 'Fire safety' : 'Sécurité incendie',
+        conformite: isEn ? 'Document & display' : 'Document & affichage',
+        divers: isEn ? 'Other / Misc' : 'Autre / Divers',
     }
 
     for (const it of items.value) {

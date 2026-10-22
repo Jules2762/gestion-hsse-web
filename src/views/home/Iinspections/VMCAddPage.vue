@@ -43,15 +43,22 @@
                     :lists="siteList"
                     list_id="sites_datalist"
                 />
-
-                <!-- Inspecteur : Input avec choix liste affichant Nom complet - Direction - Fonction -->
-                <Input
-                    :label="locale === 'en' ? 'Inspector / Person in charge' : 'Inspecteur / Responsable'"
-                    v-model="data.inspector"
-                    :placeholder="locale === 'en' ? 'Type or choose an inspector...' : 'Saisissez ou choisissez un inspecteur...'"
-                    :lists="personnelList"
-                    list_id="inspectors_datalist"
-                />
+                <!-- Inspecteur : sélection parmi les Utilisateurs du système -->
+                <div class="col-span-2">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+                        <span>{{ locale === 'en' ? 'Inspector / Person in charge' : 'Inspecteur / Responsable' }}</span>
+                        <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Selected from system users' : 'Choisi parmi les utilisateurs' }}</span>
+                    </label>
+                    <select
+                        v-model="data.inspector_id"
+                        class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer"
+                    >
+                        <option :value="undefined">{{ locale === 'en' ? 'Select an inspector (default yourself)...' : 'Sélectionner un inspecteur (par défaut vous-même)...' }}</option>
+                        <option v-for="usr in users" :key="usr.id" :value="usr.id">
+                            {{ usr.first_name + " " + usr.last_name + (usr.email ? " (" + usr.email + ")" : "") }}
+                        </option>
+                    </select>
+                </div>
 
                 <Input :label="locale === 'en' ? 'Accompanying person' : 'Personne accompagnante'" v-model="data.accompanying_person" :placeholder="locale === 'en' ? 'Name of accompanying person...' : 'Nom de l\'accompagnant...'" />
 
@@ -171,12 +178,10 @@
                                     {{ cleanInspectorName }}
                                 </p>
 
-                                <p v-if="matchingPersonnel" class="text-xs text-gray-400 truncate">
-                                    {{ [matchingPersonnel.direction, matchingPersonnel.fonction].filter(Boolean).join(' • ') }}
+                                <p v-if="selectedInspectorUser?.job" class="text-xs text-gray-400 truncate">{{ selectedInspectorUser.job }}
                                 </p>
 
-                                <p v-else-if="!cleanInspectorName" class="mt-1 text-sm text-gray-400">
-                                    {{ locale === 'en' ? 'Not provided' : 'Non renseigné' }}
+                                <p v-else-if="!cleanInspectorName" class="mt-1 text-sm text-gray-400">{{ locale === 'en' ? 'Default (yourself)' : 'Par défaut (vous-même)' }}
                                 </p>
                             </div>
 
@@ -260,7 +265,7 @@
     import { computed, onMounted, ref } from 'vue';
     import type { VMCFormType } from '../../../@types/VMC.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
-    import personnelService from '../../../core/services/personnel.service.ts';
+    import { useUserService } from '../../../core/services/user.service.ts';
 
     const { t, locale } = useI18n();
 
@@ -279,33 +284,37 @@
         date: new Date().toISOString().slice(0, 10),
         site: '',
         inspector: '',
+        inspector_id: undefined,
         accompanying_person: '',
     })
 
     const loading_submit = ref<boolean>(false)
     const errorMessage = ref<string>('')
 
-    /* Personnels list : Nom complet - Direction - Fonction */
-    const personnels = ref<any[]>([])
-    const personnelList = computed(() => {
-        return personnels.value.map(p => {
-            const fullName = `${p.first_name} ${p.last_name || ''}`.trim()
-            const details = [p.direction, p.fonction].filter(Boolean).join(' - ')
-            return details ? `${fullName} - ${details}` : fullName
-        }).filter(Boolean)
+    /* Users list for inspector selection */
+    const userService = useUserService()
+    const users = ref<any[]>([])
+
+    const selectedInspectorUser = computed(() => {
+        if (!data.value.inspector_id) return null
+        return users.value.find((u: any) => String(u.id) === String(data.value.inspector_id)) ?? null
     })
 
-    /* Sites list pour choix liste */
+    const cleanInspectorName = computed(() => {
+        if (!selectedInspectorUser.value) return ''
+        const u = selectedInspectorUser.value
+        return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.name || u.email || ''
+    })
+
+    /* Sites list */
     const siteList = ref<string[]>([])
 
-    function fetchPersonnels() {
-        personnelService.indexAll()
-            .then(res => {
-                personnels.value = res.data.data || res.data || []
+    function fetchUsers() {
+        userService.index()
+            .then((res: any) => {
+                users.value = res.data?.data || res.data || []
             })
-            .catch(err => {
-                console.error(err)
-            })
+            .catch((err: any) => console.error('Erreur chargement utilisateurs:', err))
     }
 
     function fetchSites() {
@@ -313,38 +322,8 @@
             .then(res => {
                 siteList.value = res.data.site || []
             })
-            .catch(err => {
-                console.error(err)
-            })
+            .catch(err => console.error(err))
     }
-
-    const matchingPersonnel = computed(() => {
-        const val = data.value.inspector?.trim().toLowerCase()
-        if (!val) return null
-
-        return personnels.value.find(p => {
-            const fullName = `${p.first_name} ${p.last_name || ''}`.trim().toLowerCase()
-            const details = [p.direction, p.fonction].filter(Boolean).join(' - ').toLowerCase()
-            const fullDisplay = details ? `${fullName} - ${details}` : fullName
-
-            return (
-                val === fullDisplay ||
-                val === fullName ||
-                val.startsWith(fullName) ||
-                (p.first_name && val.includes(p.first_name.toLowerCase()))
-            )
-        })
-    })
-
-    const cleanInspectorName = computed(() => {
-        if (matchingPersonnel.value) {
-            return `${matchingPersonnel.value.first_name} ${matchingPersonnel.value.last_name || ''}`.trim()
-        }
-        if (data.value.inspector?.includes(' - ')) {
-            return data.value.inspector.split(' - ')[0].trim()
-        }
-        return data.value.inspector?.trim() || ''
-    })
 
     // Type et date obligatoires
     const disabled_submit = computed(() => !data.value.type || !data.value.date)
@@ -360,7 +339,7 @@
         { label: locale.value === 'en' ? 'Type' : 'Type', value: data.value.type },
         { label: locale.value === 'en' ? 'Site' : 'Site', value: data.value.site },
         { label: locale.value === 'en' ? 'Date' : 'Date', value: formattedDate.value },
-        { label: locale.value === 'en' ? 'Inspector' : 'Inspecteur', value: cleanInspectorName.value || data.value.inspector },
+        { label: locale.value === 'en' ? 'Inspector' : 'Inspecteur', value: cleanInspectorName.value || (locale.value === 'en' ? '(Default: yourself)' : '(Par défaut : vous-même)') },
         { label: locale.value === 'en' ? 'Accompanying' : 'Accompagnant', value: data.value.accompanying_person },
     ])
 
@@ -375,8 +354,9 @@
             date: data.value.date,
             title: data.value.title?.trim() || undefined,
             site: data.value.site?.trim() || undefined,
-            inspector: cleanInspectorName.value || data.value.inspector?.trim() || undefined,
-            assigned_to: matchingPersonnel.value?.id || undefined,
+            inspector: cleanInspectorName.value || undefined,
+            inspector_id: data.value.inspector_id || undefined,
+            assigned_to: data.value.inspector_id || undefined,
             accompanying_person: data.value.accompanying_person?.trim() || undefined,
         }
 
@@ -396,7 +376,7 @@
     }
 
     onMounted(() => {
-        fetchPersonnels()
+        fetchUsers()
         fetchSites()
     })
 </script>

@@ -62,10 +62,15 @@
         type ActionPriority,
     } from '../../../core/utils/checklist.utils.ts'
     import ButtonFilter from '../../../components/ui/ButtonFilter.vue'
+    import LocationPickerMap from '../../../components/shared/LocationPickerMap.vue'
+    import siteService from '../../../core/services/site.service.ts'
+    import { ChecklistStatusJsonData } from '../../../@data/Checklist.data.ts'
     import { useChecklistService } from '../../../core/services/checklist.service.ts'
     import { useActionService } from '../../../core/services/action.service.ts'
     import { useUserService } from '../../../core/services/user.service.ts'
+    import personnelService from '../../../core/services/personnel.service.ts'
     import type { ActionStatusType } from '../../../@types/Action.type.ts'
+    import { toast } from 'vue3-toastify'
 
     const router = useRouter()
     const { t, locale } = useI18n()
@@ -137,6 +142,12 @@
         } | null
         status?: string | null
         type?: string | null
+        comment?: string | null
+        date?: string | null
+        time?: string | null
+        latitude?: number | null
+        longitude?: number | null
+        rawInspectorId?: string | number | null
     }>({
         title: 'Inspection Station-Service',
         description:
@@ -150,6 +161,12 @@
         site_location: null,
         status: null,
         type: null,
+        comment: null,
+        date: null,
+        time: null,
+        latitude: null,
+        longitude: null,
+        rawInspectorId: null,
     })
 
     const sections = ref<ChecklistSectionVM[]>([
@@ -417,6 +434,29 @@
     const actionService = useActionService()
     const userService = useUserService()
     const usersList = ref<any[]>([])
+
+    const personnelsList = ref<any[]>([])
+    const actionPersonnelSearchQuery = ref('')
+
+    const filteredActionPersonnels = computed(() => {
+        const q = actionPersonnelSearchQuery.value.toLowerCase().trim()
+        if (!q) return personnelsList.value
+        return personnelsList.value.filter((p: any) => {
+            const full = `${p.first_name || ''} ${p.last_name || ''} ${p.fonction || ''} ${p.direction || ''} ${p.email || ''}`.toLowerCase()
+            return full.includes(q)
+        })
+    })
+
+    function fetchPersonnels() {
+        personnelService.indexAll()
+            .then((res: any) => {
+                personnelsList.value = res.data?.data || res.data || []
+            })
+            .catch((err: any) => {
+                console.error('Erreur chargement personnels:', err)
+            })
+    }
+
     const loading = ref<boolean>(false)
 
     function mapApiResponse(data: any) {
@@ -428,12 +468,18 @@
             createdBy: data.added_by?.first_name ? `${data.added_by.first_name} ${data.added_by.last_name || ''}` : checklist.value.createdBy,
             createdAt: data.date || checklist.value.createdAt,
             updatedAt: data.completed_at || data.date || checklist.value.updatedAt,
-            inspector: data.inspector?.first_name ? `${data.inspector.first_name} ${data.inspector.last_name || ''}` : checklist.value.inspector,
+            inspector: data.inspector?.first_name ? `${data.inspector.first_name} ${data.inspector.last_name || ''}` : (typeof data.inspector === 'string' ? data.inspector : checklist.value.inspector),
             site: data.site || null,
             location: data.location || null,
             site_location: data.site_location || null,
             status: data.status || null,
             type: data.type || null,
+            comment: data.comment || null,
+            date: data.date || null,
+            time: data.time || null,
+            latitude: data.latitude ?? data.site_location?.latitude ?? null,
+            longitude: data.longitude ?? data.site_location?.longitude ?? null,
+            rawInspectorId: data.inspector?.id ?? null,
         }
 
         if (data.sections && data.sections.length > 0) {
@@ -592,6 +638,224 @@
         }
     }
 
+    // =========================================================
+    // MODIFIER L'INSPECTION (EDIT INSPECTION MODAL)
+    // =========================================================
+    const modal_edit = ref(false)
+    const loading_edit = ref(false)
+    const editStationSearchQuery = ref('')
+
+    const siteCategories = [
+        { label: 'Station Service', value: 'STATION SERVICE' },
+        { label: 'Magasin', value: 'MAGASIN' },
+        { label: 'Agence', value: 'AGENCE' },
+        { label: 'Véhicule', value: 'VEHICULE' },
+        { label: 'Camion Citerne (CC)', value: 'CAMION CITERNE' },
+        { label: 'Client B2B', value: 'B2B' },
+    ]
+
+    const registeredSites = ref<{
+        id: number | string;
+        name: string;
+        locality?: string;
+        province?: string;
+        latitude?: number | null;
+        longitude?: number | null;
+    }[]>([])
+
+    const zonePresets = [
+        'Piste de distribution',
+        'Boutique / Shop',
+        'Local technique TGBT',
+        'Zone Dépotage',
+        'Baie de lavage / Vidange',
+        'Bureaux administratifs',
+        'Stockage & Cuves',
+        'Parking & Dépôt',
+        'Zone compresseur / Air',
+        'Sanitaires / Vestiaires',
+    ]
+
+    function applyZonePreset(form: any, preset: string) {
+        if (form.location === preset) {
+            form.location = ''
+        } else {
+            form.location = preset
+        }
+    }
+
+    const editForm = ref<{
+        title: string;
+        description: string;
+        status: string;
+        site_type: string;
+        site: string;
+        location: string;
+        latitude?: number;
+        longitude?: number;
+        inspector_id?: string | number;
+        date: string;
+        time: string;
+        comment: string;
+    }>({
+        title: '',
+        description: '',
+        status: 'IN_PROGRESS',
+        site_type: 'STATION SERVICE',
+        site: '',
+        location: '',
+        latitude: undefined,
+        longitude: undefined,
+        inspector_id: undefined,
+        date: '',
+        time: '',
+        comment: '',
+    })
+
+    const isEditCartographyRequired = computed(() => {
+        const st = (editForm.value.site_type || '').toUpperCase()
+        return st === 'VEHICULE' || st === 'CAMION CITERNE' || st === 'B2B'
+    })
+
+    const filteredEditRegisteredSites = computed(() => {
+        const q = editStationSearchQuery.value.trim().toLowerCase()
+        if (!q) return registeredSites.value
+        return registeredSites.value.filter(s =>
+            s.name.toLowerCase().includes(q) ||
+            (s.locality && s.locality.toLowerCase().includes(q)) ||
+            (s.province && s.province.toLowerCase().includes(q))
+        )
+    })
+
+    const selectedEditRegisteredSiteInfo = computed(() => {
+        return registeredSites.value.find(s => s.name === editForm.value.site)
+    })
+
+    function loadRegisteredSites() {
+        if (registeredSites.value.length === 0) {
+            siteService.all()
+                .then(res => {
+                    const sList = res.data?.data || res.data || []
+                    registeredSites.value = sList.map((s: any) => ({
+                        id: s.id,
+                        name: s.name,
+                        locality: s.location?.locality || s.locality || '',
+                        province: s.location?.province || s.province || '',
+                        latitude: s.location?.latitude ?? s.latitude ?? null,
+                        longitude: s.location?.longitude ?? s.longitude ?? null,
+                    })).filter((s: any) => Boolean(s.name))
+                })
+                .catch(() => {})
+        }
+    }
+
+    function openEditModal() {
+        fetchUsers()
+        loadRegisteredSites()
+
+        let inferredSiteType = 'STATION SERVICE'
+        const chkSiteUpper = (checklist.value.site || '').toUpperCase()
+        const chkTypeUpper = (checklist.value.type || '').toUpperCase()
+        if (chkSiteUpper === 'VEHICULE' || chkTypeUpper.includes('VEHICULE')) {
+            inferredSiteType = 'VEHICULE'
+        } else if (chkSiteUpper.includes('CITERNE') || chkTypeUpper.includes('CITERNE') || chkTypeUpper.includes('CAMION')) {
+            inferredSiteType = 'CAMION CITERNE'
+        } else if (chkSiteUpper === 'B2B' || chkTypeUpper.includes('B2B') || chkTypeUpper.includes('CONSO')) {
+            inferredSiteType = 'B2B'
+        } else if (chkSiteUpper === 'MAGASIN' || chkTypeUpper.includes('MAGASIN')) {
+            inferredSiteType = 'MAGASIN'
+        } else if (chkSiteUpper === 'AGENCE' || chkTypeUpper.includes('AGENCE')) {
+            inferredSiteType = 'AGENCE'
+        }
+
+        editForm.value = {
+            title: checklist.value.title || '',
+            description: checklist.value.description || '',
+            status: checklist.value.status || 'IN_PROGRESS',
+            site_type: inferredSiteType,
+            site: checklist.value.site || '',
+            location: checklist.value.location || '',
+            latitude: checklist.value.latitude ?? checklist.value.site_location?.latitude ?? undefined,
+            longitude: checklist.value.longitude ?? checklist.value.site_location?.longitude ?? undefined,
+            inspector_id: checklist.value.rawInspectorId ?? undefined,
+            date: checklist.value.date || (checklist.value.createdAt ? checklist.value.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]),
+            time: checklist.value.time || '08:00',
+            comment: checklist.value.comment || '',
+        }
+
+        editStationSearchQuery.value = ''
+        modal_edit.value = true
+    }
+
+    function onEditSiteTypeChange() {
+        if (!isEditCartographyRequired.value) {
+            const existing = registeredSites.value.find(s => s.name === editForm.value.site)
+            if (existing) {
+                editForm.value.latitude = existing.latitude ?? undefined
+                editForm.value.longitude = existing.longitude ?? undefined
+            } else if (registeredSites.value.length > 0 && !editForm.value.site) {
+                const first = registeredSites.value[0]
+                editForm.value.site = first.name
+                editForm.value.latitude = first.latitude ?? undefined
+                editForm.value.longitude = first.longitude ?? undefined
+            }
+        }
+    }
+
+    function onEditRegisteredSiteChange(e: Event) {
+        const target = e.target as HTMLSelectElement
+        const siteName = target.value
+        editForm.value.site = siteName
+        const found = registeredSites.value.find(s => s.name === siteName)
+        if (found) {
+            editForm.value.latitude = found.latitude ?? undefined
+            editForm.value.longitude = found.longitude ?? undefined
+            if (!editForm.value.location) {
+                editForm.value.location = found.name
+            }
+        }
+    }
+
+    function onEditLocationPickerDetected(data: { locality: string; province: string; dms: string; displayName: string; lat: number; lng: number }) {
+        editForm.value.latitude = data.lat
+        editForm.value.longitude = data.lng
+        if (!editForm.value.location && (data.locality || data.displayName)) {
+            editForm.value.location = data.locality || data.displayName
+        }
+    }
+
+    async function submitEdit() {
+        const id = route.params.id as string
+        if (!id || !editForm.value.title || !editForm.value.date || !editForm.value.time) return
+        loading_edit.value = true
+        try {
+            const payload: any = {
+                title: editForm.value.title,
+                description: editForm.value.description,
+                status: editForm.value.status,
+                site_type: editForm.value.site_type,
+                site: editForm.value.site || editForm.value.site_type,
+                location: editForm.value.location,
+                latitude: editForm.value.latitude,
+                longitude: editForm.value.longitude,
+                inspector_id: editForm.value.inspector_id,
+                date: editForm.value.date,
+                time: editForm.value.time,
+                comment: editForm.value.comment,
+            }
+
+            await checklistService.update(id, payload)
+            toast.success(locale.value === 'en' ? 'Inspection updated successfully!' : 'Inspection modifiée avec succès !')
+            modal_edit.value = false
+            fetchChecklist()
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to update inspection.' : 'Erreur lors de la modification de l\'inspection.')
+            toast.error(errorMsg)
+        } finally {
+            loading_edit.value = false
+        }
+    }
+
     onMounted(() => {
         window.addEventListener('keydown', onKeydown)
 
@@ -651,16 +915,19 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                <ButtonFilter :text="locale === 'en' ? 'Edit info' : 'Modifier les infos'" :icon="Edit" @click="openEditModal" />
                 <ButtonFilter :text="copied === 'summary' ? (locale === 'en' ? 'Summary copied!' : 'Résumé copié !') : (locale === 'en' ? 'Copy summary' : 'Copier le résumé')" :icon="copied === 'summary' ? Check : MessageSquare" @click="copySummary" />
                 <ButtonFilter :text="locale === 'en' ? 'Export CSV' : 'Exporter en CSV'" :icon="FileDown" @click="exportCsv" />
                 <ButtonFilter :text="locale === 'en' ? 'Export PDF' : 'Exporter en PDF'" :icon="Printer" is-primary @click="exportPdf" />
             </div>
         </div>
 
-        <!-- GRILLE SUPÉRIEURE : SYNTHÈSE + CARTOGRAPHIE & DÉTAILS -->
-        <div class="grid grid-cols-1 gap-4 p-4 lg:grid-cols-6">
-            <!-- COLONNE GAUCHE (4 COLONNES) : Synthèse & Performances -->
-            <section class="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-2xs lg:col-span-4">
+        <!-- DISPOSITION PRINCIPALE : TOUT LE CONTENU À GAUCHE, CARTOGRAPHIE & DÉTAILS À DROITE -->
+        <div class="grid grid-cols-1 gap-4 p-4 lg:grid-cols-6 items-start">
+            <!-- COLONNE GAUCHE (4 COLONNES) : SYNTHÈSE, PLAN D'ACTIONS, SECTIONS & QUESTIONS -->
+            <div class="flex flex-col gap-4 lg:col-span-4 min-w-0">
+                <!-- 1. SYNTHÈSE & PERFORMANCES -->
+                <section class="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-2xs ">
                 <div class="flex flex-row items-start justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -732,85 +999,9 @@
                 </div>
             </section>
 
-            <!-- COLONNE DROITE (2 COLONNES) : Cartographie & Métadonnées -->
-            <div class="flex flex-col gap-4 lg:col-span-2">
-                <!-- 1. CARTOGRAPHIE D'EMPLACEMENT ET SECOURS D'URGENCE -->
-                <SidebarLocationMap
-                    :site-name="checklist.site || checklist.location"
-                    :location-name="checklist.location || checklist.site"
-                    :latitude="checklist.site_location?.latitude"
-                    :longitude="checklist.site_location?.longitude"
-                    :locality="checklist.site_location?.locality"
-                    :province="checklist.site_location?.province"
-                    :status="checklist.status"
-                    :conformity-rate="stats.conformityRate"
-                />
-
-                <!-- 2. FICHE DÉTAILS DE L'INSPECTION -->
-                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-2xs flex flex-col gap-3">
-                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                        <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500">{{ locale === 'en' ? 'Inspection details' : "Détails de l'inspection" }}</h5>
-                        <span class="text-[10px] text-gray-400">Réf. #{{ route.params.id }}</span>
-                    </div>
-
-                    <dl class="flex flex-col gap-3 text-xs">
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="flex items-center gap-2 text-gray-500">
-                                <MapPin :size="14" class="text-gray-400 shrink-0" />
-                                <span>{{ locale === 'en' ? 'Site / Station' : 'Site / Station' }}</span>
-                            </dt>
-                            <dd class="font-bold text-gray-900 truncate max-w-[150px] text-right">
-                                {{ checklist.site || checklist.location || (locale === 'en' ? 'Not specified' : 'Non spécifié') }}
-                            </dd>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="flex items-center gap-2 text-gray-500">
-                                <UserCheck2 :size="14" class="text-gray-400 shrink-0" />
-                                <span>{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</span>
-                            </dt>
-                            <dd class="font-bold text-gray-900 truncate">
-                                {{ checklist.inspector || (locale === 'en' ? 'Not assigned' : 'Non assigné') }}
-                            </dd>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="flex items-center gap-2 text-gray-500">
-                                <Calendar :size="14" class="text-gray-400 shrink-0" />
-                                <span>{{ locale === 'en' ? 'Inspection date' : "Date d'inspection" }}</span>
-                            </dt>
-                            <dd class="font-semibold text-gray-800">
-                                {{ formatLocalizedDate(checklist.createdAt) }}
-                            </dd>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="flex items-center gap-2 text-gray-500">
-                                <User :size="14" class="text-gray-400 shrink-0" />
-                                <span>{{ locale === 'en' ? 'Creator' : 'Créateur' }}</span>
-                            </dt>
-                            <dd class="font-semibold text-gray-800 truncate">
-                                {{ checklist.createdBy }}
-                            </dd>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-2">
-                            <dt class="flex items-center gap-2 text-gray-500">
-                                <TimerReset :size="14" class="text-gray-400 shrink-0" />
-                                <span>{{ locale === 'en' ? 'Last update' : 'Dernière mise à jour' }}</span>
-                            </dt>
-                            <dd class="font-semibold text-gray-800">
-                                {{ formatLocalizedDate(checklist.updatedAt) }}
-                            </dd>
-                        </div>
-                    </dl>
-                </section>
-            </div>
-        </div>
-
-        <!-- PLAN D'ACTIONS SI ACTIONS EXISTANTES -->
-        <section v-if="actions.length" class="p-4 pt-0">
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-2xs">
+                <!-- 2. PLAN D'ACTIONS CORRECTIVES -->
+                <!-- PLAN D'ACTIONS SI ACTIONS EXISTANTES -->
+        <section v-if="actions.length" class="rounded-2xl border border-gray-200 bg-white p-5 shadow-2xs">
                 <div class="mb-3 flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
                         <div class="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
@@ -854,11 +1045,11 @@
                         </div>
                     </li>
                 </ul>
-            </div>
-        </section>
+            </section>
 
-        <!-- SECTIONS & QUESTIONS -->
-        <div class="flex flex-col gap-y-3 p-4 pt-0">
+                <!-- 3. SECTIONS & QUESTIONS -->
+                <!-- SECTIONS & QUESTIONS -->
+        <div class="flex flex-col gap-y-3">
             <div class="flex flex-wrap items-center justify-between gap-3 pb-1">
                 <div>
                     <h4 class="text-base font-bold text-gray-900">{{ locale === 'en' ? 'Section and question details' : 'Détails des sections et questions' }}</h4>
@@ -1126,6 +1317,94 @@
                 </div>
             </div>
         </div>
+            </div>
+
+            <!-- COLONNE DROITE (2 COLONNES) : CARTOGRAPHIE & DÉTAILS UNIQUEMENT -->
+            <div class="flex flex-col gap-4 lg:col-span-2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+                <!-- 1. CARTOGRAPHIE D'EMPLACEMENT ET SECOURS D'URGENCE -->
+                <SidebarLocationMap
+                    :site-name="checklist.site || checklist.location"
+                    :location-name="checklist.location || checklist.site"
+                    :site-type="checklist.type || checklist.site"
+                    :latitude="checklist.site_location?.latitude"
+                    :longitude="checklist.site_location?.longitude"
+                    :locality="checklist.site_location?.locality"
+                    :province="checklist.site_location?.province"
+                    :status="checklist.status"
+                    :conformity-rate="stats.conformityRate"
+                />
+
+                <!-- 2. FICHE DÉTAILS DE L'INSPECTION -->
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-2xs flex flex-col gap-3">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <div class="flex items-center gap-2">
+                            <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500">{{ locale === 'en' ? 'Inspection details' : "Détails de l'inspection" }}</h5>
+                            <button
+                                type="button"
+                                @click="openEditModal"
+                                class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-md transition cursor-pointer"
+                            >
+                                <Edit :size="12" />
+                                <span>{{ locale === 'en' ? 'Edit' : 'Modifier' }}</span>
+                            </button>
+                        </div>
+                        <span class="text-[10px] text-gray-400">Réf. #{{ route.params.id }}</span>
+                    </div>
+
+                    <dl class="flex flex-col gap-3 text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <MapPin :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Site / Station' : 'Site / Station' }}</span>
+                            </dt>
+                            <dd class="font-bold text-gray-900 truncate max-w-[150px] text-right">
+                                {{ checklist.site || checklist.location || (locale === 'en' ? 'Not specified' : 'Non spécifié') }}
+                            </dd>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <UserCheck2 :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Inspector' : 'Inspecteur' }}</span>
+                            </dt>
+                            <dd class="font-bold text-gray-900 truncate">
+                                {{ checklist.inspector || (locale === 'en' ? 'Not assigned' : 'Non assigné') }}
+                            </dd>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <Calendar :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Inspection date' : "Date d'inspection" }}</span>
+                            </dt>
+                            <dd class="font-semibold text-gray-800">
+                                {{ formatLocalizedDate(checklist.createdAt) }}
+                            </dd>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <User :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Creator' : 'Créateur' }}</span>
+                            </dt>
+                            <dd class="font-semibold text-gray-800 truncate">
+                                {{ checklist.createdBy }}
+                            </dd>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <TimerReset :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Last update' : 'Dernière mise à jour' }}</span>
+                            </dt>
+                            <dd class="font-semibold text-gray-800">
+                                {{ formatLocalizedDate(checklist.updatedAt) }}
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+        </div>
 
         <!-- MODAL ACTION CORRECTIVE CHECKLIST -->
         <div v-if="checklistActionModal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
@@ -1158,15 +1437,24 @@
                             class="w-full p-2.5 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary resize-none"></textarea>
                     </div>
 
-                    <!-- Responsable assigné -->
+                    <!-- Responsable assigné (Personnel) -->
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1">{{ locale === 'en' ? 'Assigned person (User)' : 'Responsable assigné (Utilisateur)' }}</label>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block font-semibold text-gray-700">{{ locale === 'en' ? 'Person in charge (Personnel) *' : 'Responsable assigné (Personnel) *' }}</label>
+                            <span v-if="personnelsList.length > 0" class="text-[10px] text-gray-400 font-medium">({{ filteredActionPersonnels.length }} / {{ personnelsList.length }})</span>
+                        </div>
+                        <input
+                            v-model="actionPersonnelSearchQuery"
+                            type="text"
+                            :placeholder="locale === 'en' ? 'Search personnel by name, role...' : '🔍 Rechercher un personnel par nom, fonction...'"
+                            class="w-full mb-1.5 p-2 text-xs border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary transition"
+                        />
                         <select
                             v-model="checklistActionModal.assignedTo"
                             class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option :value="null">{{ locale === 'en' ? '-- No user assigned --' : '-- Aucun utilisateur assigné --' }}</option>
-                            <option v-for="u in usersList" :key="u.id" :value="u.id">
-                                {{ u.first_name }} {{ u.last_name || '' }} — {{ u.job || u.department || u.email }}
+                            <option :value="null">{{ locale === 'en' ? '-- Select a personnel --' : '-- Choisir parmi le personnel Galana --' }}</option>
+                            <option v-for="p in filteredActionPersonnels" :key="p.id" :value="p.id">
+                                {{ p.first_name }} {{ p.last_name || '' }} — {{ p.fonction || p.direction || 'Personnel' }}
                             </option>
                         </select>
                     </div>
@@ -1202,6 +1490,351 @@
                 </div>
             </div>
         </div>
+
+        <!-- ========================================================= -->
+        <!-- MODAL MODIFIER L'INSPECTION (EDIT CHECKLIST INFO MODAL)     -->
+        <!-- ========================================================= -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="modal_edit"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="modal_edit = false"
+                >
+                    <div
+                        class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl sm:max-w-3xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                    >
+                        <!-- En-tête Modal Edit -->
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-amber-50 to-orange-50/50 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                                    <Edit :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'Edit Inspection Information' : 'Modifier les informations de l\'inspection' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        Réf. #{{ route.params.id }} • {{ locale === 'en' ? 'Update inspection metadata, site, GPS location, and status.' : 'Mettez à jour les métadonnées, le site, la cartographie GPS et le statut.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="modal_edit = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <X :size="18" />
+                            </button>
+                        </div>
+
+                        <!-- Formulaire Modal Edit -->
+                        <form @submit.prevent="submitEdit" class="flex flex-col flex-1 overflow-y-auto">
+                            <div class="p-5 space-y-4">
+                                <!-- Titre de l'inspection -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Inspection Title' : 'Titre de l\'inspection' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="editForm.title"
+                                        type="text"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition font-medium"
+                                    />
+                                </div>
+
+                                <!-- Statut & Inspecteur -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Statut de l'inspection -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Inspection Status' : 'Statut de l\'inspection' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            v-model="editForm.status"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer font-semibold"
+                                        >
+                                            <option v-for="st in ChecklistStatusJsonData" :key="st.value" :value="st.value">
+                                                {{ st.label }} ({{ st.value }})
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Inspecteur assigné -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Assigned inspector' : 'Inspecteur assigné' }}
+                                        </label>
+                                        <select
+                                            v-model="editForm.inspector_id"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                        >
+                                            <option :value="undefined">{{ locale === 'en' ? 'Default (Unassigned / Yourself)' : 'Par défaut (Non assigné / Vous-même)' }}</option>
+                                            <option v-for="usr in usersList" :key="usr.id" :value="usr.id">
+                                                {{ usr.first_name ? (usr.first_name + ' ' + (usr.last_name || '')).trim() : (usr.name || usr.email) }} {{ usr.job ? '(' + usr.job + ')' : '' }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Type de site / Cible -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Target / Site Category' : 'Type de site / Cible' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="editForm.site_type"
+                                        required
+                                        @change="onEditSiteTypeChange"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer font-medium"
+                                    >
+                                        <option v-for="st in siteCategories" :key="st.value" :value="st.value">
+                                            {{ st.label }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- CAS 1 EDIT: SITE FIXE / STATION SERVICE -->
+                                <div v-if="!isEditCartographyRequired" class="space-y-2">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label class="block text-xs font-semibold text-gray-700">
+                                                {{ locale === 'en' ? 'Galana Station / Site (registered list)' : 'Station / Site Galana enregistré' }}
+                                            </label>
+                                            <span v-if="registeredSites.length" class="text-[10px] text-gray-400">
+                                                {{ filteredEditRegisteredSites.length }} / {{ registeredSites.length }} {{ locale === 'en' ? 'stations' : 'stations' }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Champ de recherche de station en mode édition -->
+                                        <div class="relative mb-1.5">
+                                            <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" :size="13" />
+                                            <input
+                                                v-model="editStationSearchQuery"
+                                                type="text"
+                                                :placeholder="locale === 'en' ? 'Filter station by name, locality, province...' : 'Filtrer par nom de station, localité, province...'"
+                                                class="w-full h-8 pl-8 pr-7 text-xs rounded-lg border border-gray-200 bg-slate-50/80 focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                            />
+                                            <button
+                                                v-if="editStationSearchQuery"
+                                                type="button"
+                                                @click="editStationSearchQuery = ''"
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded cursor-pointer"
+                                            >
+                                                <X :size="12" />
+                                            </button>
+                                        </div>
+
+                                        <select
+                                            :value="editForm.site"
+                                            @change="onEditRegisteredSiteChange"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer font-medium"
+                                        >
+                                            <option value="">{{ locale === 'en' ? '-- Select a registered site --' : '-- Sélectionner une station enregistrée --' }}</option>
+                                            <option v-for="s in filteredEditRegisteredSites" :key="s.name" :value="s.name">
+                                                {{ s.name }} {{ s.locality ? '— ' + s.locality : '' }} {{ s.province ? '(' + s.province + ')' : '' }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div
+                                        v-if="selectedEditRegisteredSiteInfo"
+                                        class="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-2"
+                                    >
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                                <MapPin :size="13" />
+                                            </div>
+                                            <div class="min-w-0">
+                                                <span class="font-bold text-xs truncate block">{{ selectedEditRegisteredSiteInfo.name }}</span>
+                                                <span class="text-[11px] text-emerald-700">
+                                                    {{ selectedEditRegisteredSiteInfo.locality || 'Madagascar' }}
+                                                    <template v-if="selectedEditRegisteredSiteInfo.province"> • {{ selectedEditRegisteredSiteInfo.province }}</template>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="text-[10px] font-mono text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md shrink-0">
+                                            <span v-if="selectedEditRegisteredSiteInfo.latitude && selectedEditRegisteredSiteInfo.longitude">
+                                                GPS : {{ Number(selectedEditRegisteredSiteInfo.latitude).toFixed(4) }}, {{ Number(selectedEditRegisteredSiteInfo.longitude).toFixed(4) }}
+                                            </span>
+                                            <span v-else>{{ locale === 'en' ? 'Registered site' : 'Cartographie enregistrée' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CAS 2 EDIT: VEHICULE, CC, B2B -->
+                                <div v-else class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <template v-if="editForm.site_type === 'VEHICULE'">
+                                                {{ locale === 'en' ? 'Vehicle License Plate / Identifier' : 'Immatriculation / Réf. du véhicule' }} <span class="text-gray-400 font-normal">({{ locale === 'en' ? 'Optional' : 'Optionnel' }})</span>
+                                            </template>
+                                            <template v-else-if="editForm.site_type === 'CAMION CITERNE'">
+                                                {{ locale === 'en' ? 'Tanker Truck Number / License Plate' : 'Numéro / Immatriculation Camion Citerne (CC)' }} <span class="text-gray-400 font-normal">({{ locale === 'en' ? 'Optional' : 'Optionnel' }})</span>
+                                            </template>
+                                            <template v-else-if="editForm.site_type === 'B2B'">
+                                                {{ locale === 'en' ? 'Client Name / B2B Installation' : 'Nom du client / Site client B2B' }} <span class="text-red-500">*</span>
+                                            </template>
+                                            <template v-else>
+                                                {{ locale === 'en' ? 'Site / Identifier' : 'Désignation du site / Cible' }}
+                                            </template>
+                                        </label>
+                                        <input
+                                            v-model="editForm.site"
+                                            type="text"
+                                            :placeholder="
+                                                editForm.site_type === 'VEHICULE'
+                                                    ? 'Ex: Toyota Hilux - 1234 TAB (optionnel)'
+                                                    : editForm.site_type === 'CAMION CITERNE'
+                                                    ? 'Ex: Camion Citerne CC-04 / 5678 WWT (optionnel)'
+                                                    : 'Ex: Client B2B - Usine Star Antsirabe'
+                                            "
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Localisation précise / Zone / Adresse (avec presets 1-clic) -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="block text-xs font-semibold text-gray-700">
+                                            {{ locale === 'en' ? 'Precise location / Zone / Address' : 'Localisation précise / Zone / Adresse' }}
+                                        </label>
+                                        <button
+                                            v-if="editForm.location"
+                                            type="button"
+                                            @click="editForm.location = ''"
+                                            class="text-[10px] text-gray-400 hover:text-red-500 cursor-pointer transition"
+                                        >
+                                            {{ locale === 'en' ? 'Clear' : 'Effacer' }}
+                                        </button>
+                                    </div>
+                                    <input
+                                        v-model="editForm.location"
+                                        type="text"
+                                        :placeholder="locale === 'en' ? 'Ex: Distribution lanes, Shop, Technical room TGBT...' : 'Ex: Piste de distribution, Boutique, Local technique TGBT...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                        <span class="text-[10px] text-gray-400 font-medium mr-1">{{ locale === 'en' ? 'Quick zones:' : 'Zones types :' }}</span>
+                                        <button
+                                            v-for="zp in zonePresets"
+                                            :key="zp"
+                                            type="button"
+                                            @click="applyZonePreset(editForm, zp)"
+                                            :class="editForm.location === zp ? 'bg-primary text-white border-primary' : 'bg-slate-100 hover:bg-slate-200 text-gray-700 border-gray-200'"
+                                            class="px-2 py-0.5 rounded-full text-[10px] border transition cursor-pointer"
+                                        >
+                                            {{ zp }}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Choix cartographique interactif GPS (disponible pour tous en édition) -->
+                                <div class="rounded-xl border border-gray-200 bg-slate-50/70 p-3 flex flex-col gap-2">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1.5 text-xs font-bold text-gray-800">
+                                            <MapPin :size="15" class="text-primary" />
+                                            <span>{{ locale === 'en' ? 'Inspection GPS Location' : 'Coordonnées GPS / Emplacement cartographique' }}</span>
+                                        </div>
+                                        <div v-if="editForm.latitude && editForm.longitude" class="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            <span>{{ Number(editForm.latitude).toFixed(4) }}, {{ Number(editForm.longitude).toFixed(4) }}</span>
+                                        </div>
+                                        <span v-else class="text-[10px] text-gray-400">
+                                            {{ locale === 'en' ? 'No GPS set' : 'Non géolocalisé' }}
+                                        </span>
+                                    </div>
+                                    <LocationPickerMap
+                                        :latitude="editForm.latitude ?? null"
+                                        :longitude="editForm.longitude ?? null"
+                                        height="h-[200px]"
+                                        @update:latitude="editForm.latitude = $event ?? undefined"
+                                        @update:longitude="editForm.longitude = $event ?? undefined"
+                                        @location-detected="onEditLocationPickerDetected"
+                                    />
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <!-- Date -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Date' : 'Date de contrôle' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="editForm.date"
+                                            type="date"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+
+                                    <!-- Heure -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                            {{ locale === 'en' ? 'Time' : 'Heure de contrôle' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            v-model="editForm.time"
+                                            type="time"
+                                            required
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Commentaire / Observations -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'General Comment / Observations' : 'Commentaire général / Observations' }}
+                                    </label>
+                                    <textarea
+                                        v-model="editForm.comment"
+                                        rows="2"
+                                        :placeholder="locale === 'en' ? 'Add any context, general observation or inspection notes...' : 'Ajouter des notes générales, contexte ou observations sur l\'inspection...'"
+                                        class="w-full p-2.5 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition resize-none"
+                                    ></textarea>
+                                </div>
+
+                                <!-- Description -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Description' : 'Description du contexte' }}
+                                    </label>
+                                    <input
+                                        v-model="editForm.description"
+                                        type="text"
+                                        :placeholder="locale === 'en' ? 'Brief description of the inspection context...' : 'Brève description du contexte de contrôle...'"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+                            </div>
+
+                            <!-- Footer d'actions Edit -->
+                            <div class="px-5 py-3 bg-slate-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                                <button
+                                    type="button"
+                                    @click="modal_edit = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="loading_edit || !editForm.title || !editForm.date || !editForm.time"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-xs transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                >
+                                    <Loader2 v-if="loading_edit" :size="13" class="animate-spin" />
+                                    <span>{{ locale === 'en' ? 'Save Changes' : 'Enregistrer les modifications' }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
     </div>
 </template>
 

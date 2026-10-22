@@ -39,7 +39,7 @@
                                 <IdCard class="h-4 w-4" />
                             </div>
                             <h5>
-                                Informations générales
+                                {{ locale === 'en' ? 'General Information' : 'Informations générales' }}
                             </h5>
                         </div>
 
@@ -67,17 +67,17 @@
 
                             <div>
                                 <p class="text-sm font-medium text-text-primary">
-                                    Photo de profil
+                                    {{ locale === 'en' ? 'Profile picture' : 'Photo de profil' }}
                                 </p>
                                 <p class="mt-0.5 text-xs text-text-muted">
-                                    JPG ou PNG, 2 Mo maximum, optionnel.
+                                    {{ locale === 'en' ? 'JPG or PNG, 2 MB maximum, optional.' : 'JPG ou PNG, 2 Mo maximum, optionnel.' }}
                                 </p>
                                 <p v-if="avatarError" class="mt-1 text-xs font-medium text-danger">
                                     {{ avatarError }}
                                 </p>
                                 <button v-if="avatarPreview" type="button" @click="removeAvatar"
                                     class="mt-1 text-xs font-medium text-danger hover:underline">
-                                    Retirer la photo
+                                    {{ locale === 'en' ? 'Remove picture' : 'Retirer la photo' }}
                                 </button>
                             </div>
 
@@ -86,7 +86,7 @@
                         <div class="flex flex-col gap-3">
 
                             <p class="text-xs font-medium text-text-muted">
-                                Identité
+                                {{ locale === 'en' ? 'Identity' : 'Identité' }}
                             </p>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -95,8 +95,8 @@
                                     "Prénom" le prénom. Les libellés étaient auparavant
                                     inversés par rapport aux champs first_name / last_name.
                                 -->
-                                <Input v-model="form.first_name" :error="errors?.first_name ? errors?.first_name[0]: undefined" label="Prénom *" :icon="UserRound" />
-                                <Input v-model="form.last_name" label="Nom" :icon="UserRound" />
+                                <Input v-model="form.first_name" :error="errors?.first_name ? errors?.first_name[0]: undefined" :label="locale === 'en' ? 'First name *' : 'Prénom *'" :icon="UserRound" />
+                                <Input v-model="form.last_name" :label="locale === 'en' ? 'Last name' : 'Nom'" :icon="UserRound" />
                             </div>
 
                         </div>
@@ -104,23 +104,23 @@
                         <div class="flex flex-col gap-3 border-t border-border pt-5">
 
                             <p class="text-xs font-medium text-text-muted">
-                                Contact &amp; poste
+                                {{ locale === 'en' ? 'Contact & position' : 'Contact & poste' }}
                             </p>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
-                                <Input v-model="form.phone_number" type="tel" label="Numéro de téléphone" :icon="Phone"                                     :error="errors?.phone_number ? errors?.phone_number[0] : undefined"
+                                <Input v-model="form.phone_number" type="tel" :label="locale === 'en' ? 'Phone number' : 'Numéro de téléphone'" :icon="Phone"                                     :error="errors?.phone_number ? errors?.phone_number[0] : undefined"
                                     class="sm:col-span-2" />
 
                                 <div class="relative">
-                                    <Input v-model="form.department" label="Département" :error="errors?.department ? errors?.department[0] : undefined"
+                                    <Input v-model="form.department" :label="locale === 'en' ? 'Department' : 'Département'" :error="errors?.department ? errors?.department[0] : undefined"
                                         :icon="Building2Icon"
                                         :list_id="'department_id'" :lists="departments" :disabled="isLoadingFilters" />
                                     <Loader2 v-if="isLoadingFilters"
                                         class="absolute right-3 top-9 h-4 w-4 animate-spin text-text-muted" />
                                 </div>
                                 <div class="relative">
-                                    <Input v-model="form.job" label="Fonction" :icon="Briefcase" :list_id="'job_id'"                                         :error="errors?.job ? errors?.job[0] : undefined"
+                                    <Input v-model="form.job" :label="locale === 'en' ? 'Position' : 'Fonction'" :icon="Briefcase" :list_id="'job_id'"                                         :error="errors?.job ? errors?.job[0] : undefined"
                                         :lists="fonctions" :disabled="isLoadingFilters" />
                                     <Loader2 v-if="isLoadingFilters"
                                         class="absolute right-3 top-9 h-4 w-4 animate-spin text-text-muted" />
@@ -150,39 +150,39 @@
                                 <ShieldCheck class="h-4 w-4" />
                             </div>
                             <h5>
-                                Sécurisation
+                                {{ locale === 'en' ? 'Security' : 'Sécurisation' }}
                             </h5>
                         </div>
 
                         <div class="flex flex-col gap-y-3">
 
-                            <Input v-model="form.email" type="email" label="E-mail *" :icon="MailIcon" :error="errors?.email ? errors?.email[0] : undefined"/>
+                            <Input v-model="form.email" type="email" :label="locale === 'en' ? 'Email *' : 'E-mail *'" :icon="MailIcon" :error="errors?.email ? errors?.email[0] : undefined"/>
 
-                            <Input v-model="form.password" type="password" label="Mot de passe *" :icon="LockIcon" :error="errors?.password ? errors?.password[0] : undefined" />
+                            <Input v-model="form.password" type="password" :label="locale === 'en' ? 'Password *' : 'Mot de passe *'" :icon="LockIcon" :error="errors?.password ? errors?.password[0] : undefined" />
 
                             <Input v-model="form.confirmation_password" type="password"
-                                label="Confirmation de mot de passe *" :icon="LockKeyhole" />
+                                :label="locale === 'en' ? 'Password confirmation *' : 'Confirmation de mot de passe *'" :icon="LockKeyhole" />
 
                             <ul class="-mt-1 flex flex-col gap-1">
                                 <li class="flex items-center gap-1.5 text-xs"
                                     :class="isLengthValid ? 'text-success' : 'text-text-muted'">
                                     <Check v-if="isLengthValid" class="h-3.5 w-3.5 shrink-0" />
                                     <Circle v-else class="h-3.5 w-3.5 shrink-0" />
-                                    8 caractères minimum
+                                    {{ locale === 'en' ? '8 characters minimum' : '8 caractères minimum' }}
                                 </li>
                                 <li class="flex items-center gap-1.5 text-xs"
                                     :class="isMatchValid ? 'text-success' : 'text-text-muted'">
                                     <Check v-if="isMatchValid" class="h-3.5 w-3.5 shrink-0" />
                                     <Circle v-else class="h-3.5 w-3.5 shrink-0" />
-                                    Les deux mots de passe correspondent
+                                    {{ locale === 'en' ? 'Both passwords match' : 'Les deux mots de passe correspondent' }}
                                 </li>
                             </ul>
 
-                            <Select v-model="form.role" label="Rôle *" :icon="UserCog2Icon"
-                                :options="UserRoleDataJson" />
+                            <Select v-model="form.role" :label="locale === 'en' ? 'Role *' : 'Rôle *'" :icon="UserCog2Icon"
+                                :options="userRoleOptions" />
 
-                            <Select v-model="form.status" label="Statut" :icon="ToggleRight"
-                                :options="UserStatusJsonData" />
+                            <Select v-model="form.status" :label="locale === 'en' ? 'Status' : 'Statut'" :icon="ToggleRight"
+                                :options="userStatusOptions" />
 
                         </div>
 
@@ -197,11 +197,11 @@
 
                 <div class="flex w-full flex-row items-center justify-end gap-3 border-t border-border px-1 pt-6">
                     <Button variant="outline" type="button" :disabled="isSubmitting" @click="handleCancel">
-                        Annuler
+                        {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                     </Button>
                     <Button type="submit" :left-icon="isSubmitting ? Loader2 : CheckCircle"
                         :disabled="isSubmitting == true || validated_form == false" :loading="isSubmitting">
-                        {{ isSubmitting ? "Enregistrement..." : "Enregistrer" }}
+                        {{ isSubmitting ? (locale === 'en' ? "Saving..." : "Enregistrement...") : (locale === 'en' ? "Save" : "Enregistrer") }}
                     </Button>
                 </div>
 
@@ -234,6 +234,7 @@
     } from '@lucide/vue'
 
     import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+    import { useI18n } from 'vue-i18n'
 
     import Header from '../../../components/shared/Header.vue'
     import Input from '../../../components/ui/Input.vue'
@@ -260,6 +261,18 @@
     | FORMULAIRE
     |--------------------------------------------------------------------------
     */
+
+    const { t, locale } = useI18n()
+
+    const userRoleOptions = computed(() => [
+        { label: locale.value === 'en' ? 'User' : 'Utilisateur', value: 'USER' },
+        { label: locale.value === 'en' ? 'Administrator' : 'Administrateur', value: 'ADMIN' },
+    ])
+
+    const userStatusOptions = computed(() => [
+        { label: locale.value === 'en' ? 'Active' : 'Actif', value: 'ENABLED' },
+        { label: locale.value === 'en' ? 'Disabled' : 'Désactivé', value: 'DISABLED' },
+    ])
 
     const form = ref({
 

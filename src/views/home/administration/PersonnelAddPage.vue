@@ -32,18 +32,18 @@
                                     <IdCard class="h-4.5 w-4.5" />
                                 </div>
                                 <div>
-                                    <h5>Identité</h5>
-                                    <p class="text-xs text-text-muted">Comment cette personne apparaîtra dans la liste.
+                                    <h5>{{ locale === 'en' ? 'Identity' : 'Identité' }}</h5>
+                                    <p class="text-xs text-text-muted">{{ locale === 'en' ? 'How this person will appear in the list.' : 'Comment cette personne apparaîtra dans la liste.' }}
                                     </p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <Input v-model="form.first_name" label="Prénom *" :icon="UserRound"
+                                <Input v-model="form.first_name" :label="locale === 'en' ? 'First name *' : 'Prénom *'" :icon="UserRound"
                                     :error="errors.first_name?.[0]" />
-                                <Input v-model="form.last_name" label="Nom" :icon="UserRound"
+                                <Input v-model="form.last_name" :label="locale === 'en' ? 'Last name' : 'Nom'" :icon="UserRound"
                                     :error="errors.last_name?.[0]" />
-                                <Input v-model="form.email" type="email" label="E-mail *" :icon="MailIcon"
+                                <Input v-model="form.email" type="email" :label="locale === 'en' ? 'Email *' : 'E-mail *'" :icon="MailIcon"
                                     :error="errors.email?.[0]" class="sm:col-span-2" />
                             </div>
 
@@ -58,8 +58,8 @@
                                     <Building2Icon class="h-4.5 w-4.5" />
                                 </div>
                                 <div>
-                                    <h5>Affectation</h5>
-                                    <p class="text-xs text-text-muted">Poste occupé et rattachement dans l'organisation.
+                                    <h5>{{ locale === 'en' ? 'Assignment' : 'Affectation' }}</h5>
+                                    <p class="text-xs text-text-muted">{{ locale === 'en' ? 'Position held and department in the organization.' : 'Poste occupé et rattachement dans l\'organisation.' }}
                                     </p>
                                 </div>
                                 <Loader2 v-if="isLoadingFilters" class="ml-auto h-4 w-4 animate-spin text-text-muted"
@@ -69,13 +69,13 @@
                             <!-- Les champs restent saisissables pendant le chargement :
                                  les listes ne servent qu'à suggérer des valeurs. -->
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <Input v-model="form.fonction" label="Fonction *" :icon="Briefcase"
+                                <Input v-model="form.fonction" :label="locale === 'en' ? 'Position *' : 'Fonction *'" :icon="Briefcase"
                                 list_id="fonction-lists" :lists="fonctions"
                                      :error="errors.fonction?.[0]"
                                     class="sm:col-span-2" />
-                                <Input v-model="form.direction" label="Direction *" :icon="Network"
+                                <Input v-model="form.direction" :label="locale === 'en' ? 'Department *' : 'Direction *'" :icon="Network"
                                     :error="errors.direction?.[0]" />
-                                <Input v-model="form.entity" label="Entité *" :icon="Building2Icon"
+                                <Input v-model="form.entity" :label="locale === 'en' ? 'Entity *' : 'Entité *'" :icon="Building2Icon"
                                     :error="errors.entity?.[0]" />
                             </div>
 
@@ -106,11 +106,11 @@
                             <div class="min-w-0">
                                 <p class="truncate text-base font-semibold"
                                     :class="fullName ? 'text-text-primary' : 'text-text-muted'">
-                                    {{ fullName || "Nouveau membre" }}
+                                    {{ fullName || (locale === 'en' ? 'New member' : 'Nouveau membre') }}
                                 </p>
                                 <p class="truncate text-sm"
                                     :class="form.fonction.trim() ? 'text-text-primary' : 'text-text-muted'">
-                                    {{ form.fonction.trim() || "Fonction à renseigner" }}
+                                    {{ form.fonction.trim() || (locale === 'en' ? 'Position to fill' : 'Fonction à renseigner') }}
                                 </p>
                             </div>
 
@@ -122,7 +122,7 @@
                                 <dt class="sr-only">E-mail</dt>
                                 <dd class="truncate"
                                     :class="form.email.trim() ? 'text-text-primary' : 'text-text-muted'">
-                                    {{ form.email.trim() || "Adresse e-mail" }}
+                                    {{ form.email.trim() || (locale === 'en' ? 'Email address' : 'Adresse e-mail') }}
                                 </dd>
                             </div>
                             <div class="flex items-center gap-2.5">
@@ -130,7 +130,7 @@
                                 <dt class="sr-only">Direction</dt>
                                 <dd class="truncate"
                                     :class="form.direction.trim() ? 'text-text-primary' : 'text-text-muted'">
-                                    {{ form.direction.trim() || "Direction" }}
+                                    {{ form.direction.trim() || (locale === 'en' ? 'Department' : 'Direction') }}
                                 </dd>
                             </div>
                             <div class="flex items-center gap-2.5">
@@ -138,7 +138,7 @@
                                 <dt class="sr-only">Entité</dt>
                                 <dd class="truncate"
                                     :class="form.entity.trim() ? 'text-text-primary' : 'text-text-muted'">
-                                    {{ form.entity.trim() || "Entité" }}
+                                    {{ form.entity.trim() || (locale === 'en' ? 'Entity' : 'Entité') }}
                                 </dd>
                             </div>
                         </dl>
@@ -146,7 +146,7 @@
                         <div class="flex flex-col gap-3 border-t border-border pt-5">
 
                             <div class="flex items-center justify-between text-xs">
-                                <span class="font-medium text-text-muted">Champs obligatoires</span>
+                                <span class="font-medium text-text-muted">{{ locale === 'en' ? 'Required fields' : 'Champs obligatoires' }}</span>
                                 <span class="font-semibold"
                                     :class="completedCount === checks.length ? 'text-success' : 'text-text-primary'">
                                     {{ completedCount }} / {{ checks.length }}
@@ -182,15 +182,15 @@
                 <div
                     class="sticky bottom-0 z-10 -mx-6 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-border bg-surface/90 px-6 py-4 backdrop-blur sm:flex-row sm:items-center lg:-mx-8 lg:px-8">
                     <Button variant="outline" type="button" :disabled="isBusy" @click="handleCancel">
-                        Annuler
+                        {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
                     </Button>
                     <Button variant="outline" type="button" :left-icon="UserPlus" :disabled="isBusy"
                         :loading="isSubmitting && addAnotherMode" @click="handleSubmit(true)">
-                        Enregistrer et ajouter un autre
+                        {{ locale === 'en' ? 'Save and add another' : 'Enregistrer et ajouter un autre' }}
                     </Button>
                     <Button type="submit" :left-icon="isSubmitting && !addAnotherMode ? Loader2 : CheckCircle"
                         :disabled="isBusy" :loading="isSubmitting && !addAnotherMode">
-                        {{ isSubmitting && !addAnotherMode ? "Enregistrement..." : "Enregistrer" }}
+                        {{ isSubmitting && !addAnotherMode ? (locale === 'en' ? "Saving..." : "Enregistrement...") : (locale === 'en' ? "Save" : "Enregistrer") }}
                     </Button>
                 </div>
 
@@ -218,6 +218,7 @@
     } from '@lucide/vue'
 
     import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+    import { useI18n } from 'vue-i18n'
     import { onBeforeRouteLeave } from 'vue-router'
 
     import Header from '../../../components/shared/Header.vue'
@@ -229,6 +230,8 @@
     import type { PersonnelFormType } from '../../../@types/Personnel.type.ts'
     import personnelService from '../../../core/services/personnel.service.ts'
 import jobService from '../../../core/services/job.service.ts'
+
+    const { t, locale } = useI18n()
 
 
     /*
@@ -285,11 +288,11 @@ import jobService from '../../../core/services/job.service.ts'
     })
 
     const checks = computed(() => [
-        { label: "Prénom", ok: form.value.first_name.trim() !== "" },
-        { label: "E-mail valide", ok: EMAIL_REGEX.test(form.value.email.trim()) },
-        { label: "Fonction", ok: form.value.fonction.trim() !== "" },
-        { label: "Direction", ok: form.value.direction.trim() !== "" },
-        { label: "Entité", ok: form.value.entity.trim() !== "" },
+        { label: locale.value === 'en' ? 'First name' : 'Prénom', ok: form.value.first_name.trim() !== "" },
+        { label: locale.value === 'en' ? 'Valid email' : 'E-mail valide', ok: EMAIL_REGEX.test(form.value.email.trim()) },
+        { label: locale.value === 'en' ? 'Position' : 'Fonction', ok: form.value.fonction.trim() !== "" },
+        { label: locale.value === 'en' ? 'Department' : 'Direction', ok: form.value.direction.trim() !== "" },
+        { label: locale.value === 'en' ? 'Entity' : 'Entité', ok: form.value.entity.trim() !== "" },
     ])
 
     const completedCount = computed(() => checks.value.filter(c => c.ok).length)

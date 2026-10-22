@@ -162,7 +162,7 @@ export const en: LangType = {
         "dashboard": "Dashboard",
         "administration": "Administration",
         "users": "Users",
-        "personnels": 'Personnels',
+        "personnels": 'Personnel',
         "sites": "Sites & Stations",
         "activity": "Activity",
         "documents": "Documents",

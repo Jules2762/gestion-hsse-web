@@ -13,21 +13,21 @@
                     <div class="flex flex-row items-center gap-1.5">
                         <ButtonFilter is-primary :text="t('formation.actions.add')" :icon="SquarePlusIcon" @click="openAddModal" />
                         <ButtonFilter
-                            text="Exporter"
+                            :text="t('common.export') || (locale === 'en' ? 'Export' : 'Exporter')"
                             :icon="DownloadIcon"
                             :badge="String(pagination.total)"
                             :loading="loading_export"
                             @click="handleExport"
                         />
                         <ButtonFilter
-                            text="Actualiser"
+                            :text="t('common.refresh') || (locale === 'en' ? 'Refresh' : 'Actualiser')"
                             :icon="RefreshCw"
                             :loading="loading"
                             @click="fetchData()"
                         />
                     </div>
                     <div class="flex flex-row items-center gap-2">
-                        <InputFilter :icon="Search" placeholder="Rechercher un membre du personnel..." v-model="searchQuery" />
+                        <InputFilter :icon="Search" :placeholder="locale === 'en' ? 'Search a staff member...' : 'Rechercher un membre du personnel...'" v-model="searchQuery" />
                     </div>
                 </div>
                 <ChipFilter
@@ -45,7 +45,7 @@
             <!-- TABLE DES PERSONNELS -->
             <div v-if="loading" class="p-16 flex flex-col items-center justify-center gap-3 text-gray-500">
                 <Loader2 :size="32" class="animate-spin text-primary" />
-                <span class="text-sm">Chargement du personnel...</span>
+                <span class="text-sm">{{ locale === 'en' ? 'Loading personnel...' : 'Chargement du personnel...' }}</span>
             </div>
 
             <div v-else-if="!data || data.length === 0" class="p-16 flex flex-col items-center justify-center text-center">
@@ -105,7 +105,7 @@
                         <td colspan="6" class="w-full p-4 border-t border-gray-200">
                             <div class="flex flex-row items-center justify-between text-sm">
                                 <span class="text-xs text-gray-500">
-                                    Affichage de {{ pagination.to }} sur {{ pagination.total }} membres du personnel
+                                    {{ locale === 'en' ? `Showing ${pagination.to} of ${pagination.total} staff members` : `Affichage de ${pagination.to} sur ${pagination.total} membres du personnel` }}
                                 </span>
                                 <vue-awesome-paginate
                                     :hide-prev-next-when-ends="true"
@@ -132,7 +132,7 @@
                 <!-- EN-TÊTE DU VOLET -->
                 <div class="flex items-start justify-between pb-4 border-b border-gray-200 mb-5">
                     <div class="min-w-0 flex-1">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Personnel n° {{ selected_personnel.id }}</p>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">{{ locale === 'en' ? 'Personnel #' : 'Personnel n°' }} {{ selected_personnel.id }}</p>
                         <h4 class="mt-1 font-bold text-gray-900 truncate">{{ selected_personnel.first_name }} {{ selected_personnel.last_name }}</h4>
                     </div>
                     <button
@@ -159,19 +159,19 @@
 
                 <!-- DÉTAILS D'AFFECTATION -->
                 <div class="space-y-3">
-                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Affectation & Organisation</h5>
+                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ locale === 'en' ? 'Assignment & Organization' : 'Affectation & Organisation' }}</h5>
 
                     <div class="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2.5 text-xs">
                         <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Direction :</span>
+                            <span class="text-gray-500">{{ locale === 'en' ? 'Department :' : 'Direction :' }}</span>
                             <span class="font-semibold text-gray-800">{{ selected_personnel.direction }}</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Entité d'exploitation :</span>
+                            <span class="text-gray-500">{{ locale === 'en' ? 'Operating entity :' : 'Entité d\'exploitation :' }}</span>
                             <span class="font-semibold text-gray-800">{{ selected_personnel.entity || 'Non spécifiée' }}</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Référence système :</span>
+                            <span class="text-gray-500">{{ locale === 'en' ? 'System reference :' : 'Référence système :' }}</span>
                             <span class="font-mono text-gray-500">#{{ selected_personnel.id }}</span>
                         </div>
                     </div>
@@ -185,7 +185,7 @@
                     :left-icon="Edit"
                     @click="router.push({ name: 'PERSONNEL_UPDATE', params: { id: selected_personnel.id } })"
                 >
-                    Modifier la fiche
+                    {{ locale === 'en' ? 'Edit details' : 'Modifier la fiche' }}
                 </Button>
                 <Button
                     class="w-full"
@@ -193,7 +193,7 @@
                     :left-icon="Trash2"
                     @click="promptDelete(selected_personnel)"
                 >
-                    Supprimer ce membre
+                    {{ locale === 'en' ? 'Delete this member' : 'Supprimer ce membre' }}
                 </Button>
             </div>
         </aside>

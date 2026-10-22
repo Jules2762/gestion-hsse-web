@@ -21,7 +21,7 @@
                             @click="router.push({ name: 'FORMATION_IMPORT' })" :icon="CloudDownloadIcon" />
                         <ButtonFilter :text="t('formation.actions.export')" @click="exportData()"
                             :loading="loading_export" :icon="DownloadIcon" :badge="pagination.total.toString()" />
-                        <ButtonFilter :text="'Actualiser'" @click="fetchData()"
+                        <ButtonFilter :text="locale === 'en' ? 'Refresh' : 'Actualiser'" @click="fetchData()"
                             :loading="loading_data" :icon="RefreshCw" />
                         <!-- <div class="w-px h-8 bg-gray-300 mx-2" /> -->
                         <!-- <ButtonFilter text="Personnels" :icon="Users" :badge="'100'" @click="router.push({
@@ -102,17 +102,17 @@
                         <tr v-else-if="loading_data == false && data.length > 0">
                             <td colspan="9" class="py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center gap-2">
-                                    <span>Aucun résultat pour ces filtres</span>
+                                    <span>{{ locale === 'en' ? 'No results for these filters' : 'Aucun résultat pour ces filtres' }}</span>
                                     <button class="text-xs font-medium text-primary hover:underline"
                                         @click="clearAllFilters">
-                                        Réinitialiser les filtres
+                                        {{ locale === 'en' ? 'Reset filters' : 'Réinitialiser les filtres' }}
                                     </button>
                                 </div>
                             </td>
                         </tr>
                         <tr v-else-if="data.length === 0 && loading_data == false">
                             <td colspan="9" class="py-10 text-center text-gray-500">
-                                Aucune formation trouvée
+                                {{ locale === 'en' ? 'No training found' : 'Aucune formation trouvée' }}
                             </td>
                         </tr>
                         <tr v-else>
@@ -121,7 +121,7 @@
                                     <Loader :size="30" class="animate-spin text-primary" />
 
                                     <span class="text-sm text-gray-500">
-                                        Chargement des formations...
+                                        {{ locale === 'en' ? 'Loading training...' : 'Chargement des formations...' }}
                                     </span>
                                 </div>
                             </td>
@@ -243,7 +243,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Taux de participation
+                            {{ locale === 'en' ? 'Attendance rate' : 'Taux de participation' }}
                         </p>
 
                         <h5>
@@ -263,7 +263,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Durée
+                            {{ locale === 'en' ? 'Duration' : 'Durée' }}
                         </p>
 
                         <h5>
@@ -283,7 +283,7 @@
                             text-xs
                             text-gray-500
                         ">
-                            Public
+                            {{ locale === 'en' ? 'Audience' : 'Public' }}
                         </p>
 
                         <h5 class="
@@ -308,7 +308,7 @@
                         mb-4
                         text-gray-500
                     ">
-                        Informations générales
+                        {{ locale === 'en' ? 'General information' : 'Informations générales' }}
                     </h6>
 
                     <div class="
@@ -336,7 +336,7 @@
                                 text-xs
                                 text-gray-500
                             ">
-                                Formateur
+                                {{ locale === 'en' ? 'Trainer' : 'Formateur' }}
                             </p>
 
                             <p>
@@ -387,7 +387,7 @@
                     pt-5
                 ">
                     <h6 class="mb-3">
-                        Public concerné
+                        {{ locale === 'en' ? 'Target audience' : 'Public concerné' }}
                     </h6>
 
                     <p>
@@ -416,7 +416,7 @@
                     pt-5
                 ">
                     <h6 class="mb-3">
-                        Participation
+                        {{ locale === 'en' ? 'Participation' : 'Participation' }}
                     </h6>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -433,7 +433,7 @@
                             justify-between
                         ">
                                 <span>
-                                    Prévus
+                                    {{ locale === 'en' ? 'Expected' : 'Prévus' }}
                                 </span>
 
                                 <span class="
@@ -460,7 +460,7 @@
                             justify-between
                         ">
                                 <span>
-                                    Présents
+                                    {{ locale === 'en' ? 'Attended' : 'Présents' }}
                                 </span>
 
                                 <span class="
@@ -492,10 +492,10 @@
                     ">
                         <Button class="w-full" variant="danger"
                             @click="contextMenu.formation = selectedFormation; modal_delete = true">
-                            Supprimer
+                            {{ locale === 'en' ? 'Delete' : 'Supprimer' }}
                         </Button>
                         <Button class="w-full" variant="outline">
-                            Modifier
+                            {{ locale === 'en' ? 'Edit' : 'Modifier' }}
                         </Button>
 
 
@@ -512,12 +512,12 @@
         :title="t('formation.notification.delete.confirmation.title')" confirm-variant="danger">
         <p>{{ t('formation.notification.delete.confirmation.message') }}</p>
     </CenterModal>
-    <CenterModal title="Reporter la formation" :is-open="modal.reporting_date"
+    <CenterModal :title="locale === 'en' ? 'Reschedule training' : 'Reporter la formation'" :is-open="modal.reporting_date"
         @close="modal.reporting_date = false; reporting_date = ''" @confirm="onResceduleDate()"
         :confirm-loading="loading_reschedule_date">
         <div class="flex flex-col gap-2">
             <label for="reporting_date" class="text-sm font-medium text-gray-700">
-                Nouvelle date de la formation
+                {{ locale === 'en' ? 'New training date' : 'Nouvelle date de la formation' }}
             </label>
 
             <p class="text-xs text-gray-500">
@@ -877,7 +877,7 @@
         })
     const context_actions: ComputedRef<ContextMenuActionType[]> = computed(() => [
         {
-            label: "Détails",
+            label: locale.value === 'en' ? 'Details' : 'Détails',
             icon: Eye,
             onClick: () => {
                 selectedFormation.value = contextMenu.value.formation
@@ -886,7 +886,7 @@
 
         ...(contextMenu.value.formation?.status==="SCHEDULED"|| contextMenu.value.formation?.status === "POSTPONED"|| contextMenu.value.formation?.status === "COMPLETED" ? [
             {
-                label: "Participants",
+                label: locale.value === 'en' ? 'Participants' : 'Participants',
                 icon: Users,
                 badge: contextMenu.value.formation?.participant_count?.toString(),
                 onClick: () => {
@@ -902,14 +902,14 @@
 
         ...(contextMenu.value.formation?.status != 'COMPLETED' ? [
             {
-                label: 'Reporter',
+                label: locale.value === 'en' ? 'Reschedule' : 'Reporter',
                 icon: CalendarClock,
                 onClick: () => { modal.value.reporting_date=true;contextMenu.value.isOpen=false }
             }
         ] as ContextMenuActionType[] : []),
 
         {
-            label: "Modifier",
+            label: locale.value === 'en' ? 'Edit' : 'Modifier',
             icon: Edit,
             variant: 'WARNING',
             onClick() {
@@ -926,7 +926,7 @@
             contextMenu.value.formation?.status === 'POSTPONED'
             ? [
                 {
-                    label: "Annuler",
+                    label: locale.value === 'en' ? 'Cancel' : 'Annuler',
                     variant: "DANGER",
                     icon: CircleSlash,
                     onClick: () => cancelFormation(),
@@ -938,7 +938,7 @@
     ])
     const context_bottom_actions: ContextMenuActionType[] = [
         {
-            label: "Suprimer",
+            label: locale.value === 'en' ? 'Delete' : 'Supprimer',
             icon: Trash2,
             variant: "DANGER",
             onClick: () => modal_delete.value = true
@@ -949,12 +949,12 @@
 
     type FilterKey = 'type' | 'volet' | 'trainer' | 'target'
     const filterableKeys: FilterKey[] = ['type', 'volet', 'trainer', 'target']
-    const columnLabels: Record<FilterKey, string> = {
-        type: 'Type',
-        volet: 'Volet',
-        trainer: 'Formateur',
-        target: 'Cible',
-    }
+    const columnLabels = computed<Record<FilterKey, string>>(() => ({
+        type: locale.value === 'en' ? 'Type' : 'Type',
+        volet: locale.value === 'en' ? 'Component' : 'Volet',
+        trainer: locale.value === 'en' ? 'Trainer' : 'Formateur',
+        target: locale.value === 'en' ? 'Target' : 'Cible',
+    }))
 
     // index-aligned with `headers`, null = not filterable/sortable
     const sortableKeys: (string | null)[] = [null, 'date', 'type', 'volet', 'trainer', 'duration', 'target']

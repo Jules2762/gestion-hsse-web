@@ -12,12 +12,12 @@
             <div class="border-b border-gray-200 bg-white sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter text="Ajout" :icon="PlusSquare" is-primary @click="openAddModal" />
-                        <ButtonFilter text="Export" :icon="Download" :badge="String(pagination.total)" @click="handleExport" />
-                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
+                        <ButtonFilter :text="locale === 'en' ? 'Add' : 'Ajout'" :icon="PlusSquare" is-primary @click="openAddModal" />
+                        <ButtonFilter :text="locale === 'en' ? 'Export' : 'Export'" :icon="Download" :badge="String(pagination.total)" @click="handleExport" />
+                        <ButtonFilter :text="locale === 'en' ? 'Refresh' : 'Actualiser'" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
                     </div>
                     <div class="flex flex-row items-center gap-2">
-                        <InputFilter :icon="Search" placeholder="Rechercher une VMC..." v-model="searchQuery" />
+                        <InputFilter :icon="Search" :placeholder="locale === 'en' ? 'Search a VMC...' : 'Rechercher une VMC...'" v-model="searchQuery" />
                     </div>
                 </div>
                 <ChipFilter :filterable-keys="filterableKeys" :column-labels="columnLabels"
@@ -111,14 +111,14 @@
             <header class="flex items-start justify-between gap-3 border-b border-gray-200 p-5 bg-white shrink-0">
 
                 <div class="flex min-w-0 flex-1 flex-col">
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">VMC n° {{ selected.id }}</p>
-                    <h4 class="mt-1 font-bold text-gray-900 truncate">{{ selected.title || selected.type || "Sans titre" }}</h4>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">{{ locale === 'en' ? 'VMC #' : 'VMC n°' }} {{ selected.id }}</p>
+                    <h4 class="mt-1 font-bold text-gray-900 truncate">{{ selected.title || selected.type || (locale === 'en' ? 'Untitled' : 'Sans titre') }}</h4>
                     <div class="mt-2.5">
                         <ChecklistStatus :name="selected.status" />
                     </div>
                 </div>
 
-                <button type="button" aria-label="Fermer l'aperçu"
+                <button type="button" :aria-label="locale === 'en' ? 'Close preview' : 'Fermer l\'aperçu'"
                     class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                     @click="closePreview">
                     <XIcon :size="18" />
@@ -144,26 +144,26 @@
                 <!-- RÉSUMÉ DE LA VISITE CLÔTURÉE / ÉVALUÉE -->
                 <section v-if="selected.status === 'COMPLETED' || selectedStats.total > 0" class="flex flex-col gap-3">
                     <div class="flex items-center justify-between">
-                        <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">Résumé de clôture</h6>
+                        <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">{{ locale === 'en' ? 'Closing summary' : 'Résumé de clôture' }}</h6>
                         <span v-if="selected.status === 'COMPLETED'" class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                             <CheckCircle2 :size="12" />
-                            Clôturée
+                            {{ locale === 'en' ? 'Closed' : 'Clôturée' }}
                         </span>
                     </div>
 
                     <!-- KPI Cards de conformité -->
                     <div class="grid grid-cols-2 gap-2">
                         <div class="p-3 bg-white rounded-xl border border-border shadow-xs flex flex-col">
-                            <span class="text-[11px] text-gray-500 font-medium">Conformité</span>
+                            <span class="text-[11px] text-gray-500 font-medium">{{ locale === 'en' ? 'Compliance' : 'Conformité' }}</span>
                             <span class="text-lg font-bold text-gray-900 mt-1">{{ selectedStats.conformityRate }}%</span>
-                            <span class="text-[10px] text-emerald-600 font-medium mt-0.5">{{ selectedStats.yes }} / {{ selectedStats.evaluated }} conformes</span>
+                            <span class="text-[10px] text-emerald-600 font-medium mt-0.5">{{ selectedStats.yes }} / {{ selectedStats.evaluated }} {{ locale === 'en' ? 'compliant' : 'conformes' }}</span>
                         </div>
                         <div class="p-3 bg-white rounded-xl border border-border shadow-xs flex flex-col">
-                            <span class="text-[11px] text-gray-500 font-medium">Contrôles</span>
-                            <span class="text-lg font-bold text-gray-900 mt-1">{{ selectedStats.total }} points</span>
+                            <span class="text-[11px] text-gray-500 font-medium">{{ locale === 'en' ? 'Controls' : 'Contrôles' }}</span>
+                            <span class="text-lg font-bold text-gray-900 mt-1">{{ selectedStats.total }} {{ locale === 'en' ? 'points' : 'points' }}</span>
                             <div class="flex items-center gap-1.5 text-[10px] mt-0.5">
-                                <span class="text-emerald-600 font-semibold">{{ selectedStats.yes }} Oui</span>
-                                <span v-if="selectedStats.no > 0" class="text-red-600 font-semibold">• {{ selectedStats.no }} Non</span>
+                                <span class="text-emerald-600 font-semibold">{{ selectedStats.yes }} {{ locale === 'en' ? 'Yes' : 'Oui' }}</span>
+                                <span v-if="selectedStats.no > 0" class="text-red-600 font-semibold">• {{ selectedStats.no }} {{ locale === 'en' ? 'No' : 'Non' }}</span>
                             </div>
                         </div>
                     </div>
@@ -171,8 +171,8 @@
                     <!-- Mini liste scrollable des critères vérifiés -->
                     <div v-if="selectedItems.length > 0" class="bg-white rounded-xl border border-border p-3 shadow-xs">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-gray-800">Points vérifiés</span>
-                            <span class="text-[11px] text-gray-400">{{ selectedItems.length }} critères</span>
+                            <span class="text-xs font-semibold text-gray-800">{{ locale === 'en' ? 'Verified points' : 'Points vérifiés' }}</span>
+                            <span class="text-[11px] text-gray-400">{{ selectedItems.length }} {{ locale === 'en' ? 'criteria' : 'critères' }}</span>
                         </div>
                         <div class="max-h-44 overflow-y-auto space-y-2 pr-1 divide-y divide-gray-100">
                             <div v-for="(it, idx) in selectedItems" :key="idx" class="pt-1.5 first:pt-0 flex items-start gap-2 text-xs">
@@ -189,7 +189,7 @@
                 </section>
 
                 <section class="flex flex-col gap-3">
-                    <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">Informations</h6>
+                    <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">{{ locale === 'en' ? 'Information' : 'Informations' }}</h6>
                     <dl class="flex flex-col divide-y divide-border rounded-xl border border-border bg-white shadow-sm">
                         <div v-for="row in infoRows" :key="row.label" class="flex items-center gap-3 px-3.5 py-3">
                             <div
@@ -208,7 +208,7 @@
                 </section>
 
                 <section class="flex flex-col gap-3">
-                    <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">Responsables</h6>
+                    <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">{{ locale === 'en' ? 'Responsibles' : 'Responsables' }}</h6>
                     <ul class="flex flex-col gap-2">
                         <li v-for="person in people" :key="person.label"
                             class="flex items-center gap-3 rounded-xl border border-border p-3 bg-white shadow-sm">
@@ -221,7 +221,7 @@
                                 <p class="text-xs text-text-muted">{{ person.label }}</p>
                                 <p class="truncate text-sm font-medium"
                                     :class="person.name ? 'text-text-primary' : 'text-text-muted'">
-                                    {{ person.name || "Non renseigné" }}
+                                    {{ person.name || (locale === 'en' ? 'Not specified' : 'Non renseigné') }}
                                 </p>
                                 <p v-if="person.email" class="truncate text-xs text-text-muted">{{ person.email }}</p>
                             </div>
@@ -230,13 +230,13 @@
                 </section>
 
                 <section class="flex flex-col gap-3">
-                    <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">Recommandations & Observations</h6>
+                    <h6 class="text-xs font-semibold uppercase tracking-wide text-text-muted">{{ locale === 'en' ? 'Recommendations & Observations' : 'Recommandations & Observations' }}</h6>
                     <p v-if="selected.recommendation?.trim()"
                         class="whitespace-pre-line rounded-xl bg-white border border-border p-3.5 text-sm leading-relaxed text-text-primary shadow-sm">
                         {{ selected.recommendation }}
                     </p>
                     <p v-else class="rounded-xl border border-dashed border-border p-3.5 text-sm text-text-muted bg-white">
-                        Aucune recommandation pour cette visite.
+                        {{ locale === 'en' ? 'No recommendations for this visit.' : 'Aucune recommandation pour cette visite.' }}
                     </p>
                 </section>
 
@@ -245,24 +245,24 @@
             <!-- Actions du footer : Clôture + Redirection Détails + Téléchargement PDF -->
             <footer class="flex flex-col gap-2 border-t border-border p-4 bg-white">
                 <div class="flex items-center justify-between gap-2">
-                    <Button variant="outline" type="button" @click="closePreview">Fermer</Button>
+                    <Button variant="outline" type="button" @click="closePreview">{{ locale === 'en' ? 'Close' : 'Fermer' }}</Button>
 
                     <div class="flex items-center gap-2">
                         <Button v-if="selected.status === 'DRAFT'" type="button" @click="changeStatus(selected, 'IN_PROGRESS')">
-                            Démarrer la visite
+                            {{ locale === 'en' ? 'Start visit' : 'Démarrer la visite' }}
                         </Button>
                         <Button v-else-if="selected.status === 'IN_PROGRESS'" type="button" @click="changeStatus(selected, 'COMPLETED')">
-                            Clôturer la visite
+                            {{ locale === 'en' ? 'Close visit' : 'Clôturer la visite' }}
                         </Button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100">
                     <Button type="button" :left-icon="Eye" @click="goToDetails(selected)">
-                        Détails
+                        {{ locale === 'en' ? 'Details' : 'Détails' }}
                     </Button>
                     <Button variant="outline" type="button" :left-icon="FileDown" @click="downloadVmcPdf(selected)">
-                        Fiche PDF
+                        {{ locale === 'en' ? 'PDF Sheet' : 'Fiche PDF' }}
                     </Button>
                 </div>
             </footer>
@@ -372,20 +372,21 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                    <!-- Inspecteur -->
+                                    <!-- Inspecteur (depuis la liste des Utilisateurs) -->
                                     <div>
                                         <label class="block text-xs font-semibold text-gray-700 mb-1">
-                                            {{ locale === 'en' ? 'Inspector / In charge' : 'Inspecteur / Responsable' }}
+                                            {{ locale === 'en' ? 'Inspector / In charge (User)' : 'Inspecteur / Responsable (Utilisateur)' }}
                                         </label>
-                                        <input
-                                            v-model="newVmcForm.inspector"
-                                            list="vmc_modal_inspectors_datalist"
-                                            :placeholder="locale === 'en' ? 'Select or type inspector...' : 'Sélectionner ou saisir un inspecteur...'"
-                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
-                                        />
-                                        <datalist id="vmc_modal_inspectors_datalist">
-                                            <option v-for="(p, pIdx) in personnelList" :key="pIdx" :value="p">{{ p }}</option>
-                                        </datalist>
+                                        <select
+                                            v-model="newVmcForm.inspector_id"
+                                            class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                        >
+                                            <option :value="undefined">{{ locale === 'en' ? 'Default (Yourself / Unassigned)' : 'Par défaut (Vous-même / Non assigné)' }}</option>
+                                            <option v-for="usr in usersList" :key="usr.id" :value="usr.id">
+                                                {{ `${usr.first_name || ''} ${usr.last_name || ''}`.trim() || usr.name || usr.email }}
+                                                {{ usr.job ? ` — ${usr.job}` : (usr.department ? ` (${usr.department})` : '') }}
+                                            </option>
+                                        </select>
                                     </div>
 
                                     <!-- Accompagnant -->
@@ -463,7 +464,7 @@
     import type { UserDataType } from '../../../@types/User.type.ts';
     import type { ContextMenuActionType, contextMenuType } from '../../../@types/ContextMenu.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
-    import personnelService from '../../../core/services/personnel.service.ts';
+    import { useUserService } from '../../../core/services/user.service.ts';
     import siteService from '../../../core/services/site.service.ts';
     import { toast } from 'vue3-toastify';
     import type { VMCFormType } from '../../../@types/VMC.type.ts';
@@ -493,19 +494,13 @@
         date: new Date().toISOString().slice(0, 10),
         site: '',
         inspector: '',
+        inspector_id: undefined,
         accompanying_person: '',
     })
 
-    const personnelsListRaw = ref<any[]>([])
+    const userService = useUserService()
+    const usersList = ref<any[]>([])
     const siteList = ref<string[]>([])
-
-    const personnelList = computed(() => {
-        return personnelsListRaw.value.map(p => {
-            const fullName = `${p.first_name} ${p.last_name || ''}`.trim()
-            const details = [p.direction, p.fonction].filter(Boolean).join(' - ')
-            return details ? `${fullName} - ${details}` : fullName
-        }).filter(Boolean)
-    })
 
     function openAddModal() {
         newVmcForm.value = {
@@ -514,6 +509,7 @@
             date: new Date().toISOString().slice(0, 10),
             site: '',
             inspector: '',
+            inspector_id: undefined,
             accompanying_person: '',
         }
         modal_add.value = true
@@ -521,12 +517,12 @@
     }
 
     function loadVmcSuggestions() {
-        if (personnelsListRaw.value.length === 0) {
-            personnelService.indexAll()
-                .then(res => {
-                    personnelsListRaw.value = res.data?.data || res.data || []
+        if (usersList.value.length === 0) {
+            userService.index()
+                .then((res: any) => {
+                    usersList.value = res.data?.data || res.data || []
                 })
-                .catch(err => console.error(err))
+                .catch((err: any) => console.error(err))
         }
 
         if (siteList.value.length === 0) {
@@ -553,32 +549,19 @@
         if (!newVmcForm.value.type || !newVmcForm.value.site || !newVmcForm.value.date) return
         loading_add.value = true
         try {
-            const rawInspector = (newVmcForm.value.inspector || '').trim()
-            let assignedId: any = undefined
-            let cleanInspector = rawInspector
-
-            if (rawInspector) {
-                const matched = personnelsListRaw.value.find(p => {
-                    const full = `${p.first_name} ${p.last_name || ''}`.trim().toLowerCase()
-                    const formatted = `${full} - ${[p.direction, p.fonction].filter(Boolean).join(' - ')}`.toLowerCase()
-                    return rawInspector.toLowerCase() === formatted || rawInspector.toLowerCase() === full
-                })
-
-                if (matched) {
-                    assignedId = matched.id
-                    cleanInspector = `${matched.first_name} ${matched.last_name || ''}`.trim()
-                } else if (rawInspector.includes(' - ')) {
-                    cleanInspector = rawInspector.split(' - ')[0].trim()
-                }
-            }
+            const selectedUser = usersList.value.find((u: any) => u.id == newVmcForm.value.inspector_id)
+            const cleanInspector = selectedUser
+                ? `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || selectedUser.name || selectedUser.email
+                : (newVmcForm.value.inspector || '').trim()
 
             const payload: any = {
                 ...newVmcForm.value,
                 inspector: cleanInspector,
             }
-            if (assignedId !== undefined) {
-                payload.assigned_to = assignedId
+            if (newVmcForm.value.inspector_id !== undefined) {
+                payload.assigned_to = newVmcForm.value.inspector_id
             }
+            delete payload.inspector_id
 
             await vmcService.store(payload)
             toast.success(locale.value === 'en' ? 'VMC created successfully!' : 'VMC créée avec succès !')
@@ -593,11 +576,11 @@
     }
 
     const filterableKeys: string[] = ['type', 'site', 'inspector']
-    const columnLabels: Record<string, string> = {
-        'type': 'Type',
-        'site': 'Site',
-        'inspector': 'Inspecteur'
-    }
+    const columnLabels = computed<Record<string, string>>(() => ({
+        'type': locale.value === 'en' ? 'Type' : 'Type',
+        'site': locale.value === 'en' ? 'Site' : 'Site',
+        'inspector': locale.value === 'en' ? 'Inspector' : 'Inspecteur'
+    }))
     const filters = ref<Record<string, string[]>>({
         'type': [],
         'site': [],
@@ -657,7 +640,7 @@
 
         const actions: ContextMenuActionType[] = [
             {
-                label: 'Détails de la fiche',
+                label: locale.value === 'en' ? 'Sheet details' : 'Détails de la fiche',
                 icon: Eye,
                 onClick() {
                     goToDetails(vmc)
@@ -665,7 +648,7 @@
                 }
             },
             {
-                label: 'Télécharger la fiche',
+                label: locale.value === 'en' ? 'Download sheet' : 'Télécharger la fiche',
                 icon: FileDown,
                 onClick() {
                     downloadVmcPdf(vmc)
@@ -676,7 +659,7 @@
 
         if (vmc.status === 'DRAFT') {
             actions.push({
-                label: 'Démarrer la visite',
+                label: locale.value === 'en' ? 'Start visit' : 'Démarrer la visite',
                 icon: Play,
                 variant: 'WARNING',
                 onClick() {
@@ -685,7 +668,7 @@
                 }
             })
             actions.push({
-                label: 'Annuler',
+                label: locale.value === 'en' ? 'Cancel' : 'Annuler',
                 icon: Ban,
                 variant: 'DANGER',
                 onClick() {
@@ -695,7 +678,7 @@
             })
         } else if (vmc.status === 'IN_PROGRESS') {
             actions.push({
-                label: 'Clôturer la visite',
+                label: locale.value === 'en' ? 'Close visit' : 'Clôturer la visite',
                 icon: CheckCircle2,
                 onClick() {
                     changeStatus(vmc, 'COMPLETED')
@@ -705,7 +688,7 @@
         }
 
         actions.push({
-            label: 'Exporter CSV',
+            label: locale.value === 'en' ? 'Export CSV' : 'Exporter CSV',
             icon: Download,
             onClick() {
                 handleExport()
@@ -718,7 +701,7 @@
 
     const contextMenuBottomActions: ComputedRef<ContextMenuActionType[]> = computed(() => [
         {
-            label: 'Supprimer',
+            label: locale.value === 'en' ? 'Delete' : 'Supprimer',
             icon: Trash2,
             variant: 'DANGER',
             onClick() {
@@ -828,11 +811,11 @@
     }
 
     const infoRows = computed(() => [
-        { label: 'Date', value: formatDate(selected.value?.date), icon: CalendarDays },
-        { label: 'Type', value: selected.value?.type, icon: ClipboardList },
-        { label: 'Site', value: selected.value?.site, icon: MapPin },
-        { label: 'Inspecteur', value: selected.value?.inspector, icon: UserCheck },
-        { label: 'Personne accompagnante', value: selected.value?.accompanying_person, icon: Users },
+        { label: locale.value === 'en' ? 'Date' : 'Date', value: formatDate(selected.value?.date), icon: CalendarDays },
+        { label: locale.value === 'en' ? 'Type' : 'Type', value: selected.value?.type, icon: ClipboardList },
+        { label: locale.value === 'en' ? 'Site' : 'Site', value: selected.value?.site, icon: MapPin },
+        { label: locale.value === 'en' ? 'Inspector' : 'Inspecteur', value: selected.value?.inspector, icon: UserCheck },
+        { label: locale.value === 'en' ? 'Accompanying person' : 'Personne accompagnante', value: selected.value?.accompanying_person, icon: Users },
     ])
 
     function describeUser(label: string, user?: UserDataType) {
@@ -847,7 +830,7 @@
     }
 
     const people = computed(() => [
-        describeUser('Assignée à', selected.value?.assigned_to),
+        describeUser(locale.value === 'en' ? 'Assigned to' : 'Assignée à', selected.value?.assigned_to),
         describeUser('Créée par', selected.value?.created_by),
     ])
 

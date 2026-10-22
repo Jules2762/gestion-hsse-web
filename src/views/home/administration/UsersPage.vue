@@ -19,13 +19,13 @@
             <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div class="h-16 px-6 flex flex-row items-center justify-between gap-4">
                     <div class="flex flex-row items-center gap-1.5">
-                        <ButtonFilter text="Ajouter" :icon="Plus" is-primary @click="openAddModal" />
-                        <ButtonFilter text="Exporter" :icon="Download" :loading="loading_export"
+                        <ButtonFilter :text="t('common.add') || (locale === 'en' ? 'Add' : 'Ajouter')" :icon="Plus" is-primary @click="openAddModal" />
+                        <ButtonFilter :text="t('common.export') || (locale === 'en' ? 'Export' : 'Exporter')" :icon="Download" :loading="loading_export"
                             :badge="pagination.total.toString()" @click="exportData()" />
-                        <ButtonFilter text="Actualiser" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
+                        <ButtonFilter :text="t('common.refresh') || (locale === 'en' ? 'Refresh' : 'Actualiser')" :icon="RefreshCw" :loading="loading" @click="fetchData()" />
                     </div>
                     <div class="flex flex-row items-center gap-2">
-                        <InputFilter :icon="Search" placeholder="Rechercher un utilisateur..." v-model="filters.search[0]" />
+                        <InputFilter :icon="Search" :placeholder="locale === 'en' ? 'Search a user...' : 'Rechercher un utilisateur...'" v-model="filters.search[0]" />
                     </div>
                 </div>
                 <ChipFilter :filterableKeys="filterableKeys" :column-labels="columnLabels" :filters="filters"
@@ -62,7 +62,7 @@
                             <td>
                                 <template v-if="!loading_status">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">
-                                        {{UserRoleDataJson.find(i => i.value == item.role)?.label || item.role}}
+                                        {{ item.role === 'ADMIN' ? (locale === 'en' ? 'Administrator' : 'Administrateur') : (locale === 'en' ? 'User' : 'Utilisateur') }}
                                     </span>
                                 </template>
                                 <template v-else-if="loading_status && context_menu_user?.id == item.id">
@@ -91,7 +91,7 @@
                     </tfoot>
                 </table>
             </div>
-            <CenterModal :is-open="ban_modal" title="Désactiver le compte utilisateur ?" @close="ban_modal = false"
+            <CenterModal :is-open="ban_modal" :title="locale === 'en' ? 'Disable user account?' : 'Désactiver le compte utilisateur ?'" @close="ban_modal = false"
                 @confirm="confirmDisableUser">
                 <p class="max-w-100 p-4 rounded text-sm text-gray-600">
                     Cet utilisateur ne pourra plus se connecter à la plateforme GALANA HSSE ni accéder aux inspections,
@@ -104,7 +104,7 @@
             </CenterModal>
             <ContextMenuUI v-model="isOpenContextMenu" :context-menu="contextMenu" :actions="[
                 {
-                    label: 'Profil',
+                    label: locale === 'en' ? 'Profile' : 'Profil',
                     icon: User,
                     onClick: () => router.push({
                         name: 'PROFILE',
@@ -114,7 +114,7 @@
                     })
                 },
                 {
-                    label: 'Rôle et Permissions',
+                    label: locale === 'en' ? 'Role and Permissions' : 'Rôle et Permissions',
                     icon: UserCog2,
                     onClick: () => router.push({
                         name: 'ROLE_PERMISSION',
@@ -124,7 +124,7 @@
                     })
                 },
                 {
-                    label: 'Activités',
+                    label: locale === 'en' ? 'Activities' : 'Activités',
                     icon: Activity,
                     onClick: () => router.push({
                         name: 'ACTIVITY',
@@ -135,7 +135,7 @@
                 },
                 ...(canChangeStatus
                     ? [{
-                        label: 'Modifier',
+                        label: locale === 'en' ? 'Edit' : 'Modifier',
                         icon: Edit,
                         variant: 'WARNING',
                         onClick() {
@@ -150,8 +150,8 @@
                 ...(canChangeStatus
                     ? [{
                         label: context_menu_user?.status === 'ENABLED'
-                            ? 'Désactiver'
-                            : 'Activer',
+                            ? (locale === 'en' ? 'Disable' : 'Désactiver')
+                            : (locale === 'en' ? 'Enable' : 'Activer'),
                         icon: context_menu_user?.status === 'ENABLED'
                             ? Ban
                             : CircleCheck,
@@ -172,7 +172,7 @@
             <!-- HEADER DU VOLET -->
             <div class="flex items-start justify-between pb-4 border-b border-gray-200 mb-5">
                 <div class="min-w-0 flex-1">
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Utilisateur n° {{ selected_user.id }}</p>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400">{{ locale === 'en' ? 'User #' : 'Utilisateur n°' }} {{ selected_user.id }}</p>
                     <h4 class="mt-1 font-bold text-gray-900 truncate">{{ selected_user.first_name }} {{ selected_user.last_name }}</h4>
                 </div>
                 <button
@@ -257,7 +257,7 @@
                             },
                         })
                         ">
-                        Voir profil
+                        {{ locale === 'en' ? 'View profile' : 'Voir profil' }}
                     </Button>
 
                     <Button variant="outline" class="w-full" @click="
@@ -270,7 +270,7 @@
                             },
                         })
                         ">
-                        Rôles et permissions
+                        {{ locale === 'en' ? 'Roles and permissions' : 'Rôles et permissions' }}
                     </Button>
                 </div>
             </div>
@@ -281,7 +281,7 @@
                 mb-4
                 text-gray-500
             ">
-                    Organisation
+                    {{ locale === 'en' ? 'Organization' : 'Organisation' }}
                 </h6>
 
                 <div class="
@@ -294,7 +294,7 @@
                         text-xs
                         text-gray-500
                     ">
-                            Département
+                            {{ locale === 'en' ? 'Department' : 'Département' }}
                         </span>
 
                         <p>
@@ -310,7 +310,7 @@
                         text-xs
                         text-gray-500
                     ">
-                            Fonction
+                            {{ locale === 'en' ? 'Job Title' : 'Fonction' }}
                         </span>
 
                         <p>
@@ -504,28 +504,38 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                     <!-- Poste / Fonction -->
                                     <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
-                                            {{ locale === 'en' ? 'Job Title / Position' : 'Poste / Fonction' }}
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1 flex items-center justify-between">
+                                            <span>{{ locale === 'en' ? 'Job Title / Position' : 'Poste / Fonction' }}</span>
+                                            <span v-if="availableJobs.length" class="text-[10px] text-gray-400 font-normal">({{ availableJobs.length }} {{ locale === 'en' ? 'suggested' : 'suggérés' }})</span>
                                         </label>
                                         <input
                                             v-model="newUserForm.job"
+                                            list="user_modal_jobs_datalist"
                                             type="text"
-                                            :placeholder="locale === 'en' ? 'Ex: Responsable HSSE' : 'Ex: Responsable HSSE, Inspecteur...'"
+                                            :placeholder="locale === 'en' ? 'Select or type a position...' : 'Sélectionner ou saisir un poste...'"
                                             class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
                                         />
+                                        <datalist id="user_modal_jobs_datalist">
+                                            <option v-for="j in availableJobs" :key="j" :value="j">{{ j }}</option>
+                                        </datalist>
                                     </div>
 
                                     <!-- Département -->
                                     <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
-                                            {{ locale === 'en' ? 'Department' : 'Département' }}
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1 flex items-center justify-between">
+                                            <span>{{ locale === 'en' ? 'Department' : 'Département' }}</span>
+                                            <span v-if="availableDepartments.length" class="text-[10px] text-gray-400 font-normal">({{ availableDepartments.length }} {{ locale === 'en' ? 'suggested' : 'suggérés' }})</span>
                                         </label>
                                         <input
                                             v-model="newUserForm.department"
+                                            list="user_modal_departments_datalist"
                                             type="text"
-                                            :placeholder="locale === 'en' ? 'Ex: Opérations, HSSE...' : 'Ex: Opérations, HSSE, Logistique...'"
+                                            :placeholder="locale === 'en' ? 'Select or type a department...' : 'Sélectionner ou saisir un département...'"
                                             class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
                                         />
+                                        <datalist id="user_modal_departments_datalist">
+                                            <option v-for="d in availableDepartments" :key="d" :value="d">{{ d }}</option>
+                                        </datalist>
                                     </div>
                                 </div>
 
@@ -570,7 +580,7 @@
                                             v-model="newUserForm.password"
                                             type="password"
                                             required
-                                            minlength="6"
+                                            minlength="8"
                                             placeholder="••••••••"
                                             class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
                                         />
@@ -585,7 +595,7 @@
                                             v-model="newUserForm.confirmation_password"
                                             type="password"
                                             required
-                                            minlength="6"
+                                            minlength="8"
                                             placeholder="••••••••"
                                             class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
                                         />
@@ -668,6 +678,14 @@
     const loading_export = ref<boolean>(false)
     const columnOptions = ref<Record<Exclude<FilterKeyType, 'search'>, string[]>>()
 
+    const availableJobs = computed(() => {
+        return (columnOptions.value?.fonction || []).filter(Boolean)
+    })
+
+    const availableDepartments = computed(() => {
+        return (columnOptions.value?.department || []).filter(Boolean)
+    })
+
     const pagination = ref<PaginationType>({
         'current_page': 1,
         "to": 0,
@@ -699,6 +717,9 @@
     })
 
     function openAddModal() {
+        if (!columnOptions.value?.department?.length || !columnOptions.value?.fonction?.length) {
+            fetchDataFilters()
+        }
         newUserForm.value = {
             first_name: '',
             last_name: '',
@@ -740,6 +761,7 @@
             toast.success(locale.value === 'en' ? 'User created successfully!' : 'Utilisateur créé avec succès !')
             modal_add.value = false
             fetchData()
+            fetchDataFilters()
         } catch (err: any) {
             const errorMsg = err.response?.data?.message || (locale.value === 'en' ? 'Failed to create user.' : 'Erreur lors de la création de l\'utilisateur.')
             toast.error(errorMsg)
