@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl border border-gray-200 bg-white shadow-2xs overflow-hidden transition-all duration-200">
+  <div class="shrink-0 w-full rounded-2xl border border-gray-200 bg-white shadow-2xs overflow-hidden transition-all duration-200">
     <!-- EN-TÊTE DU BLOC LOCALISATION -->
     <div
       class="p-3 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-100 flex items-center justify-between gap-2 select-none"
@@ -148,10 +148,9 @@
         <!-- CONTENEUR DU WIDGET LEAFLET -->
         <div
           ref="mapContainerRef"
-          class="relative w-full overflow-hidden transition-all duration-300"
-          :class="isFullscreen
-            ? 'flex-1 min-h-0 rounded-2xl border border-gray-200'
-            : ((activeContactModal || activeStationEmergencyModal) ? 'h-[340px] bg-slate-100' : `${mapHeight} bg-slate-100`)"
+          class="relative w-full overflow-hidden transition-all duration-300 bg-slate-100"
+          :class="isFullscreen ? 'flex-1 min-h-0 rounded-2xl border border-gray-200' : ''"
+          :style="containerHeightStyle"
         >
           <!-- SPINNER DE CHARGEMENT -->
           <div
@@ -177,6 +176,7 @@
           <LMap
             ref="lMapRef"
             class="z-0 w-full h-full"
+            style="height: 100%; min-height: 260px; width: 100%;"
             :zoom="mapZoom"
             :center="mapCenter"
             @ready="onMapReady"
@@ -768,6 +768,18 @@ const mapZoom = ref(13);
 const mapCenter = ref<[number, number]>([-18.8792, 47.5079]);
 let resizeObserver: ResizeObserver | null = null;
 
+const containerHeightStyle = computed(() => {
+  if (isFullscreen.value) return {};
+  if (activeContactModal.value || activeStationEmergencyModal.value) {
+    return { height: '340px', minHeight: '340px' };
+  }
+  const raw = props.mapHeight?.trim();
+  if (raw && !raw.startsWith('h-')) {
+    return { height: raw, minHeight: raw };
+  }
+  return { height: '260px', minHeight: '260px' };
+});
+
 // CACHE PARTAGÉ DES SITES ET CONTACTS AU NIVEAU MODULE
 let cachedSites: EmergencySiteType[] = [];
 let cachedContacts: EmergencyContactType[] = [];
@@ -1084,11 +1096,11 @@ function contactLabel(type: EmergencyType | string): string {
 }
 
 // RAFRAÎCHISSEMENT ET CONTRÔLE DE LA CARTE LEAFLET
-let leafletMapInstance: any = null;
+const leafletMapInstance = ref<any>(null);
 
 function getMapInstance(): any {
-  if (leafletMapInstance && typeof leafletMapInstance.invalidateSize === "function") {
-    return leafletMapInstance;
+  if (leafletMapInstance.value && typeof leafletMapInstance.value.invalidateSize === "function") {
+    return leafletMapInstance.value;
   }
   if (lMapRef.value?.leafletObject && typeof lMapRef.value.leafletObject.invalidateSize === "function") {
     return lMapRef.value.leafletObject;
@@ -1108,7 +1120,7 @@ function refreshMapSize() {
 function triggerStaggeredRefresh() {
   nextTick(() => {
     refreshMapSize();
-    [50, 150, 300, 600].forEach((delay) => {
+    [50, 150, 300, 600, 1000].forEach((delay) => {
       setTimeout(() => {
         refreshMapSize();
       }, delay);
@@ -1117,7 +1129,7 @@ function triggerStaggeredRefresh() {
 }
 
 function onMapReady(map: any) {
-  leafletMapInstance = map;
+  leafletMapInstance.value = map;
   updateMapCenterAndZoom();
   triggerStaggeredRefresh();
 }

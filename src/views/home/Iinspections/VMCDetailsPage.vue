@@ -64,9 +64,13 @@
         </div>
 
         <!-- ============================================================== -->
-        <!-- FICHE OFFICIELLE EXACTE (CONFORME 100% AUX PHOTOS DU CLASSEUR) -->
+        <!-- DISPOSITION PRINCIPALE : FICHE À GAUCHE, CARTOGRAPHIE & DÉTAILS À DROITE -->
         <!-- ============================================================== -->
-        <div v-else-if="vmc" class="sheet-container max-w-[210mm] mx-auto bg-white p-8 sm:p-12 shadow-lg border border-gray-300 print:shadow-none print:border-none print:p-0 print:m-0 print:w-full print:max-w-none text-black font-sans leading-tight">
+        <div v-else-if="vmc" class="max-w-[1520px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
+
+            <!-- COLONNE PRINCIPALE (8 COLS) : FICHE OFFICIELLE + ACTIONS CORRECTIVES -->
+            <div class="lg:col-span-8 xl:col-span-8 print:w-full">
+                <div class="sheet-container max-w-[210mm] mx-auto bg-white p-8 sm:p-12 shadow-lg border border-gray-300 print:shadow-none print:border-none print:p-0 print:m-0 print:w-full print:max-w-none text-black font-sans leading-tight">
 
             <!-- ========================================================================= -->
             <!-- 1. TEMPLATE VISITE STATION-SERVICE (HSSE GALANA 1)                        -->
@@ -726,7 +730,275 @@
                 </div>
             </div>
         </div>
+            </div>
+
+            <!-- COLONNE DROITE (4 COLS) : CARTOGRAPHIE D'EMPLACEMENT ET DÉTAILS VMC (MASQUÉE À L'IMPRESSION) -->
+            <div class="flex flex-col gap-4 lg:col-span-4 xl:col-span-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto print:hidden">
+                <!-- 1. CARTOGRAPHIE D'EMPLACEMENT ET SECOURS D'URGENCE (COMME DANS CHECKLIST) -->
+                <SidebarLocationMap
+                    :site-name="vmcSite"
+                    :location-name="vmc.site_location?.locality || selectedRegisteredSiteInfo?.locality || vmcSite"
+                    :site-type="vmc.type"
+                    :latitude="vmc.site_location?.latitude || selectedRegisteredSiteInfo?.latitude"
+                    :longitude="vmc.site_location?.longitude || selectedRegisteredSiteInfo?.longitude"
+                    :locality="vmc.site_location?.locality || selectedRegisteredSiteInfo?.locality"
+                    :province="vmc.site_location?.province || selectedRegisteredSiteInfo?.province"
+                    :status="vmc.status"
+                    :conformity-rate="vmcStats.conformityRate"
+                />
+
+                <!-- 2. FICHE DÉTAILS DE LA VISITE VMC -->
+                <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-2xs flex flex-col gap-3">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <div class="flex items-center gap-2">
+                            <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                {{ locale === 'en' ? 'VMC Details' : 'Détails de la VMC' }}
+                            </h5>
+                            <button
+                                type="button"
+                                @click="openEditModal"
+                                class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-md transition cursor-pointer"
+                            >
+                                <Edit :size="12" />
+                                <span>{{ locale === 'en' ? 'Edit' : 'Modifier' }}</span>
+                            </button>
+                        </div>
+                        <span class="text-[10px] text-gray-400 font-mono">Réf. #{{ vmc.id }}</span>
+                    </div>
+
+                    <dl class="flex flex-col gap-3 text-xs">
+                        <!-- Statut -->
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <span>{{ locale === 'en' ? 'Status' : 'Statut' }}</span>
+                            </dt>
+                            <dd>
+                                <ChecklistStatus :name="vmc.status" />
+                            </dd>
+                        </div>
+
+                        <!-- Site -->
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <MapPin :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Site / Station' : 'Site / Station' }}</span>
+                            </dt>
+                            <dd class="font-bold text-gray-900 truncate max-w-[180px] text-right">
+                                {{ vmcSite }}
+                            </dd>
+                        </div>
+
+                        <!-- Localité & Coordonnées GPS -->
+                        <div v-if="vmc.site_location || selectedRegisteredSiteInfo" class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <Compass :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'GPS Coordinates' : 'Coordonnées GPS' }}</span>
+                            </dt>
+                            <dd class="font-mono text-gray-700 text-[11px] text-right">
+                                {{ (vmc.site_location?.latitude || selectedRegisteredSiteInfo?.latitude) ? Number(vmc.site_location?.latitude || selectedRegisteredSiteInfo?.latitude).toFixed(4) : '-' }},
+                                {{ (vmc.site_location?.longitude || selectedRegisteredSiteInfo?.longitude) ? Number(vmc.site_location?.longitude || selectedRegisteredSiteInfo?.longitude).toFixed(4) : '-' }}
+                            </dd>
+                        </div>
+
+                        <!-- Évaluateur / Inspecteur (issu des Utilisateurs / Users) -->
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <UserCheck2 :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Inspector / Evaluator' : 'Inspecteur / Évaluateur' }}</span>
+                            </dt>
+                            <dd class="font-bold text-gray-900 truncate max-w-[180px] text-right">
+                                {{ vmcInspector }}
+                            </dd>
+                        </div>
+
+                        <!-- Personne accompagnante -->
+                        <div v-if="vmcAccompanying !== '—'" class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <Users :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Accompanying' : 'Accompagnant' }}</span>
+                            </dt>
+                            <dd class="font-medium text-gray-700 truncate max-w-[180px] text-right">
+                                {{ vmcAccompanying }}
+                            </dd>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="flex items-center justify-between gap-2">
+                            <dt class="flex items-center gap-2 text-gray-500">
+                                <CalendarDays :size="14" class="text-gray-400 shrink-0" />
+                                <span>{{ locale === 'en' ? 'Date' : 'Date' }}</span>
+                            </dt>
+                            <dd class="font-medium text-gray-700">
+                                {{ formattedDate }}
+                            </dd>
+                        </div>
+
+                        <!-- Conformité KPI -->
+                        <div v-if="vmcStats.total > 0" class="pt-2 border-t border-gray-100 flex items-center justify-between">
+                            <span class="text-gray-500">{{ locale === 'en' ? 'Compliance rate' : 'Taux de conformité' }}</span>
+                            <span class="font-bold text-emerald-600 text-sm">{{ vmcStats.conformityRate }}%</span>
+                        </div>
+                    </dl>
+                </section>
+            </div>
         </div>
+
+        <!-- MODAL ÉDITION DE LA VMC -->
+        <Teleport to="body">
+            <transition name="modal-fade">
+                <div
+                    v-if="editModal.isOpen"
+                    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+                    @click.self="editModal.isOpen = false"
+                >
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden border border-gray-200">
+                        <div class="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-amber-50/40 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                                    <Edit :size="18" />
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">
+                                        {{ locale === 'en' ? 'Edit VMC Visit' : 'Modifier la visite VMC' }}
+                                    </h4>
+                                    <p class="text-[11px] text-gray-500">
+                                        Réf. #{{ vmc?.id }} • {{ locale === 'en' ? 'Update metadata, site and assigned inspector.' : 'Mettez à jour le site, l’inspecteur et le statut.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="editModal.isOpen = false"
+                                class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition cursor-pointer"
+                            >
+                                <X :size="18" />
+                            </button>
+                        </div>
+
+                        <form @submit.prevent="submitEditVmc" class="flex flex-col flex-1 overflow-y-auto p-5 space-y-4">
+                            <!-- Titre -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                    {{ locale === 'en' ? 'Title' : 'Titre de la VMC' }}
+                                </label>
+                                <input
+                                    v-model="editModal.title"
+                                    type="text"
+                                    class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                />
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <!-- Date -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Date' : 'Date de la visite' }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="editModal.date"
+                                        type="date"
+                                        required
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+
+                                <!-- Statut -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Status' : 'Statut' }}
+                                    </label>
+                                    <select
+                                        v-model="editModal.status"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                    >
+                                        <option value="DRAFT">{{ locale === 'en' ? 'Draft' : 'Brouillon' }}</option>
+                                        <option value="IN_PROGRESS">{{ locale === 'en' ? 'In progress' : 'En cours' }}</option>
+                                        <option value="COMPLETED">{{ locale === 'en' ? 'Completed' : 'Clôturée' }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Site avec datalist -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                    {{ locale === 'en' ? 'Site / Station Galana' : 'Site / Station Galana' }}
+                                </label>
+                                <input
+                                    v-model="editModal.site"
+                                    list="vmc_details_sites_datalist"
+                                    class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                />
+                                <datalist id="vmc_details_sites_datalist">
+                                    <option v-for="(s, sIdx) in siteList" :key="sIdx" :value="s">{{ s }}</option>
+                                </datalist>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <!-- Inspecteur (depuis la liste des Utilisateurs / Users) -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1 flex items-center justify-between">
+                                        <span>{{ locale === 'en' ? 'Inspector (User)' : 'Inspecteur (Utilisateur)' }}</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Users list' : 'Liste des utilisateurs' }}</span>
+                                    </label>
+                                    <select
+                                        v-model="editModal.inspector_id"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none bg-white transition cursor-pointer"
+                                    >
+                                        <option :value="undefined">{{ locale === 'en' ? 'Default / Unassigned' : 'Par défaut / Non assigné' }}</option>
+                                        <option v-for="usr in usersList" :key="usr.id" :value="usr.id">
+                                            {{ `${usr.first_name || ''} ${usr.last_name || ''}`.trim() || usr.name || usr.email }}
+                                            {{ usr.job ? ` — ${usr.job}` : (usr.department ? ` (${usr.department})` : '') }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Accompagnant -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                        {{ locale === 'en' ? 'Accompanying person' : 'Personne accompagnante' }}
+                                    </label>
+                                    <input
+                                        v-model="editModal.accompanying_person"
+                                        type="text"
+                                        class="w-full h-9 px-3 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition"
+                                    />
+                                </div>
+                            </div>
+
+                            <!-- Recommandation -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                    {{ locale === 'en' ? 'Recommendation / Observations' : 'Recommandation / Observations' }}
+                                </label>
+                                <textarea
+                                    v-model="editModal.recommendation"
+                                    rows="3"
+                                    class="w-full p-2.5 rounded-lg border border-gray-300 text-xs focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none resize-none transition"
+                                ></textarea>
+                            </div>
+
+                            <div class="pt-3 border-t border-gray-200 flex items-center justify-end gap-2.5">
+                                <button
+                                    type="button"
+                                    @click="editModal.isOpen = false"
+                                    class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+                                >
+                                    {{ locale === 'en' ? 'Cancel' : 'Annuler' }}
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="editModal.saving"
+                                    class="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                >
+                                    <Loader2 v-if="editModal.saving" :size="14" class="animate-spin" />
+                                    <span>{{ editModal.saving ? (locale === 'en' ? 'Saving...' : 'Enregistrement...') : (locale === 'en' ? 'Save changes' : 'Enregistrer') }}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
 
         <!-- MODAL AJOUT / ÉDITION ACTION CORRECTIVE VMC -->
         <div v-if="actionModal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
@@ -819,25 +1091,32 @@
         </div>
 
     </div>
+    </div>
 </template>
 
 <script setup lang="ts">
     import {
         ArrowLeft,
+        CalendarDays,
         CheckCircle2,
+        Compass,
         Edit,
         Loader,
         Loader2,
         Mail,
+        MapPin,
         Plus,
         Printer,
         ShieldAlert,
+        UserCheck2,
+        Users,
         X,
     } from '@lucide/vue';
     import { computed, onMounted, ref } from 'vue';
     import { useRoute } from 'vue-router';
     import { useI18n } from 'vue-i18n';
     import Header from '../../../components/shared/Header.vue';
+    import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import ActionStatus from '../../../components/features/action/ActionStatus.vue';
     import ActionEmailStatus from '../../../components/features/action/ActionEmailStatus.vue';
@@ -845,6 +1124,8 @@
     import type { ActionStatusType } from '../../../@types/Action.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
     import { useActionService } from '../../../core/services/action.service.ts';
+    import { useUserService } from '../../../core/services/user.service.ts';
+    import siteService from '../../../core/services/site.service.ts';
     import personnelService from '../../../core/services/personnel.service.ts';
     import { router } from '../../../router/index.ts';
     import { toast } from 'vue3-toastify';
@@ -856,6 +1137,23 @@
     const errorMessage = ref<string>('')
     const vmc = ref<VMCDataType | null>(null)
     const sendingEmailActionId = ref<string | number | null>(null)
+
+    const userService = useUserService();
+    const usersList = ref<any[]>([]);
+    const registeredSites = ref<any[]>([]);
+    const siteList = ref<string[]>([]);
+
+    const editModal = ref({
+        isOpen: false,
+        saving: false,
+        title: '',
+        date: '',
+        status: 'IN_PROGRESS',
+        site: '',
+        inspector_id: undefined as number | string | undefined,
+        accompanying_person: '',
+        recommendation: '',
+    });
 
     /* Détermination exacte du modèle */
     const resolvedTemplateCategory = computed<'STATION_SERVICE' | 'INSPECTION_CAMION' | 'VISITE_MAGASINS_AGENCES' | 'SAFETY_MOMENT' | 'SAFETY_AWARENESS' | 'SAFETY_REPORT'>(() => {
@@ -908,6 +1206,32 @@
             vmc.value?.inspection?.recommendation?.trim() ||
             'Aucune remarque particulière. Standards de sécurité respectés lors de la visite.'
         )
+    })
+
+    const selectedRegisteredSiteInfo = computed(() => {
+        const siteStr = (vmcSite.value || '').trim().toLowerCase()
+        if (!siteStr || siteStr === '—') return null
+        return registeredSites.value.find((s: any) => s.name?.toLowerCase() === siteStr) || null
+    })
+
+    const vmcStats = computed(() => {
+        const items = vmc.value?.inspection?.items || []
+        const total = items.length
+        let yes = 0
+        let no = 0
+        items.forEach((it: any) => {
+            if (isYes(it.answer)) yes++
+            else if (isNo(it.answer)) no++
+        })
+        const evaluated = yes + no
+        const conformityRate = evaluated > 0 ? Math.round((yes / evaluated) * 100) : 100
+        return {
+            total,
+            yes,
+            no,
+            evaluated,
+            conformityRate,
+        }
     })
 
     /* Liste complète et fidèle des items Station-Service */
@@ -1251,9 +1575,90 @@
             })
     }
 
+    function fetchUsers() {
+        userService.index()
+            .then((res: any) => {
+                usersList.value = res.data?.data || res.data || []
+            })
+            .catch((err: any) => console.error('Erreur chargement utilisateurs:', err))
+    }
+
+    function fetchSites() {
+        siteService.all()
+            .then((res: any) => {
+                const sites = res.data?.data || res.data || []
+                if (Array.isArray(sites) && sites.length > 0) {
+                    registeredSites.value = sites
+                    siteList.value = sites.map((s: any) => s.name).filter(Boolean)
+                }
+            })
+            .catch((err: any) => console.error('Erreur chargement sites:', err))
+    }
+
+    function openEditModal() {
+        if (!vmc.value) return
+        const inspectorUser = usersList.value.find((u: any) => {
+            if (vmc.value?.assigned_to?.id && u.id === vmc.value.assigned_to.id) return true
+            const name = `${u.first_name || ''} ${u.last_name || ''}`.trim().toLowerCase()
+            return name && vmc.value?.inspector && name === vmc.value.inspector.toLowerCase()
+        })
+
+        editModal.value = {
+            isOpen: true,
+            saving: false,
+            title: vmc.value.title || vmc.value.type || '',
+            date: vmc.value.date ? vmc.value.date.substring(0, 10) : new Date().toISOString().slice(0, 10),
+            status: vmc.value.status || 'IN_PROGRESS',
+            site: vmcSite.value !== '—' ? vmcSite.value : '',
+            inspector_id: inspectorUser ? inspectorUser.id : (vmc.value.assigned_to?.id || undefined),
+            accompanying_person: vmcAccompanying.value !== '—' ? vmcAccompanying.value : '',
+            recommendation: vmc.value.recommendation || '',
+        }
+    }
+
+    async function submitEditVmc() {
+        if (!vmc.value) return
+        editModal.value.saving = true
+        try {
+            const selectedUser = usersList.value.find((u: any) => u.id === editModal.value.inspector_id)
+            const inspectorName = selectedUser
+                ? `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || selectedUser.name || selectedUser.email
+                : (vmc.value.inspector || '')
+
+            const payload: any = {
+                title: editModal.value.title,
+                date: editModal.value.date,
+                status: editModal.value.status,
+                site: editModal.value.site,
+                inspector: inspectorName,
+                inspector_id: editModal.value.inspector_id,
+                assigned_to: editModal.value.inspector_id,
+                accompanying_person: editModal.value.accompanying_person,
+                recommendation: editModal.value.recommendation,
+            }
+
+            const res = await vmcService.update(vmc.value.id, payload)
+            if (res.data?.data) {
+                vmc.value = res.data.data
+            } else if (res.data) {
+                vmc.value = { ...vmc.value, ...payload }
+            }
+            toast.success(locale.value === 'en' ? 'VMC visit updated successfully' : 'Visite VMC mise à jour avec succès')
+            editModal.value.isOpen = false
+            fetchVmc()
+        } catch (err: any) {
+            console.error('Erreur mise à jour VMC:', err)
+            toast.error(err.response?.data?.message || (locale.value === 'en' ? 'Failed to update VMC visit' : 'Échec de la modification de la VMC'))
+        } finally {
+            editModal.value.saving = false
+        }
+    }
+
     onMounted(() => {
         fetchVmc()
         fetchPersonnels()
+        fetchUsers()
+        fetchSites()
     })
 </script>
 

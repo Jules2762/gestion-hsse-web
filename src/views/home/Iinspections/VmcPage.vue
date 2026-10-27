@@ -131,8 +131,10 @@
 
                 <!-- CARTOGRAPHIE DE L'EMPLACEMENT DU SITE VMC -->
                 <SidebarLocationMap
+                    :key="'vmc-sidebar-map-' + selected.id"
                     :site-name="selected.site || selected.inspection?.site || selected.title"
                     :location-name="selected.site_location?.locality || selected.site"
+                    :site-type="selected.type"
                     :latitude="selected.site_location?.latitude"
                     :longitude="selected.site_location?.longitude"
                     :locality="selected.site_location?.locality"
@@ -368,14 +370,79 @@
                                         <datalist id="vmc_modal_sites_datalist">
                                             <option v-for="(s, sIdx) in siteList" :key="sIdx" :value="s">{{ s }}</option>
                                         </datalist>
+
+                                        <!-- Badge info cartographie du site -->
+                                        <div
+                                            v-if="selectedRegisteredSiteInfo"
+                                            class="mt-2 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-2"
+                                        >
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                                    <MapPin :size="13" />
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <span class="font-bold text-xs truncate block">{{ selectedRegisteredSiteInfo.name }}</span>
+                                                    <span class="text-[11px] text-emerald-700">
+                                                        {{ selectedRegisteredSiteInfo.locality || selectedRegisteredSiteInfo.location?.locality || 'Madagascar' }}
+                                                        <template v-if="selectedRegisteredSiteInfo.province || selectedRegisteredSiteInfo.location?.province">
+                                                            • {{ selectedRegisteredSiteInfo.province || selectedRegisteredSiteInfo.location?.province }}
+                                                        </template>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="text-[10px] font-mono text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                                                <CheckCircle2 :size="11" class="text-emerald-600" />
+                                                <span v-if="selectedRegisteredSiteInfo.latitude || selectedRegisteredSiteInfo.location?.latitude">
+                                                    GPS : {{ Number(selectedRegisteredSiteInfo.latitude || selectedRegisteredSiteInfo.location?.latitude).toFixed(4) }}, {{ Number(selectedRegisteredSiteInfo.longitude || selectedRegisteredSiteInfo.location?.longitude).toFixed(4) }}
+                                                </span>
+                                                <span v-else>{{ locale === 'en' ? 'Registered cartography' : 'Cartographie enregistrée' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Choix cartographique interactif GPS (comme dans checklist) -->
+                                <div class="rounded-xl border border-gray-200 bg-slate-50/70 p-3 flex flex-col gap-2">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1.5 text-xs font-bold text-gray-800">
+                                            <MapPin :size="15" class="text-primary" />
+                                            <span>{{ locale === 'en' ? 'Cartography location selection' : 'Choix cartographie de la VMC' }}</span>
+                                            <span class="text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.2 rounded-full">
+                                                {{ locale === 'en' ? 'Click on map' : 'Cliquer sur la carte' }}
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            @click="showModalMapPicker = !showModalMapPicker"
+                                            class="text-[11px] font-semibold text-primary hover:text-primary/80 bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-lg transition cursor-pointer"
+                                        >
+                                            {{ showModalMapPicker ? (locale === 'en' ? 'Hide map' : 'Masquer la carte') : (locale === 'en' ? 'Interactive map' : 'Carte interactive') }}
+                                        </button>
+                                    </div>
+                                    <p class="text-[11px] text-gray-500">
+                                        {{ locale === 'en'
+                                            ? 'Visualise or adjust the GPS location coordinates of this VMC on the map.'
+                                            : 'Visualisez ou définissez la position cartographique GPS exacte de la visite.'
+                                        }}
+                                    </p>
+                                    <div v-if="showModalMapPicker" class="mt-1">
+                                        <LocationPickerMap
+                                            :latitude="modalCoordinates.latitude"
+                                            :longitude="modalCoordinates.longitude"
+                                            height="h-[200px]"
+                                            @update:latitude="modalCoordinates.latitude = $event ?? undefined"
+                                            @update:longitude="modalCoordinates.longitude = $event ?? undefined"
+                                            @location-detected="onModalLocationDetected"
+                                        />
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                    <!-- Inspecteur (depuis la liste des Utilisateurs) -->
+                                    <!-- Inspecteur (depuis la liste des Utilisateurs / Users) -->
                                     <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">
-                                            {{ locale === 'en' ? 'Inspector / In charge (User)' : 'Inspecteur / Responsable (Utilisateur)' }}
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1 flex items-center justify-between">
+                                            <span>{{ locale === 'en' ? 'Inspector / In charge (User)' : 'Inspecteur / Responsable (Utilisateur)' }}</span>
+                                            <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'From system users' : 'Liste des utilisateurs' }}</span>
                                         </label>
                                         <select
                                             v-model="newVmcForm.inspector_id"
@@ -458,6 +525,7 @@
     import Button from '../../../components/ui/Button.vue';
     import ChecklistStatus from '../../../components/features/checklist/ChecklistStatus.vue';
     import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
+    import LocationPickerMap from '../../../components/shared/LocationPickerMap.vue';
     import ContextMenuUI from '../../../components/ui/ContextMenuUI.vue';
     import { computed, onMounted, onUnmounted, ref, watch, type ComputedRef } from 'vue';
     import type { VMCDataType, VMCFilterType } from '../../../@types/VMC.type.ts';
@@ -488,6 +556,11 @@
 
     const modal_add = ref(false)
     const loading_add = ref(false)
+    const showModalMapPicker = ref(false)
+    const modalCoordinates = ref<{ latitude?: number; longitude?: number }>({
+        latitude: undefined,
+        longitude: undefined,
+    })
     const newVmcForm = ref<VMCFormType>({
         type: 'Station-Service',
         title: '',
@@ -500,9 +573,26 @@
 
     const userService = useUserService()
     const usersList = ref<any[]>([])
+    const registeredSites = ref<any[]>([])
     const siteList = ref<string[]>([])
 
+    const selectedRegisteredSiteInfo = computed(() => {
+        if (!newVmcForm.value.site) return null
+        const siteName = newVmcForm.value.site.trim().toLowerCase()
+        return registeredSites.value.find((s: any) => s.name?.toLowerCase() === siteName) || null
+    })
+
+    function onModalLocationDetected(loc: { locality?: string; province?: string; site?: string }) {
+        if (loc.site && !newVmcForm.value.site) {
+            newVmcForm.value.site = loc.site
+        } else if (loc.locality && !newVmcForm.value.site) {
+            newVmcForm.value.site = loc.locality
+        }
+    }
+
     function openAddModal() {
+        showModalMapPicker.value = false
+        modalCoordinates.value = { latitude: undefined, longitude: undefined }
         newVmcForm.value = {
             type: 'Station-Service',
             title: '',
@@ -530,6 +620,7 @@
                 .then(res => {
                     const sites = res.data?.data || res.data || []
                     if (Array.isArray(sites) && sites.length > 0) {
+                        registeredSites.value = sites
                         siteList.value = sites.map((s: any) => s.name).filter(Boolean)
                     } else {
                         throw new Error('Fallback')
@@ -549,7 +640,7 @@
         if (!newVmcForm.value.type || !newVmcForm.value.site || !newVmcForm.value.date) return
         loading_add.value = true
         try {
-            const selectedUser = usersList.value.find((u: any) => u.id == newVmcForm.value.inspector_id)
+            const selectedUser = usersList.value.find((u: any) => String(u.id) === String(newVmcForm.value.inspector_id))
             const cleanInspector = selectedUser
                 ? `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || selectedUser.name || selectedUser.email
                 : (newVmcForm.value.inspector || '').trim()
@@ -557,9 +648,7 @@
             const payload: any = {
                 ...newVmcForm.value,
                 inspector: cleanInspector,
-            }
-            if (newVmcForm.value.inspector_id !== undefined) {
-                payload.assigned_to = newVmcForm.value.inspector_id
+                assigned_to: newVmcForm.value.inspector_id || (selectedUser ? selectedUser.id : undefined),
             }
             delete payload.inspector_id
 
@@ -791,6 +880,16 @@
     function openPreview(item: VMCDataType) {
         right_sidebar.value.selected_vmc = item
         right_sidebar.value.isOpen = true
+        if (item.id) {
+            vmcService.show(item.id).then(res => {
+                if (right_sidebar.value.isOpen && right_sidebar.value.selected_vmc?.id === item.id) {
+                    const full = res.data?.data || res.data
+                    if (full) {
+                        right_sidebar.value.selected_vmc = { ...right_sidebar.value.selected_vmc, ...full }
+                    }
+                }
+            }).catch(() => {})
+        }
     }
 
     function closePreview() {

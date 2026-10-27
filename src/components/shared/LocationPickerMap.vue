@@ -126,8 +126,9 @@
 
         <!-- CONTENEUR CARTE LEAFLET INTERACTIVE -->
         <div
-          class="relative w-full rounded-xl border border-gray-300 overflow-hidden shadow-2xs select-none"
-          :class="isFullscreen ? 'flex-1 min-h-0' : height"
+          class="relative w-full rounded-xl border border-gray-300 overflow-hidden shadow-2xs select-none bg-slate-100"
+          :class="isFullscreen ? 'flex-1 min-h-0' : ''"
+          :style="isFullscreen ? {} : { height: '280px', minHeight: '280px' }"
         >
           <LMap
             ref="lMapRef"
@@ -135,6 +136,7 @@
             v-model:center="mapCenter"
             :use-global-leaflet="false"
             class="w-full h-full z-0 cursor-crosshair"
+            style="height: 100%; min-height: 280px; width: 100%;"
             @ready="onMapReady"
             @click="onMapClick"
           >

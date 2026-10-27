@@ -36,17 +36,48 @@
                 <Input :label="locale === 'en' ? 'Date' : 'Date'" type="date" v-model="data.date" required />
 
                 <!-- Site avec liste de suggestions -->
-                <Input
-                    :label="locale === 'en' ? 'Site' : 'Site'"
-                    v-model="data.site"
-                    :placeholder="locale === 'en' ? 'Ex: Ankorondrano Station, Depot, ...' : 'Ex: Station Ankorondrano, Dépôt, ...'"
-                    :lists="siteList"
-                    list_id="sites_datalist"
-                />
-                <!-- Inspecteur : sélection parmi les Utilisateurs du système -->
+                <div class="col-span-2">
+                    <Input
+                        :label="locale === 'en' ? 'Site / Station Galana' : 'Site / Station Galana'"
+                        v-model="data.site"
+                        :placeholder="locale === 'en' ? 'Ex: Ankorondrano Station, Depot, ...' : 'Ex: Station Ankorondrano, Dépôt, ...'"
+                        :lists="siteList"
+                        list_id="sites_datalist"
+                    />
+
+                    <!-- Badge info cartographie du site -->
+                    <div
+                        v-if="selectedSiteInfo"
+                        class="mt-2 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-2"
+                    >
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                <MapPin :size="13" />
+                            </div>
+                            <div class="min-w-0">
+                                <span class="font-bold text-xs truncate block">{{ selectedSiteInfo.name }}</span>
+                                <span class="text-[11px] text-emerald-700">
+                                    {{ selectedSiteInfo.locality || selectedSiteInfo.location?.locality || 'Madagascar' }}
+                                    <template v-if="selectedSiteInfo.province || selectedSiteInfo.location?.province">
+                                        • {{ selectedSiteInfo.province || selectedSiteInfo.location?.province }}
+                                    </template>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-[10px] font-mono text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                            <CheckCircle2 :size="11" class="text-emerald-600" />
+                            <span v-if="selectedSiteInfo.latitude || selectedSiteInfo.location?.latitude">
+                                GPS : {{ Number(selectedSiteInfo.latitude || selectedSiteInfo.location?.latitude).toFixed(4) }}, {{ Number(selectedSiteInfo.longitude || selectedSiteInfo.location?.longitude).toFixed(4) }}
+                            </span>
+                            <span v-else>{{ locale === 'en' ? 'Registered cartography' : 'Cartographie enregistrée' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inspecteur : sélection parmi les Utilisateurs du système (Users) -->
                 <div class="col-span-2">
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
-                        <span>{{ locale === 'en' ? 'Inspector / Person in charge' : 'Inspecteur / Responsable' }}</span>
+                        <span>{{ locale === 'en' ? 'Inspector / Person in charge (User)' : 'Inspecteur / Responsable (Utilisateur)' }}</span>
                         <span class="text-[10px] text-gray-400 font-normal">{{ locale === 'en' ? 'Selected from system users' : 'Choisi parmi les utilisateurs' }}</span>
                     </label>
                     <select
@@ -55,7 +86,8 @@
                     >
                         <option :value="undefined">{{ locale === 'en' ? 'Select an inspector (default yourself)...' : 'Sélectionner un inspecteur (par défaut vous-même)...' }}</option>
                         <option v-for="usr in users" :key="usr.id" :value="usr.id">
-                            {{ usr.first_name + " " + usr.last_name + (usr.email ? " (" + usr.email + ")" : "") }}
+                            {{ `${usr.first_name || ''} ${usr.last_name || ''}`.trim() || usr.name || usr.email }}
+                            {{ usr.job ? ` — ${usr.job}` : (usr.department ? ` (${usr.department})` : '') }}
                         </option>
                     </select>
                 </div>
@@ -71,8 +103,21 @@
             </form>
 
             <!-- PREVIEW -->
-            <div class="col-span-4">
-                <div class="bg-white rounded border border-gray-200 sticky top-4 overflow-hidden shadow-sm">
+            <div class="col-span-4 flex flex-col gap-4">
+                <!-- CARTOGRAPHIE DU SITE SÉLECTIONNÉ (COMME DANS CHECKLIST) -->
+                <div v-if="selectedSiteInfo" class="sticky top-4 z-10">
+                    <SidebarLocationMap
+                        :site-name="data.site || selectedSiteInfo.name"
+                        :location-name="selectedSiteInfo.locality || selectedSiteInfo.location?.locality || data.site"
+                        :site-type="data.type"
+                        :latitude="selectedSiteInfo.latitude || selectedSiteInfo.location?.latitude"
+                        :longitude="selectedSiteInfo.longitude || selectedSiteInfo.location?.longitude"
+                        :locality="selectedSiteInfo.locality || selectedSiteInfo.location?.locality"
+                        :province="selectedSiteInfo.province || selectedSiteInfo.location?.province"
+                    />
+                </div>
+
+                <div class="bg-white rounded border border-gray-200 overflow-hidden shadow-sm" :class="!selectedSiteInfo ? 'sticky top-4' : ''">
 
                     <!-- HEADER -->
                     <div class="p-5 border-b border-gray-200">
@@ -178,10 +223,11 @@
                                     {{ cleanInspectorName }}
                                 </p>
 
-                                <p v-if="selectedInspectorUser?.job" class="text-xs text-gray-400 truncate">{{ selectedInspectorUser.job }}
+                                <p v-if="selectedInspectorUser?.job || selectedInspectorUser?.department" class="text-xs text-gray-400 truncate">
+                                    {{ selectedInspectorUser.job || selectedInspectorUser.department }}
                                 </p>
 
-                                <p v-else-if="!cleanInspectorName" class="mt-1 text-sm text-gray-400">{{ locale === 'en' ? 'Default (yourself)' : 'Par défaut (vous-même)' }}
+                                <p v-else-if="!cleanInspectorName" class="mt-1 text-sm text-gray-400">{{ locale === 'en' ? 'Unassigned' : 'Non assigné' }}
                                 </p>
                             </div>
 
@@ -255,17 +301,19 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { ClipboardCheck, Save } from '@lucide/vue';
+    import { CheckCircle2, ClipboardCheck, MapPin, Save } from '@lucide/vue';
     import { useI18n } from 'vue-i18n';
     import Header from '../../../components/shared/Header.vue';
     import Button from '../../../components/ui/Button.vue';
     import Input from '../../../components/ui/Input.vue';
     import Select from '../../../components/ui/Select.vue';
+    import SidebarLocationMap from '../../../components/shared/SidebarLocationMap.vue';
     import { router } from '../../../router/index.ts';
     import { computed, onMounted, ref } from 'vue';
     import type { VMCFormType } from '../../../@types/VMC.type.ts';
     import vmcService from '../../../core/services/vmc.service.ts';
     import { useUserService } from '../../../core/services/user.service.ts';
+    import siteService from '../../../core/services/site.service.ts';
 
     const { t, locale } = useI18n();
 
@@ -306,8 +354,15 @@
         return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.name || u.email || ''
     })
 
-    /* Sites list */
+    /* Sites list with coordinates */
     const siteList = ref<string[]>([])
+    const registeredSites = ref<any[]>([])
+
+    const selectedSiteInfo = computed(() => {
+        if (!data.value.site) return null
+        const sName = data.value.site.trim().toLowerCase()
+        return registeredSites.value.find((s: any) => s.name?.toLowerCase() === sName) || null
+    })
 
     function fetchUsers() {
         userService.index()
@@ -318,11 +373,23 @@
     }
 
     function fetchSites() {
-        vmcService.getFilters()
+        siteService.all()
             .then(res => {
-                siteList.value = res.data.site || []
+                const sites = res.data?.data || res.data || []
+                if (Array.isArray(sites) && sites.length > 0) {
+                    registeredSites.value = sites
+                    siteList.value = sites.map((s: any) => s.name).filter(Boolean)
+                } else {
+                    throw new Error('Fallback')
+                }
             })
-            .catch(err => console.error(err))
+            .catch(() => {
+                vmcService.getFilters()
+                    .then(res => {
+                        siteList.value = res.data.site || []
+                    })
+                    .catch(err => console.error(err))
+            })
     }
 
     // Type et date obligatoires
